@@ -1,0 +1,15 @@
+.venv/
+__pycache__/
+*.pyc
+.env
+config.yaml
+.pytest_cache/
+dist/
+*.egg-info/
+.ruff_cache/
+
+# Internal planning docs — kept private, not for the public repo
+CLAUDE.md
+docs/
+.private-git/
+.claude/
