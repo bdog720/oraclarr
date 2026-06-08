@@ -31,3 +31,7 @@ testpaths = ["tests"]
 
 [tool.ruff]
 line-length = 100
+
+[tool.ruff.lint.per-file-ignores]
+# Compact one-line fake-client stubs (name=...; type=...) are idiomatic in tests.
+"tests/**" = ["E702"]
