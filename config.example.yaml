@@ -1,0 +1,13 @@
+server:
+  allow_writes: false
+  toolsets: [media, downloads, transcode]
+defaults:
+  timeout_seconds: 10
+instances:
+  sonarr:       { type: sonarr,       url: http://192.168.1.10:8989, api_key: ${SONARR_KEY} }
+  sonarr-anime: { type: sonarr,       url: http://192.168.1.10:8990, api_key: ${SONARR_ANIME_KEY} }
+  radarr:       { type: radarr,       url: http://192.168.1.10:7878, api_key: ${RADARR_KEY} }
+  prowlarr:     { type: prowlarr,     url: http://192.168.1.10:9696, api_key: ${PROWLARR_KEY} }
+  qbit:         { type: qbittorrent,  url: http://192.168.1.10:8080, username: ${QBIT_USER}, password: ${QBIT_PASS} }
+  tdarr:        { type: tdarr,        url: http://192.168.1.10:8265 }
+  profilarr:    { type: profilarr,    url: http://192.168.1.10:6868, api_key: ${PROFILARR_KEY} }
