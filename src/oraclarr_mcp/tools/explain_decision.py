@@ -15,21 +15,21 @@ async def explain_decision(clients: dict[str, BaseClient], title: str) -> dict:
             profiles = {p["id"]: p for p in await c.quality_profiles()}
         except Exception:
             profiles = {}
-        try:
-            history = await c.history(limit=50)
-        except Exception:
-            history = []
-        id_key = "seriesId" if c.type == "sonarr" else "movieId"
+        kind = media_kind(c)
         for item in lib:
             if title.lower() not in item.get("title", "").lower():
                 continue
             prof = profiles.get(item.get("qualityProfileId"), {})
+            try:
+                history = await c.item_history(item.get("id"), kind)
+            except Exception:
+                history = []
             grabs = [
                 {"release": h.get("sourceTitle"),
                  "score": h.get("customFormatScore"),
                  "formats": [f.get("name") for f in h.get("customFormats", [])]}
                 for h in history
-                if h.get(id_key) == item.get("id") and h.get("eventType") == "grabbed"
+                if h.get("eventType") == "grabbed"
             ]
             matches.append({
                 "instance": c.name,

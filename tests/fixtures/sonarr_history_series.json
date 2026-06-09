@@ -1,0 +1,92 @@
+[
+  {
+    "eventType": "grabbed",
+    "seriesId": 237,
+    "sourceTitle": "Long Way Home S01E09 Pinball and Pierogies 2160p ATVP WEB-DL DD 5 1 Atmos DoVi HDR H 265-playWEB",
+    "customFormatScore": 926880,
+    "customFormats": [
+      {
+        "id": 338,
+        "name": "2160p WEB-DL"
+      },
+      {
+        "id": 422,
+        "name": "2160p WEB-DL (Efficient)"
+      },
+      {
+        "id": 339,
+        "name": "Atmos"
+      },
+      {
+        "id": 206,
+        "name": "ATVP"
+      },
+      {
+        "id": 273,
+        "name": "Dolby Atmos"
+      },
+      {
+        "id": 258,
+        "name": "Dolby Digital"
+      },
+      {
+        "id": 260,
+        "name": "Dolby Vision"
+      },
+      {
+        "id": 191,
+        "name": "HDR"
+      },
+      {
+        "id": 283,
+        "name": "WEB-DL Tier 2"
+      }
+    ],
+    "date": "2026-06-07T10:52:18Z"
+  },
+  {
+    "eventType": "grabbed",
+    "seriesId": 237,
+    "sourceTitle": "Long Way Home S01E05 Ice Snow and Bears 2160p ATVP WEB-DL DD 5 1 Atmos DoVi HDR H 265-playWEB",
+    "customFormatScore": 926880,
+    "customFormats": [
+      {
+        "id": 338,
+        "name": "2160p WEB-DL"
+      },
+      {
+        "id": 422,
+        "name": "2160p WEB-DL (Efficient)"
+      },
+      {
+        "id": 339,
+        "name": "Atmos"
+      },
+      {
+        "id": 206,
+        "name": "ATVP"
+      },
+      {
+        "id": 273,
+        "name": "Dolby Atmos"
+      },
+      {
+        "id": 258,
+        "name": "Dolby Digital"
+      },
+      {
+        "id": 260,
+        "name": "Dolby Vision"
+      },
+      {
+        "id": 191,
+        "name": "HDR"
+      },
+      {
+        "id": 283,
+        "name": "WEB-DL Tier 2"
+      }
+    ],
+    "date": "2026-06-07T10:52:16Z"
+  }
+]

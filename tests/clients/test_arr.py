@@ -26,3 +26,23 @@ async def test_queue_returns_records():
     recs = await c.queue()
     assert recs[0]["downloadId"] == "ABC123"
     await c.aclose()
+
+@respx.mock
+async def test_item_history_series_path_and_param():
+    payload = json.loads((FX/"sonarr_history_series.json").read_text())
+    route = respx.get("http://h/api/v3/history/series").mock(
+        return_value=httpx.Response(200, json=payload))
+    c = _client()
+    recs = await c.item_history(237, "series")
+    assert route.calls.last.request.url.params["seriesId"] == "237"
+    assert recs[0]["customFormatScore"] == 926880
+    await c.aclose()
+
+@respx.mock
+async def test_item_history_movie_uses_movie_param():
+    route = respx.get("http://h/api/v3/history/movie").mock(
+        return_value=httpx.Response(200, json=[]))
+    c = ArrClient("radarr", "radarr", "http://h", ApiKeyHeaderAuth("K"), timeout=5)
+    await c.item_history(42, "movie")
+    assert route.calls.last.request.url.params["movieId"] == "42"
+    await c.aclose()
