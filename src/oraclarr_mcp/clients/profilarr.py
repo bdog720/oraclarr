@@ -2,11 +2,11 @@ from .base import BaseClient
 
 
 class ProfilarrClient(BaseClient):
+    """Profilarr public REST API (v1). Profiles/custom-formats are not exposed
+    per-arr; sync state lives in /api/v1/status (databases + per-arr sync)."""
+
     async def arr_instances(self) -> list[dict]:
-        return await self.get_json("/api/arr")
+        return await self.get_json("/api/v1/arr")
 
-    async def quality_profiles(self, arr_id: int) -> list[dict]:
-        return await self.get_json(f"/api/arr/{arr_id}/quality-profiles")
-
-    async def custom_formats(self, arr_id: int) -> list[dict]:
-        return await self.get_json(f"/api/arr/{arr_id}/custom-formats")
+    async def status(self) -> dict:
+        return await self.get_json("/api/v1/status")

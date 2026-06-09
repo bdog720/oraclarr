@@ -11,15 +11,12 @@ async def _arr_config(c: BaseClient) -> dict:
     return out
 
 async def _profilarr_config(c: BaseClient) -> dict:
-    instances = await c.arr_instances()
-    synced = []
-    for inst in instances:
-        synced.append({
-            "arr": inst.get("name"),
-            "profiles": await c.quality_profiles(inst["id"]),
-            "custom_formats": await c.custom_formats(inst["id"]),
-        })
-    return {"synced": synced}
+    s = await c.status()
+    return {
+        "version": s.get("version"),
+        "databases": s.get("databases", []),
+        "arrs": s.get("arrs", []),
+    }
 
 async def get_quality_config(clients: dict[str, BaseClient], service: str | None = None) -> list[dict]:
     sel = {n: c for n, c in clients.items() if c.type in ("sonarr", "radarr", "profilarr")}
