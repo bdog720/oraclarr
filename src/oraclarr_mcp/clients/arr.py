@@ -1,4 +1,3 @@
-from typing import Any
 from .base import BaseClient
 
 class ArrClient(BaseClient):
@@ -21,6 +20,11 @@ class ArrClient(BaseClient):
         data = await self.get_json("/api/v3/history",
                                    params={"pageSize": limit, "sortKey": "date", "sortDirection": "descending"})
         return data.get("records", [])
+
+    async def item_history(self, item_id: int, media: str) -> list[dict]:
+        """Per-item grab/import history. Sonarr: series?seriesId; Radarr: movie?movieId."""
+        param = "seriesId" if media == "series" else "movieId"
+        return await self.get_json(f"/api/v3/history/{media}", params={param: item_id})
 
     async def wanted_missing(self) -> list[dict]:
         data = await self.get_json("/api/v3/wanted/missing", params={"pageSize": 200})
