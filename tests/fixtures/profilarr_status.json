@@ -1,0 +1,17 @@
+{
+  "version": "2.0.8",
+  "uptime": 1,
+  "timezone": "Etc/UTC",
+  "databases": [
+    {"id": 1, "name": "Dictionarry", "enabled": true, "lastSyncedAt": "2026-06-09T02:14:28Z", "syncStrategy": "auto", "counts": {"customFormats": 254, "qualityProfiles": 11, "regularExpressions": 518, "delayProfiles": 2}},
+    {"id": 2, "name": "Servers@Home", "enabled": true, "lastSyncedAt": "2026-06-04T08:01:06Z", "syncStrategy": "auto", "counts": {"customFormats": 413, "qualityProfiles": 19, "regularExpressions": 934, "delayProfiles": 3}}
+  ],
+  "arrs": [
+    {"id": 1, "name": "Radarr", "type": "radarr", "enabled": true, "sync": {"qualityProfiles": {"count": 4, "status": "idle", "lastSyncedAt": "2026-06-06T01:00:22.303Z"}, "delayProfiles": {"configured": true, "status": "idle", "lastSyncedAt": "2026-05-27T01:09:28.085Z"}, "mediaManagement": {"configured": true, "status": "idle", "lastSyncedAt": "2026-06-06T01:00:34.656Z"}}, "drift": null},
+    {"id": 2, "name": "Sonarr", "type": "sonarr", "enabled": true, "sync": {"qualityProfiles": {"count": 5, "status": "idle", "lastSyncedAt": "2026-06-06T01:01:04.659Z"}, "delayProfiles": {"configured": true, "status": "idle", "lastSyncedAt": "2026-06-06T01:01:04.675Z"}, "mediaManagement": {"configured": true, "status": "idle", "lastSyncedAt": "2026-06-06T01:01:10.825Z"}}, "drift": null},
+    {"id": 3, "name": "Sonarr_Anime", "type": "sonarr", "enabled": true, "sync": {"qualityProfiles": {"count": 1, "status": "idle", "lastSyncedAt": "2026-05-31T22:58:30.009Z"}, "delayProfiles": {"configured": true, "status": "idle", "lastSyncedAt": "2026-06-06T01:01:10.837Z"}, "mediaManagement": {"configured": true, "status": "idle", "lastSyncedAt": "2026-06-06T01:01:11.964Z"}}, "drift": null}
+  ],
+  "jobs": {"active": 0, "queued": 21, "nextRunAt": "2026-06-09T03:14:28.000Z"},
+  "backups": {"enabled": true, "lastBackupAt": "2026-06-09T00:06:53.520Z"},
+  "announcements": {"unread": 0}
+}
