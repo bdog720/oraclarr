@@ -38,3 +38,19 @@ def test_build_server_registers_only_enabled_tools():
     registered = set(_registered_tool_names(mcp))
     assert "get_transcodes" not in registered
     assert "stack_health" in registered
+
+
+def test_build_server_passes_host_and_port_to_fastmcp():
+    cfg = Config(server=ServerSettings(toolsets=["media"]), defaults=Defaults(),
+                 instances={"sonarr": Instance(type="sonarr", url="http://h:8989", api_key="K")})
+    mcp = build_server(cfg, clients={}, host="0.0.0.0", port=7979)
+    assert mcp.settings.host == "0.0.0.0"
+    assert mcp.settings.port == 7979
+
+
+def test_build_server_defaults_to_localhost_7979():
+    cfg = Config(server=ServerSettings(toolsets=["media"]), defaults=Defaults(),
+                 instances={"sonarr": Instance(type="sonarr", url="http://h:8989", api_key="K")})
+    mcp = build_server(cfg, clients={})
+    assert mcp.settings.host == "127.0.0.1"
+    assert mcp.settings.port == 7979
