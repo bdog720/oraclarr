@@ -27,8 +27,13 @@ TOOL_SPECS: list[ToolSpec] = [
 ]
 
 
-def build_server(cfg: Config, clients: dict[str, BaseClient]) -> FastMCP:
-    mcp = FastMCP("oraclarr-mcp")
+def build_server(
+    cfg: Config,
+    clients: dict[str, BaseClient],
+    host: str = "127.0.0.1",
+    port: int = 7979,
+) -> FastMCP:
+    mcp = FastMCP("oraclarr-mcp", host=host, port=port)
     enabled = set(enabled_for_toolsets(TOOL_SPECS, cfg.server.toolsets))
     spec_by_name = {s.name: s for s in TOOL_SPECS}
 
