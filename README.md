@@ -82,6 +82,55 @@ The server speaks MCP over stdio.
 }
 ```
 
+## Docker (homelab)
+
+Run Oraclarr as a long-running HTTP MCP service next to your arr stack. Images
+are published to `ghcr.io/bdog720/oraclarr-mcp` (amd64).
+
+```bash
+cp docker-compose.example.yml docker-compose.yml
+cp config.example.yaml config.yaml   # edit URLs to match your stack
+cp .env.example .env                  # fill in API keys / credentials
+docker compose up -d
+```
+
+The container serves MCP over streamable HTTP at `http://<host>:7979/mcp`
+(`config.yaml` mounted read-only; secrets injected from `.env`).
+
+### Connect Claude Desktop
+
+**Native Custom Connector (recommended):** Settings → Connectors → Add custom
+connector → URL `http://<host>:7979/mcp`. Leave the OAuth client id/secret blank
+— they're optional and not used in this phase.
+
+**Fallback (`mcp-remote`)** for older Claude Desktop without the URL flow:
+
+```json
+{
+  "mcpServers": {
+    "oraclarr": {
+      "command": "npx",
+      "args": ["-y", "mcp-remote", "http://<host>:7979/mcp"]
+    }
+  }
+}
+```
+
+> **Security:** the service is unauthenticated read-only MCP. Deploy on a trusted
+> LAN only and do not expose port 7979 to the internet. Optional authentication
+> is a later phase.
+
+### Transport env vars
+
+| Var | Default (image) | Meaning |
+|---|---|---|
+| `ORACLARR_TRANSPORT` | `http` | `stdio` or `http` |
+| `ORACLARR_HTTP_HOST` | `0.0.0.0` | bind host |
+| `ORACLARR_HTTP_PORT` | `7979` | bind port |
+| `ORACLARR_CONFIG` | `/config/config.yaml` | config path inside container |
+
+Outside Docker the code default is `stdio` on `127.0.0.1`.
+
 ## Configuration
 
 Instances are named in `config.yaml`; `type` selects the client, so multiple instances of the same type (e.g. two Sonarrs) just work. Secrets are referenced as `${ENV_VAR}` and pulled from `.env`:
