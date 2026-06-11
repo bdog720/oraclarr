@@ -1,0 +1,19 @@
+# Copy to docker-compose.yml, then: docker compose up -d
+# Secrets are read from a sibling .env file (same keys as .env.example).
+services:
+  oraclarr:
+    image: ghcr.io/bdog720/oraclarr-mcp:latest
+    container_name: oraclarr
+    restart: unless-stopped
+    ports:
+      - "7979:7979"           # host:container — change the host side freely
+    volumes:
+      - ./config.yaml:/config/config.yaml:ro
+    environment:
+      SONARR_KEY: ${SONARR_KEY}
+      SONARR_ANIME_KEY: ${SONARR_ANIME_KEY}
+      RADARR_KEY: ${RADARR_KEY}
+      PROWLARR_KEY: ${PROWLARR_KEY}
+      QBIT_USER: ${QBIT_USER}
+      QBIT_PASS: ${QBIT_PASS}
+      PROFILARR_KEY: ${PROFILARR_KEY}
