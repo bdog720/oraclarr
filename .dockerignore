@@ -1,0 +1,11 @@
+.git
+.private-git
+.venv
+tests
+docs
+**/__pycache__
+*.pyc
+.env
+config.yaml
+.ruff_cache
+.pytest_cache
