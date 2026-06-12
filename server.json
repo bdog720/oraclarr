@@ -1,0 +1,32 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.bdog720/oraclarr",
+  "title": "Oraclarr",
+  "description": "Read-only diagnostic MCP server for a self-hosted arr stack (Sonarr, Radarr, Prowlarr & more).",
+  "version": "1.0.0",
+  "websiteUrl": "https://github.com/bdog720/oraclarr",
+  "repository": {
+    "url": "https://github.com/bdog720/oraclarr",
+    "source": "github"
+  },
+  "packages": [
+    {
+      "registryType": "pypi",
+      "registryBaseUrl": "https://pypi.org",
+      "identifier": "oraclarr-mcp",
+      "version": "1.0.0",
+      "runtimeHint": "uvx",
+      "transport": {
+        "type": "stdio"
+      },
+      "environmentVariables": [
+        {
+          "name": "ORACLARR_CONFIG",
+          "description": "Absolute path to your config.yaml (arr service URLs + ${ENV} secret refs). See the repository README for the format.",
+          "isRequired": true,
+          "isSecret": false
+        }
+      ]
+    }
+  ]
+}
