@@ -50,7 +50,20 @@ def _interpolate(raw: str) -> str:
 
 
 def load_config(path: Path) -> Config:
-    raw = Path(path).read_text()
+    p = Path(path)
+    if p.is_dir():
+        raise ConfigError(
+            f"Config path {p} is a directory, not a file. In Docker this usually means "
+            f"the config.yaml file did not exist on the host when the container started, "
+            f"so a directory was created at the mount point. Create config.yaml as a file "
+            f"(copy config.example.yaml) and recreate the container."
+        )
+    if not p.exists():
+        raise ConfigError(
+            f"Config file not found: {p}. Copy config.example.yaml to config.yaml and "
+            f"point ORACLARR_CONFIG at it (or mount it into the container at this path)."
+        )
+    raw = p.read_text()
     interpolated = _interpolate(raw)
     data = yaml.safe_load(interpolated)
     try:
