@@ -99,11 +99,9 @@ The container serves MCP over streamable HTTP at `http://<host>:7979/mcp`
 
 ### Connect Claude Desktop
 
-**Native Custom Connector (recommended):** Settings → Connectors → Add custom
-connector → URL `http://<host>:7979/mcp`. Leave the OAuth client id/secret blank
-— they're optional and not used in this phase.
-
-**Fallback (`mcp-remote`)** for older Claude Desktop without the URL flow:
+Use the **`mcp-remote` stdio bridge** in `claude_desktop_config.json`. It runs
+locally as a Claude Desktop "local MCP server", so it can reach the container on
+your LAN (requires Node.js / `npx`):
 
 ```json
 {
@@ -116,9 +114,17 @@ connector → URL `http://<host>:7979/mcp`. Leave the OAuth client id/secret bla
 }
 ```
 
+> **Why not the native "Add custom connector"?** Custom connectors connect to your
+> server **from Anthropic's cloud**, not from your machine — so the URL must be a
+> publicly reachable **HTTPS** endpoint (a `http://` LAN/localhost URL is rejected).
+> Pointing it at a homelab box means exposing this **unauthenticated read-only**
+> service to the internet, which we don't recommend until authentication lands (a
+> later phase). If you want it anyway, put a reverse proxy (Caddy/nginx) or tunnel
+> (Cloudflare Tunnel, Tailscale Funnel) with TLS in front and add your own auth.
+
 > **Security:** the service is unauthenticated read-only MCP. Deploy on a trusted
-> LAN only and do not expose port 7979 to the internet. Optional authentication
-> is a later phase.
+> LAN only and do not expose port 7979 to the internet. Authentication is a later
+> phase.
 
 ### Transport env vars
 
@@ -162,9 +168,13 @@ Oraclarr is built in phases. v1 is deliberately read-only; write capability arri
 
 Have a service you'd like covered? Open an issue.
 
-## Contributing
+## 💬 Feedback & Issues
 
-Issues and PRs welcome. The codebase is TDD throughout:
+Found a bug or have a feature request? We'd love to hear about it. Please [open an issue](https://github.com/bdog720/oraclarr/issues) here on GitHub.
+
+## 🤝 Contributing
+
+We welcome contributions! Issues and PRs welcome — the codebase is TDD throughout:
 
 ```bash
 uv run pytest        # tests (respx-mocked, no live services needed)
@@ -173,6 +183,12 @@ uv run ruff check .  # lint
 
 Adding a service follows a small recipe (new client → register by `type` → extend a tool → write the test). See the project layout under `src/oraclarr_mcp/`.
 
-## License
+## 📄 License
 
-[Apache-2.0](LICENSE).
+This project is licensed under the Apache License 2.0. See the [LICENSE](LICENSE) file for details.
+
+## 💖 Support the Project
+
+If you find Oraclarr useful and it saves you from tabbing through six web UIs to work out why something didn't download, consider buying me a coffee to support future development!
+
+<a href="https://buymeacoffee.com/bdog720" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 50px !important;width: 217px !important;" ></a>
