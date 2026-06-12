@@ -20,7 +20,7 @@ A locally-run, read-only [MCP](https://modelcontextprotocol.io) server that lets
 
 Oraclarr gives a language model one place to answer the operational "why" questions that normally mean tabbing through six web UIs. It aggregates across your services and returns a single, structured answer without changing anything (it is strictly read-only in this phase).
 
-Covered now: **Sonarr** (plus a second anime instance), **Radarr**, **Prowlarr**, **qBittorrent**, **Tdarr**, and **Profilarr**.
+Covered now: **Sonarr**, **Radarr**, **Prowlarr**, **qBittorrent**, **Tdarr**, and **Profilarr** — including **multiple instances of the same type** (e.g. a separate anime or 4K Sonarr/Radarr). Every tool fans out across all the instances you define and reports each one separately.
 
 ## In practice
 
@@ -51,27 +51,87 @@ All read-only and outcome-oriented (not one-per-endpoint, which keeps the model 
 | `get_indexers` | Which indexers are failing? |
 | `get_transcodes` | What's transcoding / stuck? |
 
-## Setup
+## Install
 
-Requires Python 3.12+ and [`uv`](https://docs.astral.sh/uv/).
+There are **two ways to run Oraclarr — pick one, you don't need both:**
+
+- **🐳 Docker (recommended)** — a small always-on container that lives next to your
+  arr stack. Best for homelabs; works great with Portainer, Dockge, Unraid, etc.
+- **🐍 Python (uv)** — run it directly on your machine with no container. Best for
+  local development, or if you simply don't use Docker.
+
+Both options need the same two files. Make them from the templates in this repo —
+[`config.example.yaml`](config.example.yaml) (your service URLs) and
+[`.env.example`](.env.example) (your API keys / passwords):
+
+- **If you cloned the repo:** `cp config.example.yaml config.yaml` and
+  `cp .env.example .env`, then edit them.
+- **If you're pasting into Dockge/Portainer:** open those two example files above,
+  copy their contents into a `config.yaml` and a `.env` in your stack folder, and
+  fill in your details.
+
+See [Configuration](#configuration) below for exactly what goes in `config.yaml`.
+Your `config.yaml` and `.env` are never committed — your URLs and secrets stay on
+your machine. Now follow **one** of the two options below.
+
+---
+
+### Option A — Docker (recommended)
+
+Oraclarr runs as a long-running container that serves MCP over HTTP at
+`http://<host>:7979/mcp`. You need three things in one folder: your `config.yaml`,
+your `.env`, and a `docker-compose.yml`.
+
+**Using a stack manager (Dockge, Portainer, etc.):** create a new stack, paste the
+compose below into the editor, and put your `config.yaml` and `.env` in the same
+stack folder. Hit deploy.
+
+**Using the command line:**
+
+```bash
+cp docker-compose.example.yml docker-compose.yml
+docker compose up -d
+```
+
+Either way, this is the compose file — copy/paste it as-is:
+
+```yaml
+services:
+  oraclarr:
+    image: ghcr.io/bdog720/oraclarr-mcp:latest
+    container_name: oraclarr
+    restart: unless-stopped
+    ports:
+      - "7979:7979"           # left side is the host port — change it if 7979 is taken
+    volumes:
+      - ./config.yaml:/config/config.yaml:ro
+    environment:
+      SONARR_KEY: ${SONARR_KEY}
+      SONARR_ANIME_KEY: ${SONARR_ANIME_KEY}
+      RADARR_KEY: ${RADARR_KEY}
+      PROWLARR_KEY: ${PROWLARR_KEY}
+      QBIT_USER: ${QBIT_USER}
+      QBIT_PASS: ${QBIT_PASS}
+      PROFILARR_KEY: ${PROFILARR_KEY}
+```
+
+The keys on the right (`${SONARR_KEY}` …) are read from your `.env` file. Then
+[connect Claude Desktop](#connect-claude-desktop).
+
+---
+
+### Option B — Python (uv)
+
+Run Oraclarr directly, no Docker. Requires Python 3.12+ and
+[`uv`](https://docs.astral.sh/uv/):
 
 ```bash
 uv sync
-cp config.example.yaml config.yaml   # edit URLs to match your stack
-cp .env.example .env                  # fill in API keys / credentials
-```
-
-`config.yaml` and `.env` are gitignored, so your URLs and secrets stay local.
-
-## Run
-
-```bash
 ORACLARR_CONFIG=config.yaml uv run python -m oraclarr_mcp
 ```
 
-The server speaks MCP over stdio.
-
-### Register with Claude Code / Desktop
+This speaks MCP over **stdio** — the client launches the process for you, so you
+register it in your client's config rather than connecting to a URL:
 
 ```json
 "oraclarr": {
@@ -82,26 +142,15 @@ The server speaks MCP over stdio.
 }
 ```
 
-## Docker (homelab)
-
-Run Oraclarr as a long-running HTTP MCP service next to your arr stack. Images
-are published to `ghcr.io/bdog720/oraclarr-mcp` (amd64).
-
-```bash
-cp docker-compose.example.yml docker-compose.yml
-cp config.example.yaml config.yaml   # edit URLs to match your stack
-cp .env.example .env                  # fill in API keys / credentials
-docker compose up -d
-```
-
-The container serves MCP over streamable HTTP at `http://<host>:7979/mcp`
-(`config.yaml` mounted read-only; secrets injected from `.env`).
+---
 
 ### Connect Claude Desktop
 
-Use the **`mcp-remote` stdio bridge** in `claude_desktop_config.json`. It runs
-locally as a Claude Desktop "local MCP server", so it can reach the container on
-your LAN (requires Node.js / `npx`):
+*(For Option A / Docker. Option B registers itself with the JSON snippet above.)*
+
+Use the **`mcp-remote` bridge** in `claude_desktop_config.json`. It runs locally as
+a Claude Desktop "local MCP server", so it can reach the container on your LAN
+(requires Node.js / `npx`):
 
 ```json
 {
@@ -113,6 +162,8 @@ your LAN (requires Node.js / `npx`):
   }
 }
 ```
+
+Replace `<host>` with the IP or hostname of the machine running the container.
 
 > **Why not the native "Add custom connector"?** Custom connectors connect to your
 > server **from Anthropic's cloud**, not from your machine — so the URL must be a
@@ -126,20 +177,22 @@ your LAN (requires Node.js / `npx`):
 > LAN only and do not expose port 7979 to the internet. Authentication is a later
 > phase.
 
-### Transport env vars
+### Transport settings (Docker only)
 
-| Var | Default (image) | Meaning |
+These apply to the **Docker** container only. The image already sets sensible
+defaults, so **you normally don't touch them** — the table is here for reference.
+The Python path (Option B) always uses stdio and ignores these entirely.
+
+| Variable | Default | What it does |
 |---|---|---|
-| `ORACLARR_TRANSPORT` | `http` | `stdio` or `http` |
-| `ORACLARR_HTTP_HOST` | `0.0.0.0` | bind host |
-| `ORACLARR_HTTP_PORT` | `7979` | bind port |
-| `ORACLARR_CONFIG` | `/config/config.yaml` | config path inside container |
-
-Outside Docker the code default is `stdio` on `127.0.0.1`.
+| `ORACLARR_TRANSPORT` | `http` | How clients reach the server. `http` = long-running service (Docker). `stdio` = the client launches the process (the Python path). You don't normally set this by hand — your install method picks it. |
+| `ORACLARR_HTTP_HOST` | `0.0.0.0` | Which network interface to listen on. `0.0.0.0` means "reachable on your LAN" — leave as-is for Docker. |
+| `ORACLARR_HTTP_PORT` | `7979` | Port *inside* the container. To change the port you reach it on, edit the `ports:` line in the compose instead. |
+| `ORACLARR_CONFIG` | `/config/config.yaml` | Where the container reads `config.yaml`. Leave as-is. |
 
 ## Configuration
 
-Instances are named in `config.yaml`; `type` selects the client, so multiple instances of the same type (e.g. two Sonarrs) just work. Secrets are referenced as `${ENV_VAR}` and pulled from `.env`:
+Instances are named in `config.yaml`; `type` selects the client, so any number of instances of any type (e.g. two Sonarrs) just work. Secrets are referenced as `${ENV_VAR}` and pulled from `.env`:
 
 ```yaml
 server:
