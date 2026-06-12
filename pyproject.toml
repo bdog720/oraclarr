@@ -1,9 +1,17 @@
 [project]
 name = "oraclarr-mcp"
-version = "0.1.0"
+version = "1.0.0"
 description = "Read-only diagnostic MCP server for the arr media stack"
+readme = "README.md"
 requires-python = ">=3.12"
 license = "Apache-2.0"
+keywords = ["mcp", "model-context-protocol", "sonarr", "radarr", "prowlarr", "arr", "homelab", "media"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: System Administrators",
+    "Topic :: Multimedia",
+    "Programming Language :: Python :: 3.12",
+]
 dependencies = [
     "mcp[cli]>=1.10",
     "httpx>=0.27",
@@ -11,6 +19,11 @@ dependencies = [
     "pyyaml>=6.0",
     "python-dotenv>=1.0",
 ]
+
+[project.urls]
+Homepage = "https://github.com/bdog720/oraclarr"
+Repository = "https://github.com/bdog720/oraclarr"
+Issues = "https://github.com/bdog720/oraclarr/issues"
 
 [project.scripts]
 oraclarr-mcp = "oraclarr_mcp.__main__:main"

@@ -1,3 +1,5 @@
+<!-- mcp-name: io.github.bdog720/oraclarr -->
+
 <div align="center">
 
 # Oraclarr
@@ -123,7 +125,17 @@ The keys on the right (`${SONARR_KEY}` …) are read from your `.env` file. Then
 ### Option B — Python (uv)
 
 Run Oraclarr directly, no Docker. Requires Python 3.12+ and
-[`uv`](https://docs.astral.sh/uv/):
+[`uv`](https://docs.astral.sh/uv/).
+
+**From PyPI (no clone needed):** the package is published as
+[`oraclarr-mcp`](https://pypi.org/project/oraclarr-mcp/). Point `ORACLARR_CONFIG`
+at your `config.yaml` and run it with `uvx`:
+
+```bash
+ORACLARR_CONFIG=config.yaml uvx oraclarr-mcp
+```
+
+**From a clone (for development):**
 
 ```bash
 uv sync
@@ -135,12 +147,14 @@ register it in your client's config rather than connecting to a URL:
 
 ```json
 "oraclarr": {
-  "command": "uv",
-  "args": ["run", "python", "-m", "oraclarr_mcp"],
-  "cwd": "E:\\Development\\Oraclarr",
-  "env": { "ORACLARR_CONFIG": "E:\\Development\\Oraclarr\\config.yaml" }
+  "command": "uvx",
+  "args": ["oraclarr-mcp"],
+  "env": { "ORACLARR_CONFIG": "/absolute/path/to/config.yaml" }
 }
 ```
+
+(From a clone instead of PyPI, use `"command": "uv"`, `"args": ["run", "python",
+"-m", "oraclarr_mcp"]`, and add `"cwd"` pointing at the repo.)
 
 ---
 
