@@ -88,6 +88,13 @@ your `.env`, and a `docker-compose.yml`.
 compose below into the editor, and put your `config.yaml` and `.env` in the same
 stack folder. Hit deploy.
 
+> **Create `config.yaml` as a real file *before* you deploy.** The compose mounts
+> `./config.yaml` into the container. If that file doesn't exist yet, Docker
+> silently creates an empty **directory** at the mount point and the container
+> exits with `IsADirectoryError: Is a directory: '/config/config.yaml'`. If you hit
+> that: stop the stack, delete the `config.yaml` *directory* in the stack folder,
+> create `config.yaml` as a file, and redeploy.
+
 **Using the command line:**
 
 ```bash
