@@ -178,13 +178,18 @@ a Claude Desktop "local MCP server", so it can reach the container on your LAN
   "mcpServers": {
     "oraclarr": {
       "command": "npx",
-      "args": ["-y", "mcp-remote", "http://<host>:7979/mcp"]
+      "args": ["-y", "mcp-remote", "http://<host>:7979/mcp", "--allow-http"]
     }
   }
 }
 ```
 
 Replace `<host>` with the IP or hostname of the machine running the container.
+
+> **Why `--allow-http`?** Recent versions of `mcp-remote` reject plain `http://` URLs
+> unless the host is `localhost`. Without this flag the bridge exits immediately and
+> Claude Desktop shows the server as "disconnected" — even though the server itself is
+> reachable. The flag is safe here: the traffic stays on your trusted LAN.
 
 > **Why not the native "Add custom connector"?** Custom connectors connect to your
 > server **from Anthropic's cloud**, not from your machine — so the URL must be a
