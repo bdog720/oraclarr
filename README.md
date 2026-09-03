@@ -22,7 +22,7 @@ A locally-run, read-only [MCP](https://modelcontextprotocol.io) server that lets
 
 Oraclarr gives a language model one place to answer the operational "why" questions that normally mean tabbing through six web UIs. It aggregates across your services and returns a single, structured answer without changing anything (it is strictly read-only in this phase).
 
-Covered now: **Sonarr**, **Radarr**, **Prowlarr**, **qBittorrent**, **Tdarr**, and **Profilarr** — including **multiple instances of the same type** (e.g. a separate anime or 4K Sonarr/Radarr). Every tool fans out across all the instances you define and reports each one separately.
+Covered now: **Sonarr**, **Radarr**, **Sportarr**, **Prowlarr**, **qBittorrent**, **Tdarr**, and **Profilarr** — including **multiple instances of the same type** (e.g. a separate anime or 4K Sonarr/Radarr). Every tool fans out across all the instances you define and reports each one separately.
 
 ## In practice
 
@@ -52,6 +52,7 @@ All read-only and outcome-oriented (not one-per-endpoint, which keeps the model 
 | `search_media` | Do I have *X*, what's its status? |
 | `get_indexers` | Which indexers are failing? |
 | `get_transcodes` | What's transcoding / stuck? |
+| `get_upcoming` | What's airing or releasing soon, and will it land? (up to 90 days) |
 
 ## Install
 
@@ -122,6 +123,7 @@ services:
       QBIT_USER: ${QBIT_USER}
       QBIT_PASS: ${QBIT_PASS}
       PROFILARR_KEY: ${PROFILARR_KEY}
+      SPORTARR_KEY: ${SPORTARR_KEY}
 ```
 
 The keys on the right (`${SONARR_KEY}` …) are read from your `.env` file. Then
@@ -234,14 +236,15 @@ instances:
   qbit:         { type: qbittorrent,  url: http://host:8080, username: ${QBIT_USER}, password: ${QBIT_PASS} }
   tdarr:        { type: tdarr,        url: http://host:8265 }
   profilarr:    { type: profilarr,    url: http://host:6868, api_key: ${PROFILARR_KEY} }
+  sportarr:     { type: sportarr,     url: http://host:1867, api_key: ${SPORTARR_KEY} }
 ```
 
 ## Roadmap
 
 Oraclarr is built in phases. v1 is deliberately read-only; write capability arrives behind explicit safety gates. The architecture (typed clients + outcome tools + config-selectable toolsets) is designed to extend to other self-hosted suites beyond *arr, too.
 
-- ✅ **Phase 1: read-only diagnostics.** Sonarr, Radarr, Prowlarr, qBittorrent, Tdarr, Profilarr.
-- 🔜 **Phase 2: more services, still read-only.** Jellyfin, Seerr, Gluetun, TrueNAS, Cleanuparr, ntfy. The architecture also opens up to non-*arr stacks.
+- ✅ **Phase 1: read-only diagnostics.** Sonarr, Radarr, Sportarr, Prowlarr, qBittorrent, Tdarr, Profilarr.
+- 🔜 **Phase 2: more services, still read-only.** Jellyfin, Seerr, Gluetun, TrueNAS, Cleanuparr, Unpackerr, ntfy. The architecture also opens up to non-*arr stacks.
 - 🔭 **Phase 3: safe write actions.** Trigger search, retry, refresh/rescan, approve requests, gated behind `allow_writes` with dry-run previews and an audit log.
 - 🔭 **Phase 4: destructive actions.** Delete media, blocklist, stack control, behind an explicit confirmation and allowlist.
 
