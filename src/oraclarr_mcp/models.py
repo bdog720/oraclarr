@@ -5,6 +5,10 @@ InstanceStatus = Literal["ok", "unreachable", "auth_failed", "error"]
 Risk = Literal["read", "safe_write", "destructive"]
 Domain = Literal["media", "downloads", "transcode", "library", "infra"]
 
+# Arr-family instance types. Sportarr serves a Sonarr-compatible /api/v3, so it
+# routes to ArrClient like its peers. Every arr selector reads this constant.
+ARR_TYPES: tuple[str, ...] = ("sonarr", "radarr", "sportarr")
+
 class InstanceResult(BaseModel):
     instance: str
     type: str

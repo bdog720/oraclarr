@@ -1,4 +1,5 @@
 from .config import Config, Instance
+from .models import ARR_TYPES
 from .clients.base import BaseClient, ApiKeyHeaderAuth, NoAuth
 from .clients.arr import ArrClient
 from .clients.prowlarr import ProwlarrClient
@@ -8,7 +9,7 @@ from .clients.profilarr import ProfilarrClient
 
 def _make(name: str, inst: Instance, timeout: int) -> BaseClient:
     t = inst.type
-    if t in ("sonarr", "radarr"):
+    if t in ARR_TYPES:
         return ArrClient(name, t, inst.url, ApiKeyHeaderAuth(inst.api_key or ""), timeout)
     if t == "prowlarr":
         return ProwlarrClient(name, t, inst.url, ApiKeyHeaderAuth(inst.api_key or ""), timeout)
