@@ -26,6 +26,14 @@ class ArrClient(BaseClient):
         param = "seriesId" if media == "series" else "movieId"
         return await self.get_json(f"/api/v3/history/{media}", params={param: item_id})
 
+    async def calendar(self, start: str, end: str) -> list[dict]:
+        """Date-bounded upcoming items. Sonarr/Sportarr return episodes, Radarr movies.
+
+        includeSeries attaches the parent show/league; Radarr ignores it.
+        """
+        return await self.get_json("/api/v3/calendar", params={
+            "start": start, "end": end, "includeSeries": "true"})
+
     async def wanted_missing(self) -> list[dict]:
         data = await self.get_json("/api/v3/wanted/missing", params={"pageSize": 200})
         return data.get("records", [])

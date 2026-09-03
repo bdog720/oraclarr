@@ -1,0 +1,80 @@
+[
+    {
+        "id": 1,
+        "seriesId": 1,
+        "tvdbId": 1002527560,
+        "episodeFileId": 0,
+        "seasonNumber": 2026,
+        "episodeNumber": 5,
+        "title": "San Antonio Spurs vs Atlanta Hawks",
+        "airDate": "2026-10-09",
+        "airDateUtc": "2026-10-09T00:00:00.0000000Z",
+        "overview": "",
+        "hasFile": false,
+        "monitored": true,
+        "absoluteEpisodeNumber": 5,
+        "unverifiedSceneNumbering": false,
+        "grabbed": false,
+        "images": [
+            {
+                "coverType": "poster",
+                "url": "https://sportarr.net/static/images/event/ef/ef10102d-5f79-464a-906e-4b0891a318ae/poster_thesportsdb_14862ccfb194.jpg?v=g1-14862ccfb194",
+                "remoteUrl": "https://sportarr.net/static/images/event/ef/ef10102d-5f79-464a-906e-4b0891a318ae/poster_thesportsdb_14862ccfb194.jpg?v=g1-14862ccfb194"
+            },
+            {
+                "coverType": "screenshot",
+                "url": "https://sportarr.net/static/images/event/ef/ef10102d-5f79-464a-906e-4b0891a318ae/thumbnail_thesportsdb_4c31eebf4779.jpg?v=g1-4c31eebf4779",
+                "remoteUrl": "https://sportarr.net/static/images/event/ef/ef10102d-5f79-464a-906e-4b0891a318ae/thumbnail_thesportsdb_4c31eebf4779.jpg?v=g1-4c31eebf4779"
+            }
+        ],
+        "series": {
+            "id": 1,
+            "title": "NBA",
+            "sortTitle": "nba",
+            "status": "continuing",
+            "overview": "",
+            "network": "",
+            "images": [
+                {
+                    "coverType": "poster",
+                    "url": "https://sportarr.net/static/images/league/8d/8d29ee6c-1c1d-4d62-8bf2-c2099cfe7719/poster_thesportsdb_c5b5ae32a103.jpg?v=g1-c5b5ae32a103",
+                    "remoteUrl": "https://sportarr.net/static/images/league/8d/8d29ee6c-1c1d-4d62-8bf2-c2099cfe7719/poster_thesportsdb_c5b5ae32a103.jpg?v=g1-c5b5ae32a103"
+                },
+                {
+                    "coverType": "banner",
+                    "url": "https://sportarr.net/static/images/league/8d/8d29ee6c-1c1d-4d62-8bf2-c2099cfe7719/banner_thesportsdb_47a49265a3b4.jpg?v=g1-47a49265a3b4",
+                    "remoteUrl": "https://sportarr.net/static/images/league/8d/8d29ee6c-1c1d-4d62-8bf2-c2099cfe7719/banner_thesportsdb_47a49265a3b4.jpg?v=g1-47a49265a3b4"
+                },
+                {
+                    "coverType": "clearlogo",
+                    "url": "https://sportarr.net/static/images/league/8d/8d29ee6c-1c1d-4d62-8bf2-c2099cfe7719/badge_thesportsdb_cbde5934c767.png?v=g1-cbde5934c767",
+                    "remoteUrl": "https://sportarr.net/static/images/league/8d/8d29ee6c-1c1d-4d62-8bf2-c2099cfe7719/badge_thesportsdb_cbde5934c767.png?v=g1-cbde5934c767"
+                }
+            ],
+            "year": 2026,
+            "path": "/data/NBA",
+            "qualityProfileId": 2,
+            "languageProfileId": 1,
+            "seasonFolder": true,
+            "monitored": true,
+            "useSceneNumbering": false,
+            "runtime": 0,
+            "tvdbId": 900000030,
+            "tvRageId": 0,
+            "tvMazeId": 0,
+            "seriesType": "standard",
+            "cleanTitle": "nba",
+            "titleSlug": "nba",
+            "genres": [
+                "Sports"
+            ],
+            "tags": [],
+            "added": "2026-08-27T03:46:16.4635928Z",
+            "ratings": {
+                "votes": 0,
+                "value": 0
+            }
+        },
+        "episodeFile": null
+    }
+]

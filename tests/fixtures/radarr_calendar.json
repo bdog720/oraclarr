@@ -1,0 +1,431 @@
+[
+    {
+        "title": "In the Grey",
+        "originalTitle": "In the Grey",
+        "originalLanguage": {
+            "id": 1,
+            "name": "English"
+        },
+        "alternateTitles": [
+            {
+                "sourceType": "tmdb",
+                "movieMetadataId": 412,
+                "title": "En La Zona Gris",
+                "id": 3673
+            },
+            {
+                "sourceType": "tmdb",
+                "movieMetadataId": 412,
+                "title": "Guerra Sem Regras",
+                "id": 3674
+            },
+            {
+                "sourceType": "tmdb",
+                "movieMetadataId": 412,
+                "title": "\u00c5\u00a0ed\u00c3\u00a1 z\u00c3\u00b3na",
+                "id": 3675
+            },
+            {
+                "sourceType": "tmdb",
+                "movieMetadataId": 412,
+                "title": "\u00e0\u00b9\u20ac\u00e0\u00b8\u00ab\u00e0\u00b8\u00a5\u00e0\u00b8\u00b5\u00e0\u00b9\u02c6\u00e0\u00b8\u00a2\u00e0\u00b8\u00a1\u00e0\u00b8\u02c6\u00e0\u00b8\u00b2\u00e0\u00b8\u00a3\u00e0\u00b8\u0160\u00e0\u00b8\u2122 \u00e0\u00b8\u201e\u00e0\u00b8\u2122\u00e0\u00b9\u20ac\u00e0\u00b8\u00ab\u00e0\u00b8\u2122\u00e0\u00b8\u00b7\u00e0\u00b8\u00ad\u00e0\u00b9\u20ac\u00e0\u00b8\u2014\u00e0\u00b8\u00b2",
+                "id": 3676
+            },
+            {
+                "sourceType": "tmdb",
+                "movieMetadataId": 412,
+                "title": "In the grey - miljardikeikka",
+                "id": 3677
+            }
+        ],
+        "secondaryYearSourceId": 0,
+        "sortTitle": "in the grey",
+        "sizeOnDisk": 31977915113,
+        "status": "released",
+        "overview": "A covert team of elite operatives are living in the shadows. When a ruthless despot steals a billion-dollar fortune, they're sent to take it back\u00e2\u20ac\u201dan impossible heist that erupts into a deadly game of strategy, deception and survival.",
+        "inCinemas": "2026-05-13T00:00:00Z",
+        "physicalRelease": "2026-09-04T00:00:00Z",
+        "digitalRelease": "2026-06-02T00:00:00Z",
+        "releaseDate": "2026-06-02T00:00:00Z",
+        "images": [
+            {
+                "coverType": "poster",
+                "remoteUrl": "https://image.tmdb.org/t/p/original/dQgIcW6Th08kMRf2HBoYWoFE6OD.jpg"
+            },
+            {
+                "coverType": "fanart",
+                "remoteUrl": "https://image.tmdb.org/t/p/original/qcIKxhqGMIj8uujsSoSMZWr8QqU.jpg"
+            }
+        ],
+        "website": "https://www.inthegrey.film",
+        "year": 2026,
+        "youTubeTrailerId": "nufP15iN4GE",
+        "studio": "C2 Motion Picture Group",
+        "path": "/media/movies/In the Grey (2026) {tmdb-1122573}",
+        "qualityProfileId": 8,
+        "hasFile": true,
+        "movieFileId": 351,
+        "monitored": true,
+        "minimumAvailability": "released",
+        "isAvailable": true,
+        "folderName": "/media/movies/In the Grey (2026) {tmdb-1122573}",
+        "runtime": 97,
+        "cleanTitle": "ingrey",
+        "imdbId": "tt27681354",
+        "tmdbId": 1122573,
+        "titleSlug": "1122573",
+        "certification": "MA 15+",
+        "genres": [
+            "Action",
+            "Thriller"
+        ],
+        "keywords": [
+            "agent",
+            "audacious",
+            "dangerous mission",
+            "enthusiastic",
+            "heist",
+            "irreverent",
+            "mission",
+            "provocative",
+            "sarcastic"
+        ],
+        "tags": [
+            5
+        ],
+        "added": "2026-06-09T05:33:29Z",
+        "ratings": {
+            "imdb": {
+                "votes": 38160,
+                "value": 6.3,
+                "type": "user"
+            },
+            "tmdb": {
+                "votes": 850,
+                "value": 7.594,
+                "type": "user"
+            },
+            "metacritic": {
+                "votes": 0,
+                "value": 53,
+                "type": "user"
+            },
+            "rottenTomatoes": {
+                "votes": 0,
+                "value": 52,
+                "type": "user"
+            },
+            "trakt": {
+                "votes": 4212,
+                "value": 7.17806,
+                "type": "user"
+            }
+        },
+        "movieFile": {
+            "movieId": 247,
+            "relativePath": "In the Grey (2026) {tmdb-1122573} [Bluray-2160p][DV HDR10Plus][TrueHD Atmos 7.1][x265]-j3rico.mkv",
+            "path": "/media/movies/In the Grey (2026) {tmdb-1122573}/In the Grey (2026) {tmdb-1122573} [Bluray-2160p][DV HDR10Plus][TrueHD Atmos 7.1][x265]-j3rico.mkv",
+            "size": 31977915113,
+            "dateAdded": "2026-09-01T00:39:02Z",
+            "sceneName": "In the Grey 2026 2160p UHD BluRay TrueHD Atmos 7 1 DV HDR10P x265-j3rico",
+            "releaseGroup": "j3rico",
+            "edition": "",
+            "languages": [
+                {
+                    "id": 1,
+                    "name": "English"
+                }
+            ],
+            "quality": {
+                "quality": {
+                    "id": 19,
+                    "name": "Bluray-2160p",
+                    "source": "bluray",
+                    "resolution": 2160,
+                    "modifier": "none"
+                },
+                "revision": {
+                    "version": 1,
+                    "real": 0,
+                    "isRepack": false
+                }
+            },
+            "customFormats": [
+                {
+                    "id": 480,
+                    "name": "2160p Quality Tier 5"
+                },
+                {
+                    "id": 482,
+                    "name": "Atmos"
+                },
+                {
+                    "id": 392,
+                    "name": "Dolby Vision"
+                },
+                {
+                    "id": 401,
+                    "name": "HDR10+"
+                },
+                {
+                    "id": 488,
+                    "name": "TrueHD"
+                }
+            ],
+            "customFormatScore": 946600,
+            "indexerFlags": 1,
+            "mediaInfo": {
+                "audioBitrate": 4110516,
+                "audioChannels": 7.1,
+                "audioCodec": "TrueHD Atmos",
+                "audioLanguages": "eng/eng",
+                "audioStreamCount": 2,
+                "videoBitDepth": 10,
+                "videoBitrate": 38686036,
+                "videoCodec": "x265",
+                "videoFps": 23.976,
+                "videoDynamicRange": "HDR",
+                "videoDynamicRangeType": "DV HDR10Plus",
+                "resolution": "3840x1604",
+                "runTime": "1:37:48",
+                "scanType": "Progressive",
+                "subtitles": "eng/eng/eng/eng/eng/dan/fin/ger/ger/ger/ger/ita/nor/por/por/rum/spa/spa/spa/swe/tur"
+            },
+            "originalFilePath": "In the Grey 2026 2160p UHD BluRay TrueHD Atmos 7 1 DV HDR10P x265-j3rico/In the Grey 2026 2160p UHD BluRay TrueHD Atmos 7 1 DV HDR10P x265-j3rico.mkv",
+            "qualityCutoffNotMet": false,
+            "id": 351
+        },
+        "popularity": 43.642,
+        "lastSearchTime": "2026-09-03T06:00:03Z",
+        "statistics": {
+            "movieFileCount": 1,
+            "sizeOnDisk": 31977915113,
+            "releaseGroups": [
+                "j3rico"
+            ]
+        },
+        "id": 247
+    },
+    {
+        "title": "Forgotten Island",
+        "originalTitle": "Forgotten Island",
+        "originalLanguage": {
+            "id": 1,
+            "name": "English"
+        },
+        "alternateTitles": [
+            {
+                "sourceType": "tmdb",
+                "movieMetadataId": 420,
+                "title": "H\u00c3\u00b2n \u00c4\udc90\u00e1\u00ba\u00a3o Huy\u00e1\u00bb\udc81n B\u00c3\u00ad",
+                "id": 3736
+            },
+            {
+                "sourceType": "tmdb",
+                "movieMetadataId": 420,
+                "title": "\u00ed\udc8f\u00ac\u00ea\u00b0\u20ac\u00ed\u0160\u00bc \u00ec\u2022\u201e\u00ec\udc9d\u00bc\u00eb\u017e\u0153\u00eb\u201c\u0153",
+                "id": 3737
+            },
+            {
+                "sourceType": "tmdb",
+                "movieMetadataId": 420,
+                "title": "Nakalimutang Isla",
+                "id": 3738
+            },
+            {
+                "sourceType": "tmdb",
+                "movieMetadataId": 420,
+                "title": "\u00e8\u00a2\u00ab\u00e9\udc81\u2014\u00e5\u00bf\u02dc\u00e7\u0161\u201e\u00e5\u00b2\u203a\u00e5\u00b1\u00bf",
+                "id": 3739
+            },
+            {
+                "sourceType": "tmdb",
+                "movieMetadataId": 420,
+                "title": "Isla Olvidada",
+                "id": 3740
+            },
+            {
+                "sourceType": "tmdb",
+                "movieMetadataId": 420,
+                "title": "Limot na Isla",
+                "id": 3742
+            },
+            {
+                "sourceType": "tmdb",
+                "movieMetadataId": 420,
+                "title": "Zapomenut\u00c3\u00bd ostrov",
+                "id": 3743
+            },
+            {
+                "sourceType": "tmdb",
+                "movieMetadataId": 420,
+                "title": "L'\u00c3\u017dle Oubli\u00c3\u00a9e",
+                "id": 3744
+            },
+            {
+                "sourceType": "tmdb",
+                "movieMetadataId": 420,
+                "title": "L'isola dimenticata",
+                "id": 3842
+            },
+            {
+                "sourceType": "tmdb",
+                "movieMetadataId": 420,
+                "title": "Unohdettu Saari",
+                "id": 3897
+            },
+            {
+                "sourceType": "tmdb",
+                "movieMetadataId": 420,
+                "title": "\u00e0\u00b9\u20ac\u00e0\u00b8\udc81\u00e0\u00b8\u00b2\u00e0\u00b8\u00b0\u00e0\u00b8\u00a1\u00e0\u00b8\u00ab\u00e0\u00b8\u00b1\u00e0\u00b8\u00a8\u00e0\u00b8\u02c6\u00e0\u00b8\u00a3\u00e0\u00b8\u00a3\u00e0\u00b8\u00a2\u00e0\u00b9\u0152\u00e0\u00b8\udc81\u00e0\u00b8\u00b1\u00e0\u00b8\u0161\u00e0\u00b8\u201e\u00e0\u00b8\u00a7\u00e0\u00b8\u00b2\u00e0\u00b8\u00a1\u00e0\u00b8\u2014\u00e0\u00b8\u00a3\u00e0\u00b8\u2021\u00e0\u00b8\u02c6\u00e0\u00b8\u00b3\u00e0\u00b8\u2014\u00e0\u00b8\u00b5\u00e0\u00b9\u02c6\u00e0\u00b8\u00a5\u00e0\u00b8\u0161\u00e0\u00b8\u00a5\u00e0\u00b8\u00b7\u00e0\u00b8\u00a1",
+                "id": 4030
+            },
+            {
+                "sourceType": "tmdb",
+                "movieMetadataId": 420,
+                "title": "Die vergessene Insel",
+                "id": 4151
+            },
+            {
+                "sourceType": "tmdb",
+                "movieMetadataId": 420,
+                "title": "\u00d0\u017e\u00d1\udc81\u00d1\u201a\u00d1\u20ac\u00d0\u00be\u00d0\u00b2\u00d1\u0160\u00d1\u201a \u00d0\u00bd\u00d0\u00b0 \u00d0\u00b7\u00d0\u00b0\u00d0\u00b1\u00d1\u20ac\u00d0\u00b0\u00d0\u00b2\u00d0\u00b0\u00d1\u201a\u00d0\u00b0",
+                "id": 4152
+            },
+            {
+                "sourceType": "tmdb",
+                "movieMetadataId": 420,
+                "title": "Zaboravljeni otok",
+                "id": 4153
+            },
+            {
+                "sourceType": "tmdb",
+                "movieMetadataId": 420,
+                "title": "Den glemte \u00c3\u00b8",
+                "id": 4154
+            },
+            {
+                "sourceType": "tmdb",
+                "movieMetadataId": 420,
+                "title": "Het Vergeten Eiland",
+                "id": 4155
+            },
+            {
+                "sourceType": "tmdb",
+                "movieMetadataId": 420,
+                "title": "L'\u00c3\u00aele de l'oubli",
+                "id": 4156
+            },
+            {
+                "sourceType": "tmdb",
+                "movieMetadataId": 420,
+                "title": "\u00ce\u017e\u00ce\u00b5\u00cf\u2021\u00ce\u00b1\u00cf\u0192\u00ce\u00bc\u00ce\u00ad\u00ce\u00bd\u00ce\u00bf \u00ce\udc9d\u00ce\u00b7\u00cf\u0192\u00ce\u00af",
+                "id": 4157
+            },
+            {
+                "sourceType": "tmdb",
+                "movieMetadataId": 420,
+                "title": "Glemselens \u00c3\u00b8y",
+                "id": 4158
+            },
+            {
+                "sourceType": "tmdb",
+                "movieMetadataId": 420,
+                "title": "Ostrvo se\u00c4\u2021anja",
+                "id": 4159
+            },
+            {
+                "sourceType": "tmdb",
+                "movieMetadataId": 420,
+                "title": "Zabudnut\u00c3\u00bd ostrov",
+                "id": 4160
+            },
+            {
+                "sourceType": "tmdb",
+                "movieMetadataId": 420,
+                "title": "Pozabljeni otok",
+                "id": 4161
+            },
+            {
+                "sourceType": "tmdb",
+                "movieMetadataId": 420,
+                "title": "\u00d8\u00a7\u00d9\u201e\u00d8\u00ac\u00d8\u00b2\u00d9\u0160\u00d8\u00b1\u00d8\u00a9 \u00d8\u00a7\u00d9\u201e\u00d9\u2026\u00d9\u2020\u00d8\u00b3\u00d9\u0160\u00d8\u00a9",
+                "id": 4162
+            }
+        ],
+        "secondaryYearSourceId": 0,
+        "sortTitle": "forgotten island",
+        "sizeOnDisk": 0,
+        "status": "announced",
+        "overview": "While celebrating their last night together, high school graduates and best friends Jo and Raissa stumble upon a mysterious portal that transports them to the fantastical island of Nakali. When they discover that the memories of their entire friendship are the price for returning home, Jo and Raissa will race to find a way to leave the island before they forget each other forever.",
+        "inCinemas": "2026-09-16T00:00:00Z",
+        "releaseDate": "2026-12-15T00:00:00Z",
+        "images": [
+            {
+                "coverType": "poster",
+                "remoteUrl": "https://image.tmdb.org/t/p/original/kW1fH2jZZM5tVHwNaDdUOUXJvWU.jpg"
+            },
+            {
+                "coverType": "fanart",
+                "remoteUrl": "https://image.tmdb.org/t/p/original/obsM8IyBz3jn8hbru8V5btBRSBk.jpg"
+            }
+        ],
+        "website": "https://www.forgottenislandmovie.com",
+        "year": 2026,
+        "youTubeTrailerId": "f7mFVeWnVLw",
+        "studio": "DreamWorks Animation",
+        "path": "/media/movies/Forgotten Island (2026) {tmdb-1465063}",
+        "qualityProfileId": 8,
+        "hasFile": false,
+        "movieFileId": 0,
+        "monitored": true,
+        "minimumAvailability": "released",
+        "isAvailable": false,
+        "folderName": "/media/movies/Forgotten Island (2026) {tmdb-1465063}",
+        "runtime": 109,
+        "cleanTitle": "forgottenisland",
+        "imdbId": "tt36583977",
+        "tmdbId": 1465063,
+        "titleSlug": "1465063",
+        "certification": "PG",
+        "genres": [
+            "Adventure",
+            "Animation",
+            "Comedy",
+            "Family",
+            "Fantasy"
+        ],
+        "keywords": [
+            "3d animation",
+            "animesque",
+            "art shift",
+            "female friendship",
+            "filipino",
+            "filipino culture",
+            "filipino mythology",
+            "island",
+            "memory"
+        ],
+        "tags": [],
+        "added": "2026-07-10T05:49:34Z",
+        "ratings": {
+            "imdb": {
+                "votes": 167,
+                "value": 6.9,
+                "type": "user"
+            },
+            "tmdb": {
+                "votes": 0,
+                "value": 0,
+                "type": "user"
+            }
+        },
+        "popularity": 14.8938,
+        "statistics": {
+            "movieFileCount": 0,
+            "sizeOnDisk": 0,
+            "releaseGroups": []
+        },
+        "id": 253
+    }
+]

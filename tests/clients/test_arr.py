@@ -46,3 +46,17 @@ async def test_item_history_movie_uses_movie_param():
     await c.item_history(42, "movie")
     assert route.calls.last.request.url.params["movieId"] == "42"
     await c.aclose()
+
+@respx.mock
+async def test_calendar_sends_window_and_includes_series():
+    payload = json.loads((FX/"sportarr_calendar.json").read_text())
+    route = respx.get("http://h/api/v3/calendar").mock(
+        return_value=httpx.Response(200, json=payload))
+    c = ArrClient("sportarr", "sportarr", "http://h", ApiKeyHeaderAuth("K"), timeout=5)
+    recs = await c.calendar("2026-10-09", "2026-10-11")
+    params = route.calls.last.request.url.params
+    assert params["start"] == "2026-10-09"
+    assert params["end"] == "2026-10-11"
+    assert params["includeSeries"] == "true"
+    assert recs[0]["series"]["title"] == "NBA"
+    await c.aclose()
