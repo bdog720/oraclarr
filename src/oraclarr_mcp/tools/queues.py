@@ -1,8 +1,9 @@
 from ..clients.base import BaseClient
+from ..models import ARR_TYPES
 from ._util import probe
 
 async def get_queues(clients: dict[str, BaseClient], service: str | None = None) -> dict:
-    arr = {n: c for n, c in clients.items() if c.type in ("sonarr", "radarr")}
+    arr = {n: c for n, c in clients.items() if c.type in ARR_TYPES}
     if service is not None:
         arr = {n: c for n, c in arr.items() if n == service}
     qbits = {n: c for n, c in clients.items() if c.type == "qbittorrent"}
