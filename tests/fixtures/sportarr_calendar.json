@@ -1,0 +1,80 @@
+[
+    {
+        "id": 1,
+        "seriesId": 1,
+        "tvdbId": 1002527560,
+        "episodeFileId": 0,
+        "seasonNumber": 2026,
+        "episodeNumber": 5,
+        "title": "Home Team vs Away Team",
+        "airDate": "2026-10-09",
+        "airDateUtc": "2026-10-09T00:00:00.0000000Z",
+        "overview": "",
+        "hasFile": false,
+        "monitored": true,
+        "absoluteEpisodeNumber": 5,
+        "unverifiedSceneNumbering": false,
+        "grabbed": false,
+        "images": [
+            {
+                "coverType": "poster",
+                "url": "https://example.com/image.jpg",
+                "remoteUrl": "https://example.com/image.jpg"
+            },
+            {
+                "coverType": "screenshot",
+                "url": "https://example.com/image.jpg",
+                "remoteUrl": "https://example.com/image.jpg"
+            }
+        ],
+        "series": {
+            "id": 1,
+            "title": "Example League",
+            "sortTitle": "exampleleague",
+            "status": "continuing",
+            "overview": "",
+            "network": "",
+            "images": [
+                {
+                    "coverType": "poster",
+                    "url": "https://example.com/image.jpg",
+                    "remoteUrl": "https://example.com/image.jpg"
+                },
+                {
+                    "coverType": "banner",
+                    "url": "https://example.com/image.jpg",
+                    "remoteUrl": "https://example.com/image.jpg"
+                },
+                {
+                    "coverType": "clearlogo",
+                    "url": "https://example.com/image.jpg",
+                    "remoteUrl": "https://example.com/image.jpg"
+                }
+            ],
+            "year": 2026,
+            "path": "/data/Example League",
+            "qualityProfileId": 2,
+            "languageProfileId": 1,
+            "seasonFolder": true,
+            "monitored": true,
+            "useSceneNumbering": false,
+            "runtime": 0,
+            "tvdbId": 900000030,
+            "tvRageId": 0,
+            "tvMazeId": 0,
+            "seriesType": "standard",
+            "cleanTitle": "exampleleague",
+            "titleSlug": "exampleleague",
+            "genres": [
+                "Sports"
+            ],
+            "tags": [],
+            "added": "2026-08-27T03:46:16.4635928Z",
+            "ratings": {
+                "votes": 0,
+                "value": 0
+            }
+        },
+        "episodeFile": null
+    }
+]
