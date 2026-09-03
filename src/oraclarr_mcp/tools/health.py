@@ -1,7 +1,8 @@
 from ..clients.base import BaseClient
+from ..models import ARR_TYPES
 
 async def _summary(c: BaseClient) -> dict:
-    if c.type in ("sonarr", "radarr"):
+    if c.type in ARR_TYPES:
         return {"version": (await c.system_status()).get("version"),
                 "warnings": [h.get("message") for h in await c.health()],
                 "disks": await c.diskspace()}

@@ -1,4 +1,5 @@
 from ..clients.base import BaseClient
+from ..models import ARR_TYPES
 from ._util import probe
 
 async def _arr_config(c: BaseClient) -> dict:
@@ -19,7 +20,7 @@ async def _profilarr_config(c: BaseClient) -> dict:
     }
 
 async def get_quality_config(clients: dict[str, BaseClient], service: str | None = None) -> list[dict]:
-    sel = {n: c for n, c in clients.items() if c.type in ("sonarr", "radarr", "profilarr")}
+    sel = {n: c for n, c in clients.items() if c.type in (*ARR_TYPES, "profilarr")}
     if service is not None:
         sel = {n: c for n, c in sel.items() if n == service}
     results = []
