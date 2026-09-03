@@ -12,13 +12,18 @@ def _registered_tool_names(mcp) -> list[str]:
     return list(mcp._tool_manager._tools.keys())
 
 
-def test_tool_specs_cover_all_ten_tools():
+def test_tool_specs_cover_all_eleven_tools():
     names = {s.name for s in TOOL_SPECS}
     assert names == {
         "stack_health", "get_queues", "diagnose", "explain_decision",
         "get_quality_config", "get_history", "get_wanted", "search_media",
-        "get_indexers", "get_transcodes",
+        "get_indexers", "get_transcodes", "get_upcoming",
     }
+
+
+def test_get_upcoming_is_gated_by_the_media_toolset():
+    assert "get_upcoming" not in enabled_for_toolsets(TOOL_SPECS, ["downloads"])
+    assert "get_upcoming" in enabled_for_toolsets(TOOL_SPECS, ["media"])
 
 
 def test_all_tool_specs_are_read_risk():

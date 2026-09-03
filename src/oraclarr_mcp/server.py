@@ -12,6 +12,7 @@ from .tools.wanted import get_wanted
 from .tools.search import search_media
 from .tools.indexers import get_indexers
 from .tools.transcodes import get_transcodes
+from .tools.upcoming import get_upcoming
 
 TOOL_SPECS: list[ToolSpec] = [
     tool_spec("stack_health", "read", "always"),
@@ -24,6 +25,7 @@ TOOL_SPECS: list[ToolSpec] = [
     tool_spec("search_media", "read", "media"),
     tool_spec("get_indexers", "read", "media"),
     tool_spec("get_transcodes", "read", "transcode"),
+    tool_spec("get_upcoming", "read", "media"),
 ]
 
 
@@ -83,6 +85,10 @@ def build_server(
         """Tdarr transcode queue and node health."""
         return await get_transcodes(clients)
 
+    async def _get_upcoming(service: str | None = None, days: int = 7) -> list[dict]:
+        """Upcoming episodes, games, and movie releases across arr instances (max 90 days)."""
+        return await get_upcoming(clients, service, days)
+
     register("stack_health", _stack_health)
     register("get_queues", _get_queues)
     register("diagnose", _diagnose)
@@ -93,4 +99,5 @@ def build_server(
     register("search_media", _search_media)
     register("get_indexers", _get_indexers)
     register("get_transcodes", _get_transcodes)
+    register("get_upcoming", _get_upcoming)
     return mcp
