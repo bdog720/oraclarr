@@ -11,20 +11,27 @@ MAX_DAYS = 90
 _WHEN_KEYS = ("airDateUtc", "digitalRelease", "physicalRelease", "inCinemas", "releaseDate")
 
 
-def _when(rec: dict) -> str | None:
-    for key in _WHEN_KEYS:
-        value = rec.get(key)
-        if value:
-            return value
-    return None
+def _when(rec: dict, start: str, end: str) -> str | None:
+    """The date that put this record in the calendar window.
+
+    A Radarr movie carries up to four release dates, and the calendar matches
+    on any of them. Reporting the first one present gives answers like a
+    digitalRelease three months in the past inside a list of upcoming items,
+    so prefer the earliest date that actually falls inside the window.
+    """
+    candidates = [rec[k] for k in _WHEN_KEYS if rec.get(k)]
+    if not candidates:
+        return None
+    in_window = sorted(c for c in candidates if start <= c[:10] <= end)
+    return in_window[0] if in_window else candidates[0]
 
 
-def _normalise(rec: dict) -> dict:
+def _normalise(rec: dict, start: str, end: str) -> dict:
     parent = rec.get("series") or {}
     return {
         "title": rec.get("title"),
         "parent": parent.get("title"),
-        "when": _when(rec),
+        "when": _when(rec, start, end),
         "monitored": bool(rec.get("monitored")),
         "has_file": bool(rec.get("hasFile")),
     }
@@ -37,7 +44,8 @@ async def get_upcoming(clients: dict[str, BaseClient], service: str | None = Non
     end = start + timedelta(days=days)
 
     async def collect(c: BaseClient) -> list[dict]:
-        records = await c.calendar(start.isoformat(), end.isoformat())
-        return [_normalise(r) for r in records]
+        lo, hi = start.isoformat(), end.isoformat()
+        records = await c.calendar(lo, hi)
+        return [_normalise(r, lo, hi) for r in records]
 
     return await fan_out(arr_clients(clients, service), collect)

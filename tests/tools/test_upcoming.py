@@ -13,11 +13,23 @@ class FakeSportarr:
                  "series": {"title": "NBA"}}]
 
 
+def _iso(days_from_today: int) -> str:
+    return (date.today() + timedelta(days=days_from_today)).isoformat() + "T00:00:00Z"
+
+
 class FakeRadarr:
+    """Radarr movies carry several release dates and no airDate.
+
+    Only physicalRelease falls inside a 7-day window here, so that is the date
+    that put the movie in the calendar. digitalRelease is months in the past.
+    """
     name = "radarr"; type = "radarr"
     async def calendar(self, start, end):
-        return [{"title": "Some Movie", "inCinemas": "2026-09-05T00:00:00Z",
-                 "digitalRelease": "2026-09-12T00:00:00Z",
+        return [{"title": "In the Grey",
+                 "inCinemas": _iso(-120),
+                 "digitalRelease": _iso(-90),
+                 "physicalRelease": _iso(2),
+                 "releaseDate": _iso(-90),
                  "monitored": True, "hasFile": False}]
 
 
@@ -37,12 +49,33 @@ async def test_normalises_episode_records():
     assert item["has_file"] is False
 
 
-async def test_radarr_movie_records_fall_back_to_release_dates():
+async def test_when_reports_the_release_date_that_falls_inside_the_window():
     res = await get_upcoming({"radarr": FakeRadarr()})
     item = res[0]["data"][0]
-    assert item["title"] == "Some Movie"
+    assert item["title"] == "In the Grey"
     assert item["parent"] is None
-    assert item["when"] == "2026-09-12T00:00:00Z"  # digitalRelease wins over inCinemas
+    assert item["when"] == _iso(2)  # physicalRelease, not the past digitalRelease
+
+
+async def test_when_falls_back_to_field_order_when_no_date_is_in_the_window():
+    class AllPast:
+        name = "radarr"; type = "radarr"
+        async def calendar(self, start, end):
+            return [{"title": "Old", "digitalRelease": _iso(-30),
+                     "inCinemas": _iso(-60), "monitored": True, "hasFile": True}]
+
+    res = await get_upcoming({"radarr": AllPast()})
+    assert res[0]["data"][0]["when"] == _iso(-30)  # digitalRelease outranks inCinemas
+
+
+async def test_when_is_none_when_the_record_carries_no_date():
+    class NoDates:
+        name = "sonarr"; type = "sonarr"
+        async def calendar(self, start, end):
+            return [{"title": "Undated", "monitored": True, "hasFile": False}]
+
+    res = await get_upcoming({"sonarr": NoDates()})
+    assert res[0]["data"][0]["when"] is None
 
 
 async def test_window_starts_today_and_spans_requested_days():
