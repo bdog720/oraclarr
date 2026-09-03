@@ -11,3 +11,8 @@ def test_instance_result_serializes_status():
 def test_media_ref_carries_external_ids():
     m = MediaRef(title="Foo", instance="sonarr", item_id=12, tvdb_id=999)
     assert m.tvdb_id == 999 and m.tmdb_id is None and m.imdb_id is None
+
+
+def test_arr_types_lists_every_arr_family_type():
+    from oraclarr_mcp.models import ARR_TYPES
+    assert ARR_TYPES == ("sonarr", "radarr", "sportarr")

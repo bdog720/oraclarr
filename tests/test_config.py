@@ -49,3 +49,13 @@ def test_missing_config_file_raises_friendly_error(tmp_path):
     with pytest.raises(ConfigError) as e:
         load_config(p)
     assert "not found" in str(e.value).lower()
+
+
+def test_sportarr_type_is_accepted(tmp_path, monkeypatch):
+    monkeypatch.setenv("SONARR_KEY", "x")
+    monkeypatch.setenv("SPORTARR_KEY", "y")
+    extra = YAML + "  sportarr: { type: sportarr, url: http://h:1867, api_key: ${SPORTARR_KEY} }\n"
+    p = tmp_path / "config.yaml"; p.write_text(extra)
+    cfg = load_config(p)
+    assert cfg.instances["sportarr"].type == "sportarr"
+    assert cfg.instances["sportarr"].api_key == "y"

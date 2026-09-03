@@ -5,7 +5,7 @@ from typing import Literal
 import yaml
 from pydantic import BaseModel, ValidationError
 
-INSTANCE_TYPES = {"sonarr", "radarr", "prowlarr", "qbittorrent", "tdarr", "profilarr"}
+INSTANCE_TYPES = {"sonarr", "radarr", "sportarr", "prowlarr", "qbittorrent", "tdarr", "profilarr"}
 _ENV_RE = re.compile(r"\$\{([A-Z0-9_]+)\}")
 
 
@@ -23,7 +23,8 @@ class Defaults(BaseModel):
 
 
 class Instance(BaseModel):
-    type: Literal["sonarr", "radarr", "prowlarr", "qbittorrent", "tdarr", "profilarr"]
+    type: Literal["sonarr", "radarr", "sportarr", "prowlarr", "qbittorrent", "tdarr",
+                  "profilarr"]
     url: str
     enabled: bool = True
     read_only: bool = True
