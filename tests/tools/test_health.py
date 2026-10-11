@@ -25,3 +25,22 @@ async def test_stack_health_surfaces_unreachable():
 async def test_stack_health_projects_disks():
     res = await stack_health({"sonarr": FakeArr(ok=True)})
     assert res[0]["data"]["disks"] == [{"path": "/tv", "free_space": 5, "total_space": 100}]
+
+
+class FakeJf:
+    name = "jellyfin"; type = "jellyfin"
+    async def system_info(self):
+        return {"Version": "12.2.0", "HasPendingRestart": True, "HasUpdateAvailable": False,
+                "LocalAddress": "http://x", "ProgramDataPath": "/config"}
+    async def scheduled_tasks(self):
+        return [{"Name": "Scan Media Library", "LastExecutionResult": {"Status": "Completed"}},
+                {"Name": "Extract Chapter Images", "LastExecutionResult": {"Status": "Failed"}},
+                {"Name": "Never Ran"}]
+
+
+async def test_stack_health_reports_jellyfin():
+    row = (await stack_health({"jellyfin": FakeJf()}))[0]
+    assert row["status"] == "ok"
+    assert row["data"] == {"version": "12.2.0", "pending_restart": True,
+                           "update_available": False,
+                           "failed_tasks": ["Extract Chapter Images"]}
