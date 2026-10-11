@@ -20,3 +20,64 @@ async def test_diagnose_reports_found_and_in_queue():
 async def test_diagnose_no_match():
     res = await diagnose({"sonarr": FakeArr()}, title="Nonexistent")
     assert res["matches"] == []
+
+
+import asyncio  # noqa: E402
+import time  # noqa: E402
+
+
+class FakeSportarr:
+    name = "sportarr"; type = "sportarr"
+    async def lookup_library(self, term, media):
+        assert media == "series"
+        return [{"title": "NBA", "id": 4}]
+    async def queue(self):
+        return [{"title": "Game 1", "seriesId": 4}]
+    async def wanted_missing(self):
+        return [{"title": "Game 2", "seriesId": 4}]
+
+
+async def test_diagnose_sportarr_matches_by_series_id():
+    res = await diagnose({"sportarr": FakeSportarr()}, title="NBA")
+    m = res["matches"][0]
+    assert m["in_queue"] is True
+    assert m["wanted"] is True
+
+
+class SlowArr(FakeArr):
+    def __init__(self, name):
+        self.name = name
+    async def lookup_library(self, term, media):
+        await asyncio.sleep(0.3)
+        return await super().lookup_library(term, media)
+
+
+async def test_diagnose_runs_instances_in_parallel():
+    t0 = time.monotonic()
+    res = await diagnose({"a": SlowArr("a"), "b": SlowArr("b")}, title="Show")
+    assert time.monotonic() - t0 < 0.5
+    assert {m["instance"] for m in res["matches"]} == {"a", "b"}
+
+
+class BrokenQueue(FakeArr):
+    name = "broken"
+    async def queue(self):
+        raise RuntimeError("queue down")
+
+
+async def test_diagnose_reports_failing_instance_and_keeps_peers():
+    res = await diagnose({"sonarr": FakeArr(), "broken": BrokenQueue()}, title="Show")
+    assert [m["instance"] for m in res["matches"]] == ["sonarr"]
+    assert res["errors"][0]["instance"] == "broken"
+    assert res["errors"][0]["status"] == "error"
+
+
+class ManyArr(FakeArr):
+    async def lookup_library(self, term, media):
+        return [{"title": f"Show {i}", "id": i} for i in range(30)]
+
+
+async def test_diagnose_caps_matches_per_instance():
+    res = await diagnose({"sonarr": ManyArr()}, title="Show")
+    assert len(res["matches"]) == 20
+    assert res["truncated"] is True
