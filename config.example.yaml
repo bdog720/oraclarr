@@ -1,3 +1,5 @@
+# Optional. Oraclarr can run from ORACLARR_* variables in .env alone (see .env.example).
+# If you use this file too, any ORACLARR_ variable overrides the same setting here.
 server:
   allow_writes: false
   toolsets: [media, downloads, transcode, library]
