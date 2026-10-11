@@ -2,6 +2,8 @@ from mcp.server.fastmcp import FastMCP
 from .config import Config
 from .clients.base import BaseClient
 from .guards import tool_spec, enabled_for_toolsets, ensure_allowed, ToolSpec
+from .call_guard import guarded
+from .redact import Redactor
 from .tools.health import stack_health
 from .tools.queues import get_queues
 from .tools.diagnose import diagnose
@@ -38,12 +40,18 @@ def build_server(
     mcp = FastMCP("oraclarr-mcp", host=host, port=port)
     enabled = set(enabled_for_toolsets(TOOL_SPECS, cfg.server.toolsets))
     spec_by_name = {s.name: s for s in TOOL_SPECS}
+    redactor = Redactor.from_config(cfg)
 
     def register(name: str, fn):
         if name not in enabled:
             return
         ensure_allowed(spec_by_name[name], cfg.server.allow_writes)
-        mcp.tool(name=name)(fn)
+        mcp.tool(name=name)(guarded(
+            name, fn,
+            budget_s=cfg.server.tool_budget_seconds,
+            max_bytes=cfg.server.max_output_bytes,
+            redactor=redactor,
+        ))
 
     async def _stack_health() -> list[dict]:
         """Health/status of every configured service: versions, warnings, disk, nodes."""

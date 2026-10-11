@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 from .config import load_config
 from .registry import build_clients
 from .server import build_server
+from .redact import Redactor, install_log_redaction
 
 _TRANSPORT_MAP = {"stdio": "stdio", "http": "streamable-http"}
 
@@ -33,6 +34,7 @@ def main() -> None:
     load_dotenv()
     cfg_path = Path(os.environ.get("ORACLARR_CONFIG", "config.yaml"))
     cfg = load_config(cfg_path)
+    install_log_redaction(Redactor.from_config(cfg))
     clients = build_clients(cfg)
     transport = resolve_transport(os.environ)
     host, port = resolve_bind(os.environ)
