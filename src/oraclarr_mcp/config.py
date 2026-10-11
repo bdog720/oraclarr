@@ -18,6 +18,9 @@ class ConfigError(Exception):
 ENV_PREFIX = "ORACLARR_"
 # Read by __main__ for transport and the config path; never instance settings.
 RESERVED_ENV = {"TRANSPORT", "HTTP_HOST", "HTTP_PORT", "CONFIG"}
+# Kubernetes injects service links for a Service named "oraclarr"
+# (ORACLARR_SERVICE_HOST, ORACLARR_PORT_7979_TCP_ADDR, ...); never ours.
+_RESERVED_ENV_RE = re.compile(r"SERVICE_HOST|SERVICE_PORT(_\w+)?|PORT(_\d+_(TCP|UDP|SCTP)(_\w+)?)?")
 _TRUE = {"true", "yes", "1", "on"}
 _FALSE = {"false", "no", "0", "off"}
 # Longest suffix first, so SONARR_ANIME_API_KEY splits as SONARR_ANIME + API_KEY.
@@ -65,7 +68,7 @@ def parse_env(env: Mapping[str, str]) -> tuple[dict, dict]:
             continue
         rest = key[len(ENV_PREFIX):]
         value = raw.strip()
-        if rest in RESERVED_ENV or not value:
+        if rest in RESERVED_ENV or _RESERVED_ENV_RE.fullmatch(rest) or not value:
             continue
         if rest in _SERVER_ENV:
             section, field, parse, kind = _SERVER_ENV[rest]
@@ -124,15 +127,36 @@ class Config(BaseModel):
     instances: dict[str, Instance]
 
 
-def _interpolate(raw: str, env: Mapping[str, str]) -> str:
+def _tokenize(raw: str, env: Mapping[str, str]) -> tuple[str, dict[str, str]]:
+    """Swap each ${VAR} for a plain token before YAML parsing.
+
+    The real values go back in after parsing (_detokenize), so a secret's characters
+    (*, @, }, ' #', ': ') can neither break the YAML nor appear in a parse error.
+    """
+    values: dict[str, str] = {}
+
     def repl(m: re.Match) -> str:
         var = m.group(1)
         val = env.get(var)
         if val is None:
             raise ConfigError(f"Environment variable {var} referenced in config is not set")
-        return val
+        token = f"__ORACLARR_ENV_{len(values)}__"
+        values[token] = val
+        return token
 
-    return _ENV_RE.sub(repl, raw)
+    return _ENV_RE.sub(repl, raw), values
+
+
+def _detokenize(node, values: dict[str, str]):
+    if isinstance(node, str):
+        for token, val in values.items():
+            node = node.replace(token, val)
+        return node
+    if isinstance(node, dict):
+        return {k: _detokenize(v, values) for k, v in node.items()}
+    if isinstance(node, list):
+        return [_detokenize(v, values) for v in node]
+    return node
 
 
 def _read_file(p: Path, env: Mapping[str, str]) -> dict:
@@ -145,10 +169,23 @@ def _read_file(p: Path, env: Mapping[str, str]) -> dict:
         )
     if not p.exists():
         return {}
-    data = yaml.safe_load(_interpolate(p.read_text(), env)) or {}
+    text, values = _tokenize(p.read_text(), env)
+    try:
+        parsed = yaml.safe_load(text)
+    except yaml.YAMLError as e:
+        mark = getattr(e, "problem_mark", None)
+        line = f" at line {mark.line + 1}" if mark is not None else ""
+        # No snippet: the file may hold literal secrets.
+        raise ConfigError(f"Config file {p} is not valid YAML{line}: "
+                          f"{getattr(e, 'problem', None) or 'parse error'}") from None
+    data = _detokenize(parsed, values) or {}
     if not isinstance(data, dict):
         raise ConfigError(f"Config file {p} must contain a YAML mapping")
     return data
+
+
+def _norm(name: str) -> str:
+    return name.lower().replace("_", "-")
 
 
 def _no_instances_message(p: Path | None) -> str:
@@ -176,18 +213,22 @@ def load_settings(path: Path | None, env: Mapping[str, str]) -> Config:
         if not isinstance(inst, dict):
             raise ConfigError(f"instance '{name}' in {p} must be a mapping of settings")
         merged[name] = dict(inst)
+    by_norm = {_norm(name): name for name in merged}
     for name, fields in env_instances.items():
-        merged[name] = {**merged.get(name, {}), **fields}
+        target = by_norm.get(_norm(name), name)
+        merged[target] = {**merged.get(target, {}), **fields}
     if not merged:
         raise ConfigError(_no_instances_message(p))
     for name, inst in merged.items():
-        if not inst.get("url"):
-            raise ConfigError(f"instance '{name}' has no URL: set {env_name(name, 'URL')}")
+        if "url" not in inst:
+            if inst.get("enabled", True) is not False:
+                raise ConfigError(f"instance '{name}' has no URL: set {env_name(name, 'URL')}")
+            inst["url"] = ""  # a disabled placeholder, as 1.2.0 allowed
         if not inst.get("type"):
-            if name not in INSTANCE_TYPES:
+            if _norm(name) not in INSTANCE_TYPES:
                 raise ConfigError(f"instance '{name}' needs {env_name(name, 'TYPE')} "
                                   f"(one of: {', '.join(sorted(INSTANCE_TYPES))})")
-            inst["type"] = name
+            inst["type"] = _norm(name)
     data["instances"] = merged
     try:
         return Config.model_validate(data)

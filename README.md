@@ -71,7 +71,7 @@ Either way, every setting is an environment variable that starts with `ORACLARR_
 
 Oraclarr runs as a long-running container that serves MCP over HTTP at `http://<host>:7979/mcp`. You need two files in one folder: `docker-compose.yml` and `.env`.
 
-**Using a stack manager (Dockge, Portainer, etc.):** create a new stack, paste the compose below into the editor, and paste your settings into the stack's `.env`. Hit deploy.
+**Using a stack manager (Dockge, Portainer, etc.):** create a new stack, paste the compose below into the editor, and paste your settings into the stack's `.env`. Hit deploy. Portainer saves the variables from its web editor as `stack.env`, so in Portainer change the compose line to `env_file: stack.env`.
 
 **Using the command line:**
 

@@ -218,3 +218,48 @@ def test_main_starts_from_env_only(monkeypatch, tmp_path):
     finally:
         logging.setLogRecordFactory(before)
     assert seen["cfg"].instances["sonarr"].api_key == KEY
+
+
+def test_yaml_special_characters_in_a_secret_load_literally(tmp_path):
+    secret = "*leak-SECRET99 #x a: b"
+    p = _file(tmp_path, "instances:\n  qbit: { type: qbittorrent, url: http://h, "
+                        "username: u, password: ${QBIT_PASS} }\n")
+    cfg = load_settings(p, {"QBIT_PASS": secret})
+    assert cfg.instances["qbit"].password == secret
+
+
+def test_yaml_syntax_error_is_config_error_without_secret(tmp_path):
+    p = _file(tmp_path, "instances:\n  sonarr: { type: sonarr, url: http://h, api_key: ${K}\n")
+    with pytest.raises(ConfigError) as e:
+        load_settings(p, {"K": KEY})
+    assert KEY not in str(e.value)
+
+
+def test_kubernetes_service_link_variables_are_ignored():
+    sections, inst = parse_env({
+        "ORACLARR_SERVICE_HOST": "10.0.0.1", "ORACLARR_SERVICE_PORT": "7979",
+        "ORACLARR_SERVICE_PORT_HTTP": "7979", "ORACLARR_PORT": "tcp://10.0.0.1:7979",
+        "ORACLARR_PORT_7979_TCP": "tcp://10.0.0.1:7979",
+        "ORACLARR_PORT_7979_TCP_ADDR": "10.0.0.1", "ORACLARR_PORT_7979_TCP_PROTO": "tcp"})
+    assert inst == {} and sections == EMPTY
+
+
+def test_env_matches_file_name_with_underscores_or_case(tmp_path):
+    p = _file(tmp_path, "instances:\n"
+                        "  sonarr_anime: { type: sonarr, url: http://h:8990 }\n"
+                        "  Radarr: { type: radarr, url: http://h:7878 }\n")
+    cfg = load_settings(p, {"ORACLARR_SONARR_ANIME_ENABLED": "false",
+                            "ORACLARR_RADARR_API_KEY": KEY})
+    assert set(cfg.instances) == {"sonarr_anime", "Radarr"}
+    assert cfg.instances["sonarr_anime"].enabled is False
+    assert cfg.instances["Radarr"].api_key == KEY
+
+
+def test_file_disabled_placeholder_without_url_still_loads(tmp_path):
+    p = _file(tmp_path, "instances:\n"
+                        "  sonarr: { type: sonarr, url: http://h }\n"
+                        "  spare: { type: radarr, enabled: false }\n"
+                        "  blank: { type: tdarr, url: '' }\n")
+    cfg = load_settings(p, {})
+    assert cfg.instances["spare"].enabled is False
+    assert cfg.instances["blank"].url == ""
