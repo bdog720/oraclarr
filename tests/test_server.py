@@ -109,3 +109,13 @@ async def test_registered_tool_can_return_error_object():
     mcp = build_server(_cfg(max_output_bytes=10), clients={"sonarr": _SlowArr(0)})
     payloads = _payloads(await mcp.call_tool("stack_health", {}))
     assert payloads[0]["error"] == "output_too_large"
+
+
+def _params(mcp, tool):
+    return mcp._tool_manager._tools[tool].parameters["properties"]
+
+
+def test_get_queues_exposes_limit():
+    cfg = Config(server=ServerSettings(toolsets=["downloads"]), defaults=Defaults(),
+                 instances={"sonarr": Instance(type="sonarr", url="http://h:8989", api_key="K")})
+    assert _params(build_server(cfg, clients={}), "get_queues")["limit"]["default"] == 100

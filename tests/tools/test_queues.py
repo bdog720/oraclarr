@@ -24,3 +24,48 @@ async def test_queue_with_no_qbit_match_marks_unmatched():
         async def torrents(self): return []
     res = await get_queues({"sonarr": FakeArr(), "qbit": Other()})
     assert res["items"][0]["qbit"] is None
+
+
+import asyncio  # noqa: E402
+import time  # noqa: E402
+
+
+class ManyArr(FakeArr):
+    async def queue(self):
+        return [{"title": f"Ep {i}", "downloadId": f"H{i}", "size": 10, "sizeleft": 5}
+                for i in range(3)]
+
+
+async def test_queue_limit_truncates_and_reports_total():
+    res = await get_queues({"sonarr": ManyArr()}, limit=2)
+    assert len(res["items"]) == 2
+    assert res["total"] == 3
+    assert res["truncated"] is True
+
+
+class SlowArr(FakeArr):
+    async def queue(self):
+        await asyncio.sleep(0.3)
+        return await super().queue()
+
+
+class SlowQbit(FakeQbit):
+    async def torrents(self):
+        await asyncio.sleep(0.3)
+        return await super().torrents()
+
+
+async def test_queue_fetches_qbit_and_arr_in_parallel():
+    t0 = time.monotonic()
+    res = await get_queues({"sonarr": SlowArr(), "qbit": SlowQbit()})
+    assert time.monotonic() - t0 < 0.5
+    assert res["items"][0]["qbit"]["state"] == "stalledDL"
+
+
+async def test_queue_reports_failing_arr_in_errors():
+    class Dead(FakeArr):
+        async def queue(self):
+            raise RuntimeError("down")
+    res = await get_queues({"sonarr": Dead(), "qbit": FakeQbit()})
+    assert res["items"] == []
+    assert res["errors"][0]["instance"] == "sonarr"
