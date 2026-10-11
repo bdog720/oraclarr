@@ -46,3 +46,57 @@ async def test_item_history_movie_uses_movie_param():
     await c.item_history(42, "movie")
     assert route.calls.last.request.url.params["movieId"] == "42"
     await c.aclose()
+
+@respx.mock
+async def test_calendar_sends_window_and_includes_series():
+    payload = json.loads((FX/"sportarr_calendar.json").read_text())
+    route = respx.get("http://h/api/v3/calendar").mock(
+        return_value=httpx.Response(200, json=payload))
+    c = ArrClient("sportarr", "sportarr", "http://h", ApiKeyHeaderAuth("K"), timeout=5)
+    recs = await c.calendar("2026-10-09", "2026-10-11")
+    params = route.calls.last.request.url.params
+    assert params["start"] == "2026-10-09"
+    assert params["end"] == "2026-10-11"
+    assert params["includeSeries"] == "true"
+    assert recs[0]["series"]["title"] == "NBA"
+    await c.aclose()
+
+
+@respx.mock
+async def test_history_page_returns_records_and_total():
+    route = respx.get("http://h/api/v3/history").mock(return_value=httpx.Response(
+        200, json={"records": [{"eventType": "grabbed"}], "totalRecords": 812}))
+    c = _client()
+    records, total = await c.history_page(5)
+    params = route.calls.last.request.url.params
+    assert params["pageSize"] == "5"
+    assert params["sortKey"] == "date"
+    assert params["sortDirection"] == "descending"
+    assert params["includeSeries"] == "true"
+    assert params["includeMovie"] == "true"
+    assert records == [{"eventType": "grabbed"}] and total == 812
+    await c.aclose()
+
+
+@respx.mock
+async def test_wanted_page_uses_kind_path_and_page_size():
+    route = respx.get("http://h/api/v3/wanted/cutoff").mock(return_value=httpx.Response(
+        200, json={"records": [{"title": "Ep"}], "totalRecords": 3}))
+    c = _client()
+    records, total = await c.wanted_page("cutoff", 50)
+    params = route.calls.last.request.url.params
+    assert params["pageSize"] == "50"
+    assert params["includeSeries"] == "true"
+    assert records == [{"title": "Ep"}] and total == 3
+    await c.aclose()
+
+
+@respx.mock
+async def test_queue_page_returns_records_and_total():
+    route = respx.get("http://h/api/v3/queue").mock(return_value=httpx.Response(
+        200, json={"records": [{"title": "A"}], "totalRecords": 300}))
+    c = _client()
+    records, total = await c.queue_page(100)
+    assert route.calls.last.request.url.params["pageSize"] == "100"
+    assert records == [{"title": "A"}] and total == 300
+    await c.aclose()

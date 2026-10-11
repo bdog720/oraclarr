@@ -30,3 +30,81 @@ async def test_explain_surfaces_profile_and_grab():
 async def test_explain_no_match_returns_empty():
     res = await explain_decision({"sonarr": FakeArr()}, title="Nope")
     assert isinstance(res["matches"], list)
+
+
+class ManyArr(FakeArr):
+    def __init__(self):
+        self.history_calls = 0
+    async def lookup_library(self, term, media):
+        return [{"title": f"The Thing {i}", "id": 100 + i, "qualityProfileId": 3}
+                for i in range(25)]
+    async def item_history(self, item_id, media):
+        self.history_calls += 1
+        return []
+
+
+async def test_explain_examines_at_most_ten_items():
+    fake = ManyArr()
+    res = await explain_decision({"sonarr": fake}, title="the")
+    assert len(res["matches"]) == 10
+    assert res["truncated"] is True
+    assert fake.history_calls == 10
+
+
+class BrokenProfiles(FakeArr):
+    name = "broken"
+    async def quality_profiles(self):
+        raise RuntimeError("profiles down")
+
+
+async def test_explain_reports_failing_instance_and_keeps_peers():
+    res = await explain_decision({"sonarr": FakeArr(), "broken": BrokenProfiles()},
+                                 title="Anime")
+    assert [m["instance"] for m in res["matches"]] == ["sonarr"]
+    assert res["errors"][0]["instance"] == "broken"
+
+
+class OneBadHistory(FakeArr):
+    async def lookup_library(self, term, media):
+        return [{"title": "Anime A", "id": 9, "qualityProfileId": 3},
+                {"title": "Anime B", "id": 10, "qualityProfileId": 3}]
+    async def item_history(self, item_id, media):
+        if item_id == 10:
+            raise RuntimeError("history 500")
+        return await super().item_history(item_id, media)
+
+
+async def test_explain_one_failing_history_keeps_other_items():
+    res = await explain_decision({"sonarr": OneBadHistory()}, title="Anime")
+    by = {m["title"]: m for m in res["matches"]}
+    assert by["Anime A"]["recent_grabs"][0]["score"] == -100
+    assert by["Anime B"]["recent_grabs"] == []
+    assert by["Anime B"]["history_error"] == "history 500"
+    assert "history_error" not in by["Anime A"]
+    assert res["errors"] == []
+
+
+class ManyGrabs(FakeArr):
+    async def item_history(self, item_id, media):
+        return [{"sourceTitle": f"Anime.S01E{i:02d}", "eventType": "grabbed",
+                 "date": f"2026-01-{i:02d}T00:00:00Z", "customFormatScore": i,
+                 "customFormats": []} for i in range(1, 26)]
+
+
+async def test_explain_keeps_newest_ten_grabs_and_counts_all():
+    m = (await explain_decision({"sonarr": ManyGrabs()}, title="Anime"))["matches"][0]
+    assert len(m["recent_grabs"]) == 10
+    assert m["recent_grabs"][0]["release"] == "Anime.S01E25"
+    assert m["recent_grabs"][0]["date"] == "2026-01-25T00:00:00Z"
+    assert m["grabs_total"] == 25
+
+
+class ZeroScores(FakeArr):
+    async def quality_profiles(self):
+        return [{"id": 3, "name": "HD-Anime", "formatItems": [
+            {"name": "English Dub", "score": 50}, {"name": "Noise", "score": 0}]}]
+
+
+async def test_explain_drops_zero_score_formats():
+    m = (await explain_decision({"sonarr": ZeroScores()}, title="Anime"))["matches"][0]
+    assert m["profile"]["format_scores"] == [{"name": "English Dub", "score": 50}]
