@@ -1,0 +1,53 @@
+{
+  "Items": [
+    {
+      "Name": "The Procedural",
+      "ServerId": "server-id",
+      "Id": "00000000000000000000000000000019",
+      "DateCreated": "2026-05-29T11:40:23.5221876Z",
+      "PremiereDate": "2018-10-16T00:00:00.0000000Z",
+      "Path": "/tv/The Procedural (2018)",
+      "OfficialRating": "TV-MA",
+      "ChannelId": null,
+      "CommunityRating": 8.546,
+      "RunTimeTicks": 0,
+      "ProductionYear": 2018,
+      "ProviderIds": {
+        "Imdb": "tt0100003",
+        "Tmdb": "100002",
+        "Tvdb": "100001"
+      },
+      "IsFolder": true,
+      "Type": "Series",
+      "Status": "Continuing",
+      "AirDays": [],
+      "ImageTags": {
+        "Logo": "0000000000000000000000000000001a",
+        "Thumb": "0000000000000000000000000000001b",
+        "Primary": "0000000000000000000000000000001c"
+      },
+      "BackdropImageTags": [
+        "0000000000000000000000000000001d"
+      ],
+      "ImageBlurHashes": {
+        "Backdrop": {
+          "0000000000000000000000000000001d": "LEHV6nWB2yk8pyo0adR*.7kCMdnj"
+        },
+        "Logo": {
+          "0000000000000000000000000000001a": "LEHV6nWB2yk8pyo0adR*.7kCMdnj"
+        },
+        "Thumb": {
+          "0000000000000000000000000000001b": "LEHV6nWB2yk8pyo0adR*.7kCMdnj"
+        },
+        "Primary": {
+          "0000000000000000000000000000001c": "LEHV6nWB2yk8pyo0adR*.7kCMdnj"
+        }
+      },
+      "LocationType": "FileSystem",
+      "MediaType": "Unknown",
+      "EndDate": "2026-05-04T00:00:00.0000000Z"
+    }
+  ],
+  "TotalRecordCount": 1,
+  "StartIndex": 0
+}
