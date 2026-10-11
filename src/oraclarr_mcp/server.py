@@ -57,9 +57,9 @@ def build_server(
         """Health/status of every configured service: versions, warnings, disk, nodes."""
         return await stack_health(clients)
 
-    async def _get_queues(service: str | None = None) -> dict:
+    async def _get_queues(service: str | None = None, limit: int = 100) -> dict:
         """Unified active download queue (arr queue cross-referenced with qBittorrent)."""
-        return await get_queues(clients, service)
+        return await get_queues(clients, service, limit)
 
     async def _diagnose(title: str) -> dict:
         """Trace one title through the arr->download->transcode pipeline."""
