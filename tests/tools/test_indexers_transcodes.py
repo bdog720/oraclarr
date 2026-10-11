@@ -67,3 +67,22 @@ async def test_get_transcodes_projects_staged_items():
     assert row["data"]["staged"] == [{"file": "/media/tv/Show/S01E01.mkv",
                                       "status": "processing", "worker_type": "transcodegpu",
                                       "node": "node1", "started": 1791756922182}]
+
+
+async def test_get_transcodes_projects_live_staged_fixture():
+    import json
+    from pathlib import Path
+    live = json.loads((Path(__file__).parent.parent / "fixtures" / "tdarr_staged.json")
+                      .read_text(encoding="utf-8"))
+
+    class LiveTdarr(FakeTdarr):
+        async def staged(self):
+            return live
+
+    rows = (await get_transcodes({"tdarr": LiveTdarr()}))[0]["data"]["staged"]
+    assert len(rows) == len(live)
+    for row in rows:
+        assert set(row) == {"file", "status", "worker_type", "node", "started"}
+        assert row["file"].endswith(".mkv")
+        assert row["status"] and row["worker_type"] and row["node"]
+        assert isinstance(row["started"], int)

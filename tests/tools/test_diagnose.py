@@ -175,3 +175,32 @@ async def test_diagnose_one_jellyfin_down_uses_the_other():
 async def test_diagnose_without_jellyfin_has_no_key():
     res = await diagnose({"sonarr": IdArr()}, title="Show")
     assert "in_jellyfin" not in res["matches"][0]
+
+
+class TruncatedJf(FakeJf):
+    async def search_items(self, term, limit):
+        self.searched.append((term, limit))
+        return [{"Name": "Other", "ProviderIds": {"Tvdb": "999"}}], 120
+
+
+async def test_diagnose_truncated_search_without_match_is_unknown():
+    res = await diagnose({"sonarr": IdArr(), "jellyfin": TruncatedJf()}, title="Show")
+    assert res["matches"][0]["in_jellyfin"] is None
+
+
+async def test_diagnose_truncated_search_with_match_is_true():
+    class Hit(TruncatedJf):
+        async def search_items(self, term, limit):
+            return [{"Name": "Show", "ProviderIds": {"Tvdb": "111"}}], 120
+    res = await diagnose({"sonarr": IdArr(), "jellyfin": Hit()}, title="Show")
+    assert res["matches"][0]["in_jellyfin"] is True
+
+
+async def test_diagnose_malformed_jellyfin_item_keeps_arr_results():
+    class Bad(FakeJf):
+        async def search_items(self, term, limit):
+            return ["not-a-dict"], 1
+    res = await diagnose({"sonarr": IdArr(), "jellyfin": Bad()}, title="Show")
+    assert res["matches"][0]["in_library"] is True
+    assert res["matches"][0]["in_jellyfin"] is None
+    assert res["errors"][0]["instance"] == "jellyfin"
