@@ -1,0 +1,245 @@
+[
+    {
+        "title": "Invented Heist",
+        "originalTitle": "Invented Heist",
+        "originalLanguage": {
+            "id": 1,
+            "name": "English"
+        },
+        "alternateTitles": [],
+        "secondaryYearSourceId": 0,
+        "sortTitle": "invented heist",
+        "sizeOnDisk": 31977915113,
+        "status": "released",
+        "overview": "An invented heist film.",
+        "inCinemas": "2026-05-13T00:00:00Z",
+        "physicalRelease": "2026-09-04T00:00:00Z",
+        "digitalRelease": "2026-06-02T00:00:00Z",
+        "releaseDate": "2026-06-02T00:00:00Z",
+        "images": [
+            {
+                "coverType": "poster",
+                "remoteUrl": "https://example.com/image.jpg"
+            },
+            {
+                "coverType": "fanart",
+                "remoteUrl": "https://example.com/image.jpg"
+            }
+        ],
+        "website": "https://example.com",
+        "year": 2026,
+        "youTubeTrailerId": "",
+        "studio": "Example Studio",
+        "path": "/media/movies/Invented Heist (2026) {tmdb-900001}",
+        "qualityProfileId": 8,
+        "hasFile": true,
+        "movieFileId": 351,
+        "monitored": true,
+        "minimumAvailability": "released",
+        "isAvailable": true,
+        "folderName": "/media/movies/Invented Heist (2026) {tmdb-900001}",
+        "runtime": 97,
+        "cleanTitle": "inventedheist",
+        "imdbId": "tt0900001",
+        "tmdbId": 900001,
+        "titleSlug": "900001",
+        "certification": "PG-13",
+        "genres": [
+            "Action",
+            "Thriller"
+        ],
+        "keywords": [
+            "example"
+        ],
+        "tags": [
+            5
+        ],
+        "added": "2026-06-09T05:33:29Z",
+        "ratings": {
+            "imdb": {
+                "votes": 0,
+                "value": 0,
+                "type": "user"
+            },
+            "tmdb": {
+                "votes": 0,
+                "value": 0,
+                "type": "user"
+            },
+            "metacritic": {
+                "votes": 0,
+                "value": 0,
+                "type": "user"
+            },
+            "rottenTomatoes": {
+                "votes": 0,
+                "value": 0,
+                "type": "user"
+            },
+            "trakt": {
+                "votes": 0,
+                "value": 0,
+                "type": "user"
+            }
+        },
+        "movieFile": {
+            "movieId": 247,
+            "relativePath": "Invented Heist (2026) [Bluray-2160p]-GROUP.mkv",
+            "path": "/media/movies/Invented Heist (2026) {tmdb-900001}/Invented Heist (2026) [Bluray-2160p]-GROUP.mkv",
+            "size": 31977915113,
+            "dateAdded": "2026-09-01T00:39:02Z",
+            "sceneName": "Invented Heist (2026).2160p.BluRay-GROUP",
+            "releaseGroup": "GROUP",
+            "edition": "",
+            "languages": [
+                {
+                    "id": 1,
+                    "name": "English"
+                }
+            ],
+            "quality": {
+                "quality": {
+                    "id": 19,
+                    "name": "Bluray-2160p",
+                    "source": "bluray",
+                    "resolution": 2160,
+                    "modifier": "none"
+                },
+                "revision": {
+                    "version": 1,
+                    "real": 0,
+                    "isRepack": false
+                }
+            },
+            "customFormats": [
+                {
+                    "id": 480,
+                    "name": "2160p Quality Tier 5"
+                },
+                {
+                    "id": 482,
+                    "name": "Atmos"
+                },
+                {
+                    "id": 392,
+                    "name": "Dolby Vision"
+                },
+                {
+                    "id": 401,
+                    "name": "HDR10+"
+                },
+                {
+                    "id": 488,
+                    "name": "TrueHD"
+                }
+            ],
+            "customFormatScore": 946600,
+            "indexerFlags": 1,
+            "mediaInfo": {
+                "audioBitrate": 4110516,
+                "audioChannels": 7.1,
+                "audioCodec": "TrueHD Atmos",
+                "audioLanguages": "eng/eng",
+                "audioStreamCount": 2,
+                "videoBitDepth": 10,
+                "videoBitrate": 38686036,
+                "videoCodec": "x265",
+                "videoFps": 23.976,
+                "videoDynamicRange": "HDR",
+                "videoDynamicRangeType": "DV HDR10Plus",
+                "resolution": "3840x1604",
+                "runTime": "1:37:48",
+                "scanType": "Progressive",
+                "subtitles": "eng"
+            },
+            "originalFilePath": "Invented Heist (2026).2160p.BluRay-GROUP/Invented Heist (2026).mkv",
+            "qualityCutoffNotMet": false,
+            "id": 351
+        },
+        "popularity": 43.642,
+        "lastSearchTime": "2026-09-03T06:00:03Z",
+        "statistics": {
+            "movieFileCount": 1,
+            "sizeOnDisk": 31977915113,
+            "releaseGroups": [
+                "GROUP"
+            ]
+        },
+        "id": 247
+    },
+    {
+        "title": "Invented Island",
+        "originalTitle": "Invented Island",
+        "originalLanguage": {
+            "id": 1,
+            "name": "English"
+        },
+        "alternateTitles": [],
+        "secondaryYearSourceId": 0,
+        "sortTitle": "invented island",
+        "sizeOnDisk": 0,
+        "status": "announced",
+        "overview": "An invented animated film.",
+        "inCinemas": "2026-09-16T00:00:00Z",
+        "releaseDate": "2026-12-15T00:00:00Z",
+        "images": [
+            {
+                "coverType": "poster",
+                "remoteUrl": "https://example.com/image.jpg"
+            },
+            {
+                "coverType": "fanart",
+                "remoteUrl": "https://example.com/image.jpg"
+            }
+        ],
+        "website": "https://example.com",
+        "year": 2026,
+        "youTubeTrailerId": "",
+        "studio": "Example Animation",
+        "path": "/media/movies/Invented Island (2026) {tmdb-900002}",
+        "qualityProfileId": 8,
+        "hasFile": false,
+        "movieFileId": 0,
+        "monitored": true,
+        "minimumAvailability": "released",
+        "isAvailable": false,
+        "folderName": "/media/movies/Invented Island (2026) {tmdb-900002}",
+        "runtime": 109,
+        "cleanTitle": "inventedisland",
+        "imdbId": "tt0900002",
+        "tmdbId": 900002,
+        "titleSlug": "900002",
+        "certification": "PG-13",
+        "genres": [
+            "Adventure",
+            "Animation",
+            "Comedy",
+            "Family",
+            "Fantasy"
+        ],
+        "keywords": [
+            "example"
+        ],
+        "tags": [],
+        "added": "2026-07-10T05:49:34Z",
+        "ratings": {
+            "imdb": {
+                "votes": 0,
+                "value": 0,
+                "type": "user"
+            },
+            "tmdb": {
+                "votes": 0,
+                "value": 0,
+                "type": "user"
+            }
+        },
+        "popularity": 14.8938,
+        "statistics": {
+            "movieFileCount": 0,
+            "sizeOnDisk": 0,
+            "releaseGroups": []
+        },
+        "id": 253
+    }
+]

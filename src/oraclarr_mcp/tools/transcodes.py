@@ -1,8 +1,18 @@
 from ..clients.base import BaseClient
-from ._util import fan_out
+from ._util import Bounded, clamp, fan_out
 
-async def get_transcodes(clients: dict[str, BaseClient]) -> list[dict]:
+MAX_LIMIT = 200
+
+
+async def get_transcodes(clients: dict[str, BaseClient], limit: int = 50) -> list[dict]:
+    limit = clamp(limit, MAX_LIMIT)
     sel = {n: c for n, c in clients.items() if c.type == "tdarr"}
-    async def collect(c):
-        return {"status": await c.status(), "nodes": await c.nodes(), "staged": await c.staged()}
+
+    async def collect(c) -> Bounded:
+        staged = await c.staged()
+        kept = staged[:limit]
+        data = {"status": await c.status(), "nodes": await c.nodes(),
+                "staged_count": len(staged), "staged": kept}
+        return Bounded(data=data, total=len(staged), truncated=len(staged) > len(kept))
+
     return await fan_out(sel, collect)

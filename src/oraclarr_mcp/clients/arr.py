@@ -16,23 +16,39 @@ class ArrClient(BaseClient):
         data = await self.get_json("/api/v3/queue", params={"pageSize": 200})
         return data.get("records", [])
 
-    async def history(self, limit: int = 30) -> list[dict]:
-        data = await self.get_json("/api/v3/history",
-                                   params={"pageSize": limit, "sortKey": "date", "sortDirection": "descending"})
-        return data.get("records", [])
+    async def queue_page(self, limit: int) -> tuple[list[dict], int]:
+        data = await self.get_json("/api/v3/queue", params={"pageSize": limit})
+        return data.get("records", []), data.get("totalRecords", 0)
+
+    async def history_page(self, limit: int) -> tuple[list[dict], int]:
+        """Newest-first history page. include* attach the parent title for projection."""
+        data = await self.get_json("/api/v3/history", params={
+            "pageSize": limit, "sortKey": "date", "sortDirection": "descending",
+            "includeSeries": "true", "includeMovie": "true"})
+        return data.get("records", []), data.get("totalRecords", 0)
 
     async def item_history(self, item_id: int, media: str) -> list[dict]:
         """Per-item grab/import history. Sonarr: series?seriesId; Radarr: movie?movieId."""
         param = "seriesId" if media == "series" else "movieId"
         return await self.get_json(f"/api/v3/history/{media}", params={param: item_id})
 
+    async def calendar(self, start: str, end: str) -> list[dict]:
+        """Date-bounded upcoming items. Sonarr/Sportarr return episodes, Radarr movies.
+
+        includeSeries attaches the parent show/league; Radarr ignores it.
+        """
+        return await self.get_json("/api/v3/calendar", params={
+            "start": start, "end": end, "includeSeries": "true"})
+
     async def wanted_missing(self) -> list[dict]:
         data = await self.get_json("/api/v3/wanted/missing", params={"pageSize": 200})
         return data.get("records", [])
 
-    async def wanted_cutoff(self) -> list[dict]:
-        data = await self.get_json("/api/v3/wanted/cutoff", params={"pageSize": 200})
-        return data.get("records", [])
+    async def wanted_page(self, kind: str, limit: int) -> tuple[list[dict], int]:
+        """kind is "missing" or "cutoff"."""
+        data = await self.get_json(f"/api/v3/wanted/{kind}", params={
+            "pageSize": limit, "includeSeries": "true"})
+        return data.get("records", []), data.get("totalRecords", 0)
 
     async def custom_formats(self) -> list[dict]:
         return await self.get_json("/api/v3/customformat")

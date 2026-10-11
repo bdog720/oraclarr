@@ -12,13 +12,18 @@ def _registered_tool_names(mcp) -> list[str]:
     return list(mcp._tool_manager._tools.keys())
 
 
-def test_tool_specs_cover_all_ten_tools():
+def test_tool_specs_cover_all_eleven_tools():
     names = {s.name for s in TOOL_SPECS}
     assert names == {
         "stack_health", "get_queues", "diagnose", "explain_decision",
         "get_quality_config", "get_history", "get_wanted", "search_media",
-        "get_indexers", "get_transcodes",
+        "get_indexers", "get_transcodes", "get_upcoming",
     }
+
+
+def test_get_upcoming_is_gated_by_the_media_toolset():
+    assert "get_upcoming" not in enabled_for_toolsets(TOOL_SPECS, ["downloads"])
+    assert "get_upcoming" in enabled_for_toolsets(TOOL_SPECS, ["media"])
 
 
 def test_all_tool_specs_are_read_risk():
@@ -54,3 +59,96 @@ def test_build_server_defaults_to_localhost_7979():
     mcp = build_server(cfg, clients={})
     assert mcp.settings.host == "127.0.0.1"
     assert mcp.settings.port == 7979
+
+
+import asyncio  # noqa: E402
+import json  # noqa: E402
+
+
+class _SlowArr:
+    name = "sonarr"
+    type = "sonarr"
+
+    def __init__(self, delay):
+        self._delay = delay
+
+    async def system_status(self):
+        await asyncio.sleep(self._delay)
+        return {"version": "4.0"}
+
+    async def health(self):
+        return []
+
+    async def diskspace(self):
+        return []
+
+
+def _payloads(out) -> list:
+    blocks = out[0] if isinstance(out, tuple) else out
+    parsed = [json.loads(b.text) for b in blocks]
+    if len(parsed) == 1 and isinstance(parsed[0], list):
+        return parsed[0]
+    return parsed
+
+
+def _cfg(**server):
+    return Config(server=ServerSettings(toolsets=["media"], **server), defaults=Defaults(),
+                  instances={"sonarr": Instance(type="sonarr", url="http://h:8989",
+                                                api_key="SONARRKEY123")})
+
+
+async def test_registered_tool_reports_instance_timeout_within_budget():
+    mcp = build_server(_cfg(tool_budget_seconds=0.1), clients={"sonarr": _SlowArr(1.0)})
+    payloads = _payloads(await mcp.call_tool("stack_health", {}))
+    assert payloads[0]["status"] == "timeout"
+    assert payloads[0]["error"] == "upstream_timeout"
+
+
+async def test_registered_tool_can_return_error_object():
+    # A list[dict] output schema would reject this dict; the wrapper's Any return allows it.
+    mcp = build_server(_cfg(max_output_bytes=10), clients={"sonarr": _SlowArr(0)})
+    payloads = _payloads(await mcp.call_tool("stack_health", {}))
+    assert payloads[0]["error"] == "output_too_large"
+
+
+def _params(mcp, tool):
+    return mcp._tool_manager._tools[tool].parameters["properties"]
+
+
+def test_get_queues_exposes_limit():
+    cfg = Config(server=ServerSettings(toolsets=["downloads"]), defaults=Defaults(),
+                 instances={"sonarr": Instance(type="sonarr", url="http://h:8989", api_key="K")})
+    assert _params(build_server(cfg, clients={}), "get_queues")["limit"]["default"] == 100
+
+
+def test_media_tools_expose_limits():
+    cfg = Config(server=ServerSettings(toolsets=["media"]), defaults=Defaults(),
+                 instances={"sonarr": Instance(type="sonarr", url="http://h:8989", api_key="K")})
+    mcp = build_server(cfg, clients={})
+    assert _params(mcp, "search_media")["limit"]["default"] == 20
+    assert _params(mcp, "get_wanted")["limit"]["default"] == 50
+    assert _params(mcp, "get_history")["limit"]["default"] == 30
+
+
+def test_transcode_and_upcoming_expose_limits():
+    cfg = Config(server=ServerSettings(toolsets=["media", "transcode"]), defaults=Defaults(),
+                 instances={"sonarr": Instance(type="sonarr", url="http://h:8989", api_key="K")})
+    mcp = build_server(cfg, clients={})
+    assert _params(mcp, "get_transcodes")["limit"]["default"] == 50
+    assert _params(mcp, "get_upcoming")["limit"]["default"] == 100
+
+
+BOUNDED_TOOLS = {"get_queues", "diagnose", "explain_decision", "get_history", "get_wanted",
+                 "search_media", "get_upcoming", "get_transcodes"}
+
+
+def test_every_tool_description_says_when_to_use_it_instead_of_ssh():
+    cfg = Config(server=ServerSettings(toolsets=["media", "downloads", "transcode"]),
+                 defaults=Defaults(),
+                 instances={"sonarr": Instance(type="sonarr", url="http://h:8989", api_key="K")})
+    tools = build_server(cfg, clients={})._tool_manager._tools
+    assert set(tools) == {s.name for s in TOOL_SPECS}
+    for name, tool in tools.items():
+        assert "instead of" in tool.description and "SSH" in tool.description, name
+        if name in BOUNDED_TOOLS:
+            assert "truncated" in tool.description, name

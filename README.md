@@ -22,7 +22,7 @@ A locally-run, read-only [MCP](https://modelcontextprotocol.io) server that lets
 
 Oraclarr gives a language model one place to answer the operational "why" questions that normally mean tabbing through six web UIs. It aggregates across your services and returns a single, structured answer without changing anything (it is strictly read-only in this phase).
 
-Covered now: **Sonarr**, **Radarr**, **Prowlarr**, **qBittorrent**, **Tdarr**, and **Profilarr** — including **multiple instances of the same type** (e.g. a separate anime or 4K Sonarr/Radarr). Every tool fans out across all the instances you define and reports each one separately.
+Covered now: **Sonarr**, **Radarr**, **Sportarr**, **Prowlarr**, **qBittorrent**, **Tdarr**, and **Profilarr** — including **multiple instances of the same type** (e.g. a separate anime or 4K Sonarr/Radarr). Every tool fans out across all the instances you define and reports each one separately.
 
 ## In practice
 
@@ -31,10 +31,10 @@ Once registered, you just ask your MCP client. Oraclarr picks the right tool and
 | You ask… | Oraclarr runs | …and tells you |
 |----------|---------------|----------------|
 | "Is anything in my stack down?" | `stack_health` | which services are unreachable, unhealthy, or low on disk |
-| "Why hasn't the new episode of *X* downloaded yet?" | `diagnose` | where *X* is in the wanted → grab → download → import pipeline |
+| "Why hasn't the new episode of *X* downloaded yet?" | `diagnose` | whether *X* is in your library, sitting in the download queue, or still on the wanted list |
 | "Why did a sub-only release get grabbed when I only allow English dubs?" | `explain_decision` | the release that was grabbed, its custom-format score, and the language formats that matched |
-| "Why does Profilarr keep upgrading stuff that already looks fine?" | `explain_decision` + `get_quality_config` | the profile cutoff/upgrade thresholds vs. the current file's score |
-| "What's stuck downloading right now?" | `get_queues` | unified queue with progress, ETA, and stall flags |
+| "Why does Profilarr keep upgrading stuff that already looks fine?" | `explain_decision` + `get_quality_config` | the profile's cutoff and upgrade thresholds next to the scores of recent grabs |
+| "What's stuck downloading right now?" | `get_queues` | a unified queue with progress and stall flags |
 
 ## Tools
 
@@ -52,6 +52,7 @@ All read-only and outcome-oriented (not one-per-endpoint, which keeps the model 
 | `search_media` | Do I have *X*, what's its status? |
 | `get_indexers` | Which indexers are failing? |
 | `get_transcodes` | What's transcoding / stuck? |
+| `get_upcoming` | What's airing or releasing soon, and will it land? (up to 90 days) |
 
 ## Install
 
@@ -122,6 +123,7 @@ services:
       QBIT_USER: ${QBIT_USER}
       QBIT_PASS: ${QBIT_PASS}
       PROFILARR_KEY: ${PROFILARR_KEY}
+      SPORTARR_KEY: ${SPORTARR_KEY}
 ```
 
 The keys on the right (`${SONARR_KEY}` …) are read from your `.env` file. Then
@@ -224,6 +226,8 @@ Instances are named in `config.yaml`; `type` selects the client, so any number o
 server:
   allow_writes: false              # read-only; writes are a future phase
   toolsets: [media, downloads, transcode]
+  tool_budget_seconds: 30          # per tool call; slow instances report status "timeout"
+  max_output_bytes: 200000         # safety net for oversized responses
 defaults:
   timeout_seconds: 10
 instances:
@@ -234,14 +238,17 @@ instances:
   qbit:         { type: qbittorrent,  url: http://host:8080, username: ${QBIT_USER}, password: ${QBIT_PASS} }
   tdarr:        { type: tdarr,        url: http://host:8265 }
   profilarr:    { type: profilarr,    url: http://host:6868, api_key: ${PROFILARR_KEY} }
+  sportarr:     { type: sportarr,     url: http://host:1867, api_key: ${SPORTARR_KEY} }
 ```
+
+Every tool call has a time budget, set by `tool_budget_seconds`. If an instance doesn't answer in time, it comes back as `status: "timeout"` and the other instances still return their data. List results carry only the useful fields and stop at each tool's `limit`. When there is more, `truncated` and `total` say so. API keys and passwords from your config show up as `***` in responses and log lines (values shorter than four characters are left alone).
 
 ## Roadmap
 
 Oraclarr is built in phases. v1 is deliberately read-only; write capability arrives behind explicit safety gates. The architecture (typed clients + outcome tools + config-selectable toolsets) is designed to extend to other self-hosted suites beyond *arr, too.
 
-- ✅ **Phase 1: read-only diagnostics.** Sonarr, Radarr, Prowlarr, qBittorrent, Tdarr, Profilarr.
-- 🔜 **Phase 2: more services, still read-only.** Jellyfin, Seerr, Gluetun, TrueNAS, Cleanuparr, ntfy. The architecture also opens up to non-*arr stacks.
+- ✅ **Phase 1: read-only diagnostics.** Sonarr, Radarr, Sportarr, Prowlarr, qBittorrent, Tdarr, Profilarr.
+- 🔜 **Phase 2: more services, still read-only.** Jellyfin, Seerr, Gluetun, TrueNAS, Cleanuparr, Unpackerr, ntfy. The architecture also opens up to non-*arr stacks.
 - 🔭 **Phase 3: safe write actions.** Trigger search, retry, refresh/rescan, approve requests, gated behind `allow_writes` with dry-run previews and an audit log.
 - 🔭 **Phase 4: destructive actions.** Delete media, blocklist, stack control, behind an explicit confirmation and allowlist.
 

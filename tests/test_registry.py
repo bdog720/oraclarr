@@ -18,3 +18,12 @@ async def test_build_clients_routes_types_and_skips_disabled():
     assert "off" not in clients
     for c in clients.values():
         await c.aclose()
+
+
+async def test_sportarr_routes_to_arr_client():
+    cfg = _cfg({"sportarr": Instance(type="sportarr", url="http://h:1867", api_key="K")})
+    clients = build_clients(cfg)
+    c = clients["sportarr"]
+    assert isinstance(c, ArrClient)
+    assert c.type == "sportarr"
+    await c.aclose()
