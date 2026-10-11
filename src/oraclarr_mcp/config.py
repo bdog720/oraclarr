@@ -1,5 +1,6 @@
 import os
 import re
+from collections.abc import Mapping
 from pathlib import Path
 from typing import Literal
 import yaml
@@ -12,6 +13,82 @@ _ENV_RE = re.compile(r"\$\{([A-Z0-9_]+)\}")
 
 class ConfigError(Exception):
     pass
+
+
+ENV_PREFIX = "ORACLARR_"
+# Read by __main__ for transport and the config path; never instance settings.
+RESERVED_ENV = {"TRANSPORT", "HTTP_HOST", "HTTP_PORT", "CONFIG"}
+_TRUE = {"true", "yes", "1", "on"}
+_FALSE = {"false", "no", "0", "off"}
+# Longest suffix first, so SONARR_ANIME_API_KEY splits as SONARR_ANIME + API_KEY.
+_FIELDS = sorted({"_URL": "url", "_TYPE": "type", "_API_KEY": "api_key",
+                  "_USERNAME": "username", "_PASSWORD": "password",
+                  "_ENABLED": "enabled"}.items(), key=lambda kv: -len(kv[0]))
+_FIELD_HELP = "_TYPE, _URL, _API_KEY, _USERNAME, _PASSWORD, _ENABLED"
+
+
+def _parse_bool(value: str) -> bool:
+    s = value.lower()
+    if s in _TRUE:
+        return True
+    if s in _FALSE:
+        return False
+    raise ValueError
+
+
+def _parse_list(value: str) -> list[str]:
+    return [x.strip() for x in value.split(",") if x.strip()]
+
+
+_SERVER_ENV = {
+    "TOOLSETS": ("server", "toolsets", _parse_list, "a comma-separated list"),
+    "ALLOW_WRITES": ("server", "allow_writes", _parse_bool, "true or false"),
+    "TOOL_BUDGET_SECONDS": ("server", "tool_budget_seconds", float, "a number"),
+    "MAX_OUTPUT_BYTES": ("server", "max_output_bytes", int, "a whole number"),
+    "TIMEOUT_SECONDS": ("defaults", "timeout_seconds", int, "a whole number"),
+}
+
+
+def env_name(instance: str, field: str) -> str:
+    return f"{ENV_PREFIX}{instance.upper().replace('-', '_')}_{field}"
+
+
+def parse_env(env: Mapping[str, str]) -> tuple[dict, dict]:
+    """Split ORACLARR_* variables into settings sections and per-instance fields.
+
+    Messages name the variable but never echo its value: values are secrets.
+    """
+    sections: dict[str, dict] = {"server": {}, "defaults": {}}
+    instances: dict[str, dict] = {}
+    for key, raw in env.items():
+        if not key.startswith(ENV_PREFIX):
+            continue
+        rest = key[len(ENV_PREFIX):]
+        value = raw.strip()
+        if rest in RESERVED_ENV or not value:
+            continue
+        if rest in _SERVER_ENV:
+            section, field, parse, kind = _SERVER_ENV[rest]
+            try:
+                sections[section][field] = parse(value)
+            except ValueError:
+                raise ConfigError(f"{key} must be {kind}") from None
+            continue
+        for suffix, field in _FIELDS:
+            if rest.endswith(suffix) and len(rest) > len(suffix):
+                name = rest[: -len(suffix)].lower().replace("_", "-")
+                if field == "enabled":
+                    try:
+                        value = _parse_bool(value)
+                    except ValueError:
+                        raise ConfigError(f"{key} must be true or false") from None
+                elif field == "type":
+                    value = value.lower()
+                instances.setdefault(name, {})[field] = value
+                break
+        else:
+            raise ConfigError(f"unknown variable {key}; instance fields are {_FIELD_HELP}")
+    return sections, instances
 
 
 class ServerSettings(BaseModel):
