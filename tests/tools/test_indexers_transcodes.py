@@ -10,7 +10,7 @@ class FakeTdarr:
     name="tdarr"; type="tdarr"
     async def status(self): return {"status": "ok"}
     async def nodes(self): return {"n1": {"nodeName": "n1"}}
-    async def staged(self): return [{"file": "a.mkv"}]
+    async def staged(self): return [{"_id": "a.mkv"}]
 
 async def test_get_indexers():
     res = await get_indexers({"prowlarr": FakeProwlarr()})
@@ -43,7 +43,7 @@ async def test_get_indexers_projects_fields():
 
 class BigTdarr(FakeTdarr):
     async def staged(self):
-        return [{"file": f"{i}.mkv"} for i in range(5)]
+        return [{"_id": f"{i}.mkv"} for i in range(5)]
 
 
 async def test_get_transcodes_bounds_staged():
@@ -51,3 +51,19 @@ async def test_get_transcodes_bounds_staged():
     assert row["data"]["staged_count"] == 5
     assert [s["file"] for s in row["data"]["staged"]] == ["0.mkv", "1.mkv"]
     assert row["total"] == 5 and row["truncated"] is True
+
+
+class LiveShapeTdarr(FakeTdarr):
+    async def staged(self):
+        return [{"_id": "/media/tv/Show/S01E01.mkv", "status": "processing",
+                 "workerType": "transcodegpu", "nodeID": "node1", "start": 1791756922182,
+                 "inLimbo": False, "workDir": "/transcode/x",
+                 "flowPluginHandler": {"blob": "x" * 50_000},
+                 "originalLibraryFile": {"ffProbeData": {"streams": ["y" * 1_000]}}}]
+
+
+async def test_get_transcodes_projects_staged_items():
+    row = (await get_transcodes({"tdarr": LiveShapeTdarr()}))[0]
+    assert row["data"]["staged"] == [{"file": "/media/tv/Show/S01E01.mkv",
+                                      "status": "processing", "worker_type": "transcodegpu",
+                                      "node": "node1", "started": 1791756922182}]
