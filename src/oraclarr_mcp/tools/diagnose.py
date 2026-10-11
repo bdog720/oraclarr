@@ -2,8 +2,38 @@ import asyncio
 from ..clients.base import BaseClient
 from ._arr import arr_clients, media_kind
 from ._util import Bounded, bounded, merge_matches, probe
+from .library import search_row
 
 MAX_ITEMS = 20
+JELLYFIN_SEARCH_LIMIT = 50
+
+
+def _arr_ids(match: dict) -> set[tuple[str, str]]:
+    pairs = (("tvdb", match.get("tvdb_id")), ("tmdb", match.get("tmdb_id")),
+             ("imdb", match.get("imdb_id")))
+    # Sonarr reports tmdbId 0 when unknown; a zero id must never match.
+    return {(k, str(v)) for k, v in pairs if v}
+
+
+def _jellyfin_ids(items: list[dict]) -> set[tuple[str, str]]:
+    out = set()
+    for i in items:
+        row = search_row(i)
+        for k in ("tvdb", "tmdb", "imdb"):
+            if row[f"{k}_id"]:
+                out.add((k, str(row[f"{k}_id"])))
+    return out
+
+
+def _join_jellyfin(out: dict, results: list) -> None:
+    ok = [r for r in results if r.status == "ok"]
+    out["errors"].extend(r.model_dump() for r in results if r.status != "ok")
+    known = set()
+    for r in ok:
+        items, _total = r.data
+        known |= _jellyfin_ids(items)
+    for m in out["matches"]:
+        m["in_jellyfin"] = bool(_arr_ids(m) & known) if ok else None
 
 
 async def diagnose(clients: dict[str, BaseClient], title: str) -> dict:
@@ -44,5 +74,13 @@ async def diagnose(clients: dict[str, BaseClient], title: str) -> dict:
         return bounded(rows, MAX_ITEMS)
 
     arr = arr_clients(clients, None)
-    results = await asyncio.gather(*(probe(c, per_instance) for c in arr.values()))
-    return merge_matches(title, list(results))
+    jf = {n: c for n, c in clients.items() if c.type == "jellyfin"}
+    arr_results, jf_results = await asyncio.gather(
+        asyncio.gather(*(probe(c, per_instance) for c in arr.values())),
+        asyncio.gather(*(probe(c, lambda x: x.search_items(title, JELLYFIN_SEARCH_LIMIT))
+                         for c in jf.values())),
+    )
+    out = merge_matches(title, list(arr_results))
+    if jf:
+        _join_jellyfin(out, list(jf_results))
+    return out
