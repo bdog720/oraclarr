@@ -25,15 +25,30 @@ def _jellyfin_ids(items: list[dict]) -> set[tuple[str, str]]:
     return out
 
 
+async def _jellyfin_lookup(c: BaseClient, title: str) -> tuple[set, bool]:
+    """Provider ids found, and whether the search was cut short. Parsing runs inside
+    probe(), so a malformed Jellyfin payload fails only this instance."""
+    items, total = await c.search_items(title, JELLYFIN_SEARCH_LIMIT)
+    return _jellyfin_ids(items), total > len(items)
+
+
 def _join_jellyfin(out: dict, results: list) -> None:
     ok = [r for r in results if r.status == "ok"]
     out["errors"].extend(r.model_dump() for r in results if r.status != "ok")
-    known = set()
+    known: set = set()
+    truncated = False
     for r in ok:
-        items, _total = r.data
-        known |= _jellyfin_ids(items)
+        ids, cut = r.data
+        known |= ids
+        truncated = truncated or cut
     for m in out["matches"]:
-        m["in_jellyfin"] = bool(_arr_ids(m) & known) if ok else None
+        if not ok:
+            m["in_jellyfin"] = None
+        elif _arr_ids(m) & known:
+            m["in_jellyfin"] = True
+        else:
+            # No match in a truncated search is not proof of absence.
+            m["in_jellyfin"] = None if truncated else False
 
 
 async def diagnose(clients: dict[str, BaseClient], title: str) -> dict:
@@ -77,8 +92,7 @@ async def diagnose(clients: dict[str, BaseClient], title: str) -> dict:
     jf = {n: c for n, c in clients.items() if c.type == "jellyfin"}
     arr_results, jf_results = await asyncio.gather(
         asyncio.gather(*(probe(c, per_instance) for c in arr.values())),
-        asyncio.gather(*(probe(c, lambda x: x.search_items(title, JELLYFIN_SEARCH_LIMIT))
-                         for c in jf.values())),
+        asyncio.gather(*(probe(c, lambda x: _jellyfin_lookup(x, title)) for c in jf.values())),
     )
     out = merge_matches(title, list(arr_results))
     if jf:
