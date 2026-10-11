@@ -16,10 +16,12 @@ class ArrClient(BaseClient):
         data = await self.get_json("/api/v3/queue", params={"pageSize": 200})
         return data.get("records", [])
 
-    async def history(self, limit: int = 30) -> list[dict]:
-        data = await self.get_json("/api/v3/history",
-                                   params={"pageSize": limit, "sortKey": "date", "sortDirection": "descending"})
-        return data.get("records", [])
+    async def history_page(self, limit: int) -> tuple[list[dict], int]:
+        """Newest-first history page. include* attach the parent title for projection."""
+        data = await self.get_json("/api/v3/history", params={
+            "pageSize": limit, "sortKey": "date", "sortDirection": "descending",
+            "includeSeries": "true", "includeMovie": "true"})
+        return data.get("records", []), data.get("totalRecords", 0)
 
     async def item_history(self, item_id: int, media: str) -> list[dict]:
         """Per-item grab/import history. Sonarr: series?seriesId; Radarr: movie?movieId."""
@@ -38,9 +40,11 @@ class ArrClient(BaseClient):
         data = await self.get_json("/api/v3/wanted/missing", params={"pageSize": 200})
         return data.get("records", [])
 
-    async def wanted_cutoff(self) -> list[dict]:
-        data = await self.get_json("/api/v3/wanted/cutoff", params={"pageSize": 200})
-        return data.get("records", [])
+    async def wanted_page(self, kind: str, limit: int) -> tuple[list[dict], int]:
+        """kind is "missing" or "cutoff"."""
+        data = await self.get_json(f"/api/v3/wanted/{kind}", params={
+            "pageSize": limit, "includeSeries": "true"})
+        return data.get("records", []), data.get("totalRecords", 0)
 
     async def custom_formats(self) -> list[dict]:
         return await self.get_json("/api/v3/customformat")

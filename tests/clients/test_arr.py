@@ -60,3 +60,32 @@ async def test_calendar_sends_window_and_includes_series():
     assert params["includeSeries"] == "true"
     assert recs[0]["series"]["title"] == "Example League"
     await c.aclose()
+
+
+@respx.mock
+async def test_history_page_returns_records_and_total():
+    route = respx.get("http://h/api/v3/history").mock(return_value=httpx.Response(
+        200, json={"records": [{"eventType": "grabbed"}], "totalRecords": 812}))
+    c = _client()
+    records, total = await c.history_page(5)
+    params = route.calls.last.request.url.params
+    assert params["pageSize"] == "5"
+    assert params["sortKey"] == "date"
+    assert params["sortDirection"] == "descending"
+    assert params["includeSeries"] == "true"
+    assert params["includeMovie"] == "true"
+    assert records == [{"eventType": "grabbed"}] and total == 812
+    await c.aclose()
+
+
+@respx.mock
+async def test_wanted_page_uses_kind_path_and_page_size():
+    route = respx.get("http://h/api/v3/wanted/cutoff").mock(return_value=httpx.Response(
+        200, json={"records": [{"title": "Ep"}], "totalRecords": 3}))
+    c = _client()
+    records, total = await c.wanted_page("cutoff", 50)
+    params = route.calls.last.request.url.params
+    assert params["pageSize"] == "50"
+    assert params["includeSeries"] == "true"
+    assert records == [{"title": "Ep"}] and total == 3
+    await c.aclose()

@@ -119,3 +119,12 @@ def test_get_queues_exposes_limit():
     cfg = Config(server=ServerSettings(toolsets=["downloads"]), defaults=Defaults(),
                  instances={"sonarr": Instance(type="sonarr", url="http://h:8989", api_key="K")})
     assert _params(build_server(cfg, clients={}), "get_queues")["limit"]["default"] == 100
+
+
+def test_media_tools_expose_limits():
+    cfg = Config(server=ServerSettings(toolsets=["media"]), defaults=Defaults(),
+                 instances={"sonarr": Instance(type="sonarr", url="http://h:8989", api_key="K")})
+    mcp = build_server(cfg, clients={})
+    assert _params(mcp, "search_media")["limit"]["default"] == 20
+    assert _params(mcp, "get_wanted")["limit"]["default"] == 50
+    assert _params(mcp, "get_history")["limit"]["default"] == 30
