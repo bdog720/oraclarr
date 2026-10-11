@@ -82,3 +82,29 @@ async def test_explain_one_failing_history_keeps_other_items():
     assert by["Anime B"]["history_error"] == "history 500"
     assert "history_error" not in by["Anime A"]
     assert res["errors"] == []
+
+
+class ManyGrabs(FakeArr):
+    async def item_history(self, item_id, media):
+        return [{"sourceTitle": f"Anime.S01E{i:02d}", "eventType": "grabbed",
+                 "date": f"2026-01-{i:02d}T00:00:00Z", "customFormatScore": i,
+                 "customFormats": []} for i in range(1, 26)]
+
+
+async def test_explain_keeps_newest_ten_grabs_and_counts_all():
+    m = (await explain_decision({"sonarr": ManyGrabs()}, title="Anime"))["matches"][0]
+    assert len(m["recent_grabs"]) == 10
+    assert m["recent_grabs"][0]["release"] == "Anime.S01E25"
+    assert m["recent_grabs"][0]["date"] == "2026-01-25T00:00:00Z"
+    assert m["grabs_total"] == 25
+
+
+class ZeroScores(FakeArr):
+    async def quality_profiles(self):
+        return [{"id": 3, "name": "HD-Anime", "formatItems": [
+            {"name": "English Dub", "score": 50}, {"name": "Noise", "score": 0}]}]
+
+
+async def test_explain_drops_zero_score_formats():
+    m = (await explain_decision({"sonarr": ZeroScores()}, title="Anime"))["matches"][0]
+    assert m["profile"]["format_scores"] == [{"name": "English Dub", "score": 50}]

@@ -75,8 +75,9 @@ def build_server(
     async def _explain_decision(title: str) -> dict:
         """Explain why a title was grabbed or is being upgraded: quality profile, custom
         format scores, and grab history. Use this instead of querying arr databases over
-        SSH. Examines at most 10 matching items per instance; `truncated` shows when more
-        matched."""
+        SSH. Examines at most 10 matching items per instance and returns the newest 10
+        grabs of each (`grabs_total` gives the full count); `truncated` shows when more
+        items matched."""
         return await explain_decision(clients, title)
 
     async def _get_quality_config(service: str | None = None) -> list[dict]:
@@ -88,7 +89,7 @@ def build_server(
     async def _get_history(service: str | None = None, limit: int = 30) -> list[dict]:
         """Recent grab, import, and failure events for arr instances, newest first. Use this
         instead of querying arr databases over SSH. Returns at most `limit` events per
-        instance (max 200); `truncated` and `total` show when more exist."""
+        instance (max 80); `truncated` and `total` show when more exist."""
         return await get_history(clients, service, limit)
 
     async def _get_wanted(service: str | None = None, limit: int = 50) -> list[dict]:
@@ -101,7 +102,7 @@ def build_server(
         """Find a title in the existing arr libraries: ids, monitored state, path, size on
         disk, file counts. Use this instead of reading arr config files or curling their
         APIs over SSH, and instead of `find` or `du` on the media pool. Returns at most
-        `limit` items per instance (max 200); `truncated` and `total` show when more
+        `limit` items per instance (max 100); `truncated` and `total` show when more
         exist."""
         return await search_media(clients, term, limit)
 
@@ -120,7 +121,7 @@ def build_server(
                             limit: int = 100) -> list[dict]:
         """Upcoming episodes, games, and movie releases across arr instances (max 90 days).
         Use this instead of curling arr calendars over SSH. Returns at most `limit` items
-        per instance; `truncated` and `total` show when more exist."""
+        per instance (max 200); `truncated` and `total` show when more exist."""
         return await get_upcoming(clients, service, days, limit)
 
     register("stack_health", _stack_health)

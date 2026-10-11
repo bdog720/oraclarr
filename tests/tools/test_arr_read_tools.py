@@ -59,7 +59,7 @@ async def test_get_history_clamps_limit():
     fake = FakeArr()
     await get_history({"sonarr": fake}, limit=0)
     await get_history({"sonarr": fake}, limit=10_000)
-    assert fake.page_sizes == [1, 200]
+    assert fake.page_sizes == [1, 80]
 
 
 async def test_get_wanted_merges_projects_and_bounds():

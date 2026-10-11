@@ -37,7 +37,7 @@ def _normalise(rec: dict, start: str, end: str) -> dict:
     }
 
 
-MAX_LIMIT = 500
+MAX_LIMIT = 200
 
 
 async def get_upcoming(clients: dict[str, BaseClient], service: str | None = None,

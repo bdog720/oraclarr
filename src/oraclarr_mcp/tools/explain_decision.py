@@ -6,6 +6,8 @@ from ._util import Bounded, bounded, merge_matches, probe
 # Each examined item costs one history request; a broad title must not fan out
 # into hundreds of calls against an I/O-bound server.
 MAX_ITEMS = 10
+# A long-running series has hundreds of grabs; the newest few explain the decision.
+MAX_GRABS = 10
 
 
 def _profile_view(prof: dict) -> dict:
@@ -15,17 +17,20 @@ def _profile_view(prof: dict) -> dict:
         "min_format_score": prof.get("minFormatScore"),
         "cutoff_format_score": prof.get("cutoffFormatScore"),
         "format_scores": [{"name": f.get("name"), "score": f.get("score")}
-                          for f in prof.get("formatItems", [])],
+                          for f in prof.get("formatItems", []) if f.get("score")],
     }
 
 
 def _grabs(history: list[dict]) -> list[dict]:
+    """All grab events, newest first."""
+    grabs = [h for h in history if h.get("eventType") == "grabbed"]
+    grabs.sort(key=lambda h: h.get("date") or "", reverse=True)
     return [
         {"release": h.get("sourceTitle"),
+         "date": h.get("date"),
          "score": h.get("customFormatScore"),
          "formats": [f.get("name") for f in h.get("customFormats", [])]}
-        for h in history
-        if h.get("eventType") == "grabbed"
+        for h in grabs
     ]
 
 
@@ -42,11 +47,13 @@ async def explain_decision(clients: dict[str, BaseClient], title: str) -> dict:
             *(c.item_history(i.get("id"), kind) for i in kept), return_exceptions=True)
         rows = []
         for item, history in zip(kept, histories):
+            grabs = [] if isinstance(history, BaseException) else _grabs(history)
             row = {
                 "instance": c.name,
                 "title": item.get("title"),
                 "profile": _profile_view(profiles.get(item.get("qualityProfileId"), {})),
-                "recent_grabs": [] if isinstance(history, BaseException) else _grabs(history),
+                "recent_grabs": grabs[:MAX_GRABS],
+                "grabs_total": len(grabs),
             }
             if isinstance(history, BaseException):
                 row["history_error"] = str(history)
