@@ -1,3 +1,4 @@
+import asyncio
 from ..clients.base import BaseClient
 from ..models import ARR_TYPES
 
@@ -16,6 +17,13 @@ async def _summary(c: BaseClient) -> dict:
         return {"status": await c.status(), "nodes": list((await c.nodes()).keys())}
     if c.type == "profilarr":
         return {"instances": await c.arr_instances()}
+    if c.type == "jellyfin":
+        info, tasks = await asyncio.gather(c.system_info(), c.scheduled_tasks())
+        return {"version": info.get("Version"),
+                "pending_restart": info.get("HasPendingRestart"),
+                "update_available": info.get("HasUpdateAvailable"),
+                "failed_tasks": [t.get("Name") for t in tasks
+                                 if (t.get("LastExecutionResult") or {}).get("Status") == "Failed"]}
     return {}
 
 async def stack_health(clients: dict[str, BaseClient]) -> list[dict]:
