@@ -14,3 +14,15 @@ def test_401_maps_auth_failed():
 
 def test_other_maps_error():
     assert status_for_exception(ValueError("boom")) == "error"
+
+
+def test_read_timeout_maps_timeout():
+    assert status_for_exception(httpx.ReadTimeout("x")) == "timeout"
+
+
+def test_write_timeout_maps_timeout():
+    assert status_for_exception(httpx.WriteTimeout("x")) == "timeout"
+
+
+def test_pool_timeout_maps_timeout():
+    assert status_for_exception(httpx.PoolTimeout("x")) == "timeout"

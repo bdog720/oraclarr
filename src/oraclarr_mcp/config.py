@@ -3,7 +3,7 @@ import re
 from pathlib import Path
 from typing import Literal
 import yaml
-from pydantic import BaseModel, ValidationError
+from pydantic import BaseModel, Field, ValidationError
 
 INSTANCE_TYPES = {"sonarr", "radarr", "sportarr", "prowlarr", "qbittorrent", "tdarr", "profilarr"}
 _ENV_RE = re.compile(r"\$\{([A-Z0-9_]+)\}")
@@ -16,6 +16,8 @@ class ConfigError(Exception):
 class ServerSettings(BaseModel):
     allow_writes: bool = False
     toolsets: list[str] = ["media", "downloads", "transcode"]
+    tool_budget_seconds: float = Field(default=30, gt=0)
+    max_output_bytes: int = Field(default=200_000, gt=0)
 
 
 class Defaults(BaseModel):
