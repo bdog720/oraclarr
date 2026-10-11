@@ -16,6 +16,10 @@ class ArrClient(BaseClient):
         data = await self.get_json("/api/v3/queue", params={"pageSize": 200})
         return data.get("records", [])
 
+    async def queue_page(self, limit: int) -> tuple[list[dict], int]:
+        data = await self.get_json("/api/v3/queue", params={"pageSize": limit})
+        return data.get("records", []), data.get("totalRecords", 0)
+
     async def history_page(self, limit: int) -> tuple[list[dict], int]:
         """Newest-first history page. include* attach the parent title for projection."""
         data = await self.get_json("/api/v3/history", params={

@@ -57,3 +57,22 @@ def test_log_redaction_covers_child_loggers_and_tracebacks(caplog):
         logging.setLogRecordFactory(previous)
     assert "SONARRKEY123" not in caplog.text
     assert MASK in caplog.text
+
+
+def test_log_redaction_keeps_uvicorn_access_args():
+    import httpx
+    from uvicorn.logging import AccessFormatter
+    previous = install_log_redaction(Redactor(["SONARRKEY123"]))
+    try:
+        rec = logging.getLogger("uvicorn.access").makeRecord(
+            "uvicorn.access", logging.INFO, __file__, 1, '%s - "%s %s HTTP/%s" %d',
+            ("1.2.3.4:5", "GET", "/mcp?api_key=SONARRKEY123", "1.1", 200), None)
+        url_rec = logging.getLogger("httpx").makeRecord(
+            "httpx", logging.INFO, __file__, 1, "HTTP Request: %s %s",
+            ("GET", httpx.URL("http://h/x?api_key=SONARRKEY123")), None)
+    finally:
+        logging.setLogRecordFactory(previous)
+    out = AccessFormatter(fmt="%(message)s", use_colors=False).format(rec)
+    assert "SONARRKEY123" not in out
+    assert '"GET' in out and "200" in out
+    assert "SONARRKEY123" not in url_rec.getMessage()

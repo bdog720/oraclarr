@@ -3,8 +3,6 @@ import inspect
 import time
 from typing import Any
 
-import pytest
-
 from oraclarr_mcp.budget import remaining
 from oraclarr_mcp.call_guard import guarded
 from oraclarr_mcp.redact import Redactor
@@ -47,12 +45,20 @@ async def test_deadline_is_fresh_for_each_call():
     assert left > 0.5
 
 
-async def test_timeout_error_raised_by_the_tool_itself_propagates():
+async def test_timeout_error_raised_by_the_tool_itself_is_a_tool_error():
     async def boom():
         raise TimeoutError("not the backstop")
 
-    with pytest.raises(TimeoutError):
-        await _wrap(boom)()
+    out = await _wrap(boom)()
+    assert out == {"error": "tool_error", "tool": "t", "message": "not the backstop"}
+
+
+async def test_escaped_exception_is_returned_redacted():
+    async def leaky():
+        raise ValueError("bad key SONARRKEY123")
+
+    out = await _wrap(leaky, redactor=Redactor(["SONARRKEY123"]))()
+    assert out == {"error": "tool_error", "tool": "t", "message": "bad key ***"}
 
 
 async def test_output_over_cap_returns_output_too_large():

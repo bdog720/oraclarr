@@ -52,11 +52,20 @@ class Redactor:
         return obj
 
 
+def _scrub_arg(redactor: Redactor, value: Any) -> Any:
+    # Numbers stay numbers so %d placeholders keep working; anything else
+    # (str, httpx.URL, exceptions) is rendered and scrubbed.
+    if value is None or isinstance(value, (bool, int, float)):
+        return value
+    return redactor.scrub(str(value))
+
+
 def install_log_redaction(redactor: Redactor) -> Callable:
     """Scrub every log record at creation. Returns the previous factory.
 
     A filter on the root logger would miss records that propagate from child
-    loggers such as httpx; the record factory sees all of them.
+    loggers such as httpx; the record factory sees all of them. Args keep their
+    shape: uvicorn's AccessFormatter unpacks record.args positionally.
     """
     previous = logging.getLogRecordFactory()
     formatter = logging.Formatter()
@@ -64,8 +73,12 @@ def install_log_redaction(redactor: Redactor) -> Callable:
     def factory(*args, **kwargs):
         record = previous(*args, **kwargs)
         try:
-            record.msg = redactor.scrub(record.getMessage())
-            record.args = ()
+            if isinstance(record.msg, str):
+                record.msg = redactor.scrub(record.msg)
+            if isinstance(record.args, tuple):
+                record.args = tuple(_scrub_arg(redactor, a) for a in record.args)
+            elif isinstance(record.args, dict):
+                record.args = {k: _scrub_arg(redactor, v) for k, v in record.args.items()}
             if record.exc_info:
                 record.exc_text = redactor.scrub(formatter.formatException(record.exc_info))
         except Exception:  # noqa: BLE001 - logging must never raise

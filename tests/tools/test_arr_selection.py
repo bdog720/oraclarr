@@ -17,6 +17,9 @@ class FakeSportarr:
     async def queue(self): return [{"title": "Spurs vs Hawks", "downloadId": "H1",
                                     "trackedDownloadState": "downloading",
                                     "size": 100, "sizeleft": 25}]
+    async def queue_page(self, limit):
+        recs = await self.queue()
+        return recs[:limit], len(recs)
     async def quality_profiles(self): return [{"id": 1, "name": "WEB-1080p"}]
     async def custom_formats(self): return [{"id": 1, "name": "BR-DISK"}]
     async def release_profiles(self): return []

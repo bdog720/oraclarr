@@ -38,13 +38,19 @@ async def explain_decision(clients: dict[str, BaseClient], title: str) -> dict:
             return bounded([], MAX_ITEMS)
         kept = lib[:MAX_ITEMS]
         profiles = {p["id"]: p for p in await c.quality_profiles()}
-        histories = await asyncio.gather(*(c.item_history(i.get("id"), kind) for i in kept))
-        rows = [{
-            "instance": c.name,
-            "title": item.get("title"),
-            "profile": _profile_view(profiles.get(item.get("qualityProfileId"), {})),
-            "recent_grabs": _grabs(history),
-        } for item, history in zip(kept, histories)]
+        histories = await asyncio.gather(
+            *(c.item_history(i.get("id"), kind) for i in kept), return_exceptions=True)
+        rows = []
+        for item, history in zip(kept, histories):
+            row = {
+                "instance": c.name,
+                "title": item.get("title"),
+                "profile": _profile_view(profiles.get(item.get("qualityProfileId"), {})),
+                "recent_grabs": [] if isinstance(history, BaseException) else _grabs(history),
+            }
+            if isinstance(history, BaseException):
+                row["history_error"] = str(history)
+            rows.append(row)
         return bounded(rows, MAX_ITEMS, total=len(lib))
 
     arr = arr_clients(clients, None)

@@ -65,11 +65,27 @@ class BrokenQueue(FakeArr):
         raise RuntimeError("queue down")
 
 
+class BrokenLookup(FakeArr):
+    name = "broken"
+    async def lookup_library(self, term, media):
+        raise RuntimeError("lookup down")
+
+
 async def test_diagnose_reports_failing_instance_and_keeps_peers():
-    res = await diagnose({"sonarr": FakeArr(), "broken": BrokenQueue()}, title="Show")
+    res = await diagnose({"sonarr": FakeArr(), "broken": BrokenLookup()}, title="Show")
     assert [m["instance"] for m in res["matches"]] == ["sonarr"]
     assert res["errors"][0]["instance"] == "broken"
     assert res["errors"][0]["status"] == "error"
+
+
+async def test_diagnose_queue_failure_keeps_match_with_unknown_queue_state():
+    res = await diagnose({"broken": BrokenQueue()}, title="Show")
+    m = res["matches"][0]
+    assert m["in_library"] is True
+    assert m["in_queue"] is None
+    assert m["queue_error"] == "queue down"
+    assert m["wanted"] is True
+    assert res["errors"] == []
 
 
 class ManyArr(FakeArr):
