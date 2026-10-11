@@ -136,3 +136,19 @@ def test_transcode_and_upcoming_expose_limits():
     mcp = build_server(cfg, clients={})
     assert _params(mcp, "get_transcodes")["limit"]["default"] == 50
     assert _params(mcp, "get_upcoming")["limit"]["default"] == 100
+
+
+BOUNDED_TOOLS = {"get_queues", "diagnose", "explain_decision", "get_history", "get_wanted",
+                 "search_media", "get_upcoming", "get_transcodes"}
+
+
+def test_every_tool_description_says_when_to_use_it_instead_of_ssh():
+    cfg = Config(server=ServerSettings(toolsets=["media", "downloads", "transcode"]),
+                 defaults=Defaults(),
+                 instances={"sonarr": Instance(type="sonarr", url="http://h:8989", api_key="K")})
+    tools = build_server(cfg, clients={})._tool_manager._tools
+    assert set(tools) == {s.name for s in TOOL_SPECS}
+    for name, tool in tools.items():
+        assert "instead of" in tool.description and "SSH" in tool.description, name
+        if name in BOUNDED_TOOLS:
+            assert "truncated" in tool.description, name
