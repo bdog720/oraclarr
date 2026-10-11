@@ -94,3 +94,38 @@ async def test_max_upcoming_fits_under_cap():
         return await upcoming.get_upcoming(clients, None, 7, limit)
 
     _assert_full_and_ok(await _run(tool), upcoming.MAX_LIMIT)
+
+
+from oraclarr_mcp.tools import library  # noqa: E402
+
+
+class FakeJf:
+    type = "jellyfin"
+
+    def __init__(self, name, item):
+        self.name, self.item = name, item
+
+    async def search_items(self, term, limit): return [self.item] * limit, 10**6
+    async def recent_items(self, limit): return [self.item] * limit, 10**6
+
+
+def _jf(item):
+    return {f"jellyfin{i}": FakeJf(f"jellyfin{i}", item) for i in range(2)}
+
+
+async def test_max_library_search_and_recent_fit_under_cap():
+    # Live search rows are ~250 B; pad to 600 B for long paths, two Jellyfin servers.
+    item = _padded(library.search_row, {
+        "Name": "N", "Type": "Series", "ProductionYear": 2018, "Path": "/tv/N",
+        "DateCreated": "2026-01-01T00:00:00Z",
+        "ProviderIds": {"Tvdb": "1", "Tmdb": "2", "Imdb": "tt3"}}, "Path", 600)
+    clients = _jf(item)
+
+    async def search(limit):
+        return await library.get_library(clients, None, "n", limit)
+
+    async def recent(limit):
+        return await library.get_library(clients, "recent", None, limit)
+
+    for tool in (search, recent):
+        _assert_full_and_ok(await _run(tool), library.MAX_LIMIT)
