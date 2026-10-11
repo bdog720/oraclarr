@@ -106,3 +106,15 @@ async def test_service_filter_selects_one_instance():
                              service="radarr")
     assert len(res) == 1
     assert res[0]["instance"] == "radarr"
+
+
+class ManySportarr(FakeSportarr):
+    async def calendar(self, start, end):
+        rec = (await super().calendar(start, end))[0]
+        return [rec] * 5
+
+
+async def test_get_upcoming_bounds_per_instance():
+    row = (await get_upcoming({"sportarr": ManySportarr()}, limit=2))[0]
+    assert len(row["data"]) == 2
+    assert row["total"] == 5 and row["truncated"] is True

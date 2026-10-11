@@ -1,7 +1,7 @@
 from datetime import date, timedelta
 from ..clients.base import BaseClient
 from ._arr import arr_clients
-from ._util import fan_out
+from ._util import Bounded, bounded, clamp, fan_out
 
 MIN_DAYS = 1
 MAX_DAYS = 90
@@ -37,15 +37,19 @@ def _normalise(rec: dict, start: str, end: str) -> dict:
     }
 
 
+MAX_LIMIT = 500
+
+
 async def get_upcoming(clients: dict[str, BaseClient], service: str | None = None,
-                       days: int = 7) -> list[dict]:
+                       days: int = 7, limit: int = 100) -> list[dict]:
     days = max(MIN_DAYS, min(MAX_DAYS, days))
+    limit = clamp(limit, MAX_LIMIT)
     start = date.today()
     end = start + timedelta(days=days)
 
-    async def collect(c: BaseClient) -> list[dict]:
+    async def collect(c: BaseClient) -> Bounded:
         lo, hi = start.isoformat(), end.isoformat()
         records = await c.calendar(lo, hi)
-        return [_normalise(r, lo, hi) for r in records]
+        return bounded([_normalise(r, lo, hi) for r in records], limit)
 
     return await fan_out(arr_clients(clients, service), collect)
