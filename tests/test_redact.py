@@ -76,3 +76,9 @@ def test_log_redaction_keeps_uvicorn_access_args():
     assert "SONARRKEY123" not in out
     assert '"GET' in out and "200" in out
     assert "SONARRKEY123" not in url_rec.getMessage()
+
+
+def test_scrub_masks_mediabrowser_token_header():
+    out = Redactor([]).scrub('Authorization: MediaBrowser Token="JFKEY999", Client="x"')
+    assert "JFKEY999" not in out
+    assert 'MediaBrowser Token="***"' in out
