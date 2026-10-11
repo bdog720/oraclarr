@@ -77,13 +77,13 @@ def build_server(
         """Recent grab/import/failure history for an arr service."""
         return await get_history(clients, service, limit)
 
-    async def _get_wanted(service: str | None = None) -> list[dict]:
+    async def _get_wanted(service: str | None = None, limit: int = 50) -> list[dict]:
         """Missing and cutoff-unmet items for an arr service."""
-        return await get_wanted(clients, service)
+        return await get_wanted(clients, service, limit)
 
-    async def _search_media(term: str) -> list[dict]:
+    async def _search_media(term: str, limit: int = 20) -> list[dict]:
         """Find a title in the existing arr library and report its status."""
-        return await search_media(clients, term)
+        return await search_media(clients, term, limit)
 
     async def _get_indexers() -> list[dict]:
         """Prowlarr indexer health and stats."""
