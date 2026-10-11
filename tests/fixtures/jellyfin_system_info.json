@@ -1,0 +1,112 @@
+{
+  "OperatingSystemDisplayName": "",
+  "HasPendingRestart": true,
+  "IsShuttingDown": false,
+  "SupportsLibraryMonitor": true,
+  "WebSocketPortNumber": 8096,
+  "CompletedInstallations": [
+    {
+      "Guid": "00000000000000000000000000000023",
+      "Name": "Example Plugin",
+      "Version": "192.0.2.10",
+      "Changelog": "- See the full changelog at [GitHub](https://github.com/example-plugin/example-plugin/releases/tag/12.0/v12.0.5.0)\n",
+      "SourceUrl": "https://github.com/example-plugin/example-plugin/releases/download/12.0/v12.0.5.0/example-plugin-v12.0.5.0.zip",
+      "Checksum": "00000000000000000000000000000024",
+      "PackageInfo": {
+        "name": "Example Plugin",
+        "description": "An example plugin.",
+        "overview": "An example plugin",
+        "owner": "Example Author",
+        "category": "MoviesAndShows",
+        "guid": "00000000000000000000000000000023",
+        "versions": [
+          {
+            "version": "192.0.2.10",
+            "VersionNumber": "192.0.2.10",
+            "changelog": "- See the full changelog at [GitHub](https://github.com/example-plugin/example-plugin/releases/tag/12.0/v12.0.5.0)\n",
+            "targetAbi": "192.0.2.10",
+            "sourceUrl": "https://github.com/example-plugin/example-plugin/releases/download/12.0/v12.0.5.0/example-plugin-v12.0.5.0.zip",
+            "checksum": "00000000000000000000000000000024",
+            "timestamp": "2026-10-09T19:44:43Z",
+            "repositoryName": "Example Plugin",
+            "repositoryUrl": "https://plugins.example.com/manifest.json"
+          },
+          {
+            "version": "192.0.2.10",
+            "VersionNumber": "192.0.2.10",
+            "changelog": "- See the full changelog at [GitHub](https://github.com/example-plugin/example-plugin/releases/tag/12.0/v12.0.4.0)\n",
+            "targetAbi": "192.0.2.10",
+            "sourceUrl": "https://github.com/example-plugin/example-plugin/releases/download/12.0/v12.0.4.0/example-plugin-v12.0.4.0.zip",
+            "checksum": "00000000000000000000000000000025",
+            "timestamp": "2026-09-11T12:15:53Z",
+            "repositoryName": "Example Plugin",
+            "repositoryUrl": "https://plugins.example.com/manifest.json"
+          },
+          {
+            "version": "192.0.2.10",
+            "VersionNumber": "192.0.2.10",
+            "changelog": "- See the full changelog at [GitHub](https://github.com/example-plugin/example-plugin/releases/tag/12.0/v12.0.3.0)\n",
+            "targetAbi": "192.0.2.10",
+            "sourceUrl": "https://github.com/example-plugin/example-plugin/releases/download/12.0/v12.0.3.0/example-plugin-v12.0.3.0.zip",
+            "checksum": "00000000000000000000000000000026",
+            "timestamp": "2026-09-09T17:15:42Z",
+            "repositoryName": "Example Plugin",
+            "repositoryUrl": "https://plugins.example.com/manifest.json"
+          },
+          {
+            "version": "192.0.2.10",
+            "VersionNumber": "192.0.2.10",
+            "changelog": "- See the full changelog at [GitHub](https://github.com/example-plugin/example-plugin/releases/tag/12.0/v12.0.2.0)\n",
+            "targetAbi": "192.0.2.10",
+            "sourceUrl": "https://github.com/example-plugin/example-plugin/releases/download/12.0/v12.0.2.0/example-plugin-v12.0.2.0.zip",
+            "checksum": "00000000000000000000000000000027",
+            "timestamp": "2026-08-30T12:37:57Z",
+            "repositoryName": "Example Plugin",
+            "repositoryUrl": "https://plugins.example.com/manifest.json"
+          },
+          {
+            "version": "192.0.2.10",
+            "VersionNumber": "192.0.2.10",
+            "changelog": "- See the full changelog at [GitHub](https://github.com/example-plugin/example-plugin/releases/tag/12.0/v1.12.0.1)\n",
+            "targetAbi": "192.0.2.10",
+            "sourceUrl": "https://github.com/example-plugin/example-plugin/releases/download/12.0/v1.12.0.1/example-plugin-v1.12.0.1.zip",
+            "checksum": "00000000000000000000000000000028",
+            "timestamp": "2026-07-04T17:47:17Z",
+            "repositoryName": "Example Plugin",
+            "repositoryUrl": "https://plugins.example.com/manifest.json"
+          }
+        ],
+        "imageUrl": "https://cdn.jsdelivr.net/gh/example-plugin/manifest@a434e00edba70493794e25917cc8d3326d5a85c6/images/example-plugin/logo.png"
+      }
+    }
+  ],
+  "CanSelfRestart": true,
+  "CanLaunchWebBrowser": false,
+  "ProgramDataPath": "/config",
+  "WebPath": "/jellyfin/jellyfin-web",
+  "ItemsByNamePath": "/config/metadata",
+  "CachePath": "/cache",
+  "LogPath": "/config/log",
+  "InternalMetadataPath": "/config/metadata",
+  "TranscodingTempPath": "/cache/transcodes",
+  "CastReceiverApplications": [
+    {
+      "Id": "F007D354",
+      "Name": "Stable"
+    },
+    {
+      "Id": "6F511C87",
+      "Name": "Unstable"
+    }
+  ],
+  "HasUpdateAvailable": false,
+  "EncoderLocation": "System",
+  "SystemArchitecture": "X64",
+  "LocalAddress": "http://host:8096",
+  "ServerName": "ExampleServer",
+  "Version": "12.2.0",
+  "ProductName": "Jellyfin Server",
+  "OperatingSystem": "",
+  "Id": "server-id",
+  "StartupWizardCompleted": true
+}

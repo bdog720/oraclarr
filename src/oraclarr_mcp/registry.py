@@ -1,11 +1,12 @@
 from .config import Config, Instance
 from .models import ARR_TYPES
-from .clients.base import BaseClient, ApiKeyHeaderAuth, NoAuth
+from .clients.base import BaseClient, ApiKeyHeaderAuth, MediaBrowserTokenAuth, NoAuth
 from .clients.arr import ArrClient
 from .clients.prowlarr import ProwlarrClient
 from .clients.qbittorrent import QbitClient, QbitCookieAuth
 from .clients.tdarr import TdarrClient
 from .clients.profilarr import ProfilarrClient
+from .clients.jellyfin import JellyfinClient
 
 def _make(name: str, inst: Instance, timeout: int) -> BaseClient:
     t = inst.type
@@ -19,6 +20,9 @@ def _make(name: str, inst: Instance, timeout: int) -> BaseClient:
         return TdarrClient(name, t, inst.url, NoAuth(), timeout)
     if t == "profilarr":
         return ProfilarrClient(name, t, inst.url, ApiKeyHeaderAuth(inst.api_key or ""), timeout)
+    if t == "jellyfin":
+        return JellyfinClient(name, t, inst.url, MediaBrowserTokenAuth(inst.api_key or ""),
+                              timeout)
     raise ValueError(f"unknown instance type {t}")
 
 def build_clients(cfg: Config) -> dict[str, BaseClient]:

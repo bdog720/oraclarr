@@ -1,6 +1,6 @@
 server:
   allow_writes: false
-  toolsets: [media, downloads, transcode]
+  toolsets: [media, downloads, transcode, library]
   tool_budget_seconds: 30     # per tool call, shared across all instances it queries
   max_output_bytes: 200000    # safety net; a hit means a tool returned too much
 defaults:
@@ -14,3 +14,4 @@ instances:
   tdarr:        { type: tdarr,        url: http://192.168.1.10:8265 }
   profilarr:    { type: profilarr,    url: http://192.168.1.10:6868, api_key: ${PROFILARR_KEY} }
   sportarr:     { type: sportarr,     url: http://192.168.1.10:1867, api_key: ${SPORTARR_KEY} }
+  jellyfin:     { type: jellyfin,     url: http://192.168.1.10:8096, api_key: ${JELLYFIN_KEY} }

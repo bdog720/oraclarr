@@ -16,6 +16,7 @@ _PATTERNS = (
     re.compile(r"(?i)((?:api_?key|token)=)[^&\s\"']+"),
     re.compile(r"(?i)((?:x-api-key|x-emby-token):\s*)\S+"),
     re.compile(r"(?i)(authorization:\s*bearer\s+)\S+"),
+    re.compile(r'(?i)(mediabrowser\s+token=")[^"]+'),
 )
 
 

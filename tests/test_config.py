@@ -94,3 +94,16 @@ def test_zero_budget_is_rejected(tmp_path):
     )
     with pytest.raises(ConfigError):
         load_config(p)
+
+
+def test_default_toolsets_include_library():
+    assert ServerSettings().toolsets == ["media", "downloads", "transcode", "library"]
+
+
+def test_jellyfin_type_is_accepted(tmp_path, monkeypatch):
+    monkeypatch.setenv("JELLYFIN_KEY", "jfkey123")
+    p = tmp_path / "config.yaml"
+    p.write_text("instances:\n"
+                 "  jellyfin: { type: jellyfin, url: http://h:8096, api_key: ${JELLYFIN_KEY} }\n")
+    cfg = load_config(p)
+    assert cfg.instances["jellyfin"].type == "jellyfin"

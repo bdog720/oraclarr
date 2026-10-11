@@ -1,0 +1,285 @@
+{
+  "Items": [
+    {
+      "Name": "Episode Five",
+      "ServerId": "server-id",
+      "Id": "00000000000000000000000000000001",
+      "DateCreated": "2026-10-11T21:36:38.831636Z",
+      "HasSubtitles": true,
+      "Container": "mkv",
+      "PremiereDate": "2026-09-28T00:00:00.0000000Z",
+      "ChannelId": null,
+      "CommunityRating": 6.5,
+      "RunTimeTicks": 14200520000,
+      "ProductionYear": 2026,
+      "IndexNumber": 14,
+      "ParentIndexNumber": 3,
+      "IsFolder": false,
+      "Type": "Episode",
+      "ParentLogoItemId": "00000000000000000000000000000002",
+      "ParentBackdropItemId": "00000000000000000000000000000002",
+      "ParentBackdropImageTags": [
+        "00000000000000000000000000000003"
+      ],
+      "SeriesName": "Invented Anime",
+      "SeriesId": "00000000000000000000000000000002",
+      "SeasonId": "00000000000000000000000000000004",
+      "SeriesPrimaryImageTag": "00000000000000000000000000000005",
+      "SeasonName": "Season 3",
+      "VideoType": "VideoFile",
+      "ImageTags": {
+        "Primary": "00000000000000000000000000000006"
+      },
+      "BackdropImageTags": [],
+      "ParentLogoImageTag": "00000000000000000000000000000007",
+      "ImageBlurHashes": {
+        "Primary": {
+          "00000000000000000000000000000006": "LEHV6nWB2yk8pyo0adR*.7kCMdnj",
+          "00000000000000000000000000000005": "LEHV6nWB2yk8pyo0adR*.7kCMdnj",
+          "00000000000000000000000000000008": "LEHV6nWB2yk8pyo0adR*.7kCMdnj"
+        },
+        "Logo": {
+          "00000000000000000000000000000007": "LEHV6nWB2yk8pyo0adR*.7kCMdnj"
+        },
+        "Thumb": {
+          "00000000000000000000000000000009": "LEHV6nWB2yk8pyo0adR*.7kCMdnj"
+        },
+        "Backdrop": {
+          "00000000000000000000000000000003": "LEHV6nWB2yk8pyo0adR*.7kCMdnj"
+        }
+      },
+      "ParentThumbItemId": "00000000000000000000000000000002",
+      "ParentThumbImageTag": "00000000000000000000000000000009",
+      "ParentPrimaryImageItemId": "00000000000000000000000000000004",
+      "ParentPrimaryImageTag": "00000000000000000000000000000008",
+      "LocationType": "FileSystem",
+      "MediaType": "Video"
+    },
+    {
+      "Name": "Episode One",
+      "ServerId": "server-id",
+      "Id": "0000000000000000000000000000000a",
+      "DateCreated": "2026-10-11T12:53:09.5705362Z",
+      "HasSubtitles": true,
+      "Container": "mkv",
+      "PremiereDate": "2011-10-16T00:00:00.0000000Z",
+      "ChannelId": null,
+      "CommunityRating": 8.355,
+      "RunTimeTicks": 37774080000,
+      "ProductionYear": 2011,
+      "IndexNumber": 1,
+      "ParentIndexNumber": 2,
+      "IsFolder": false,
+      "Type": "Episode",
+      "ParentLogoItemId": "0000000000000000000000000000000b",
+      "ParentBackdropItemId": "0000000000000000000000000000000b",
+      "ParentBackdropImageTags": [
+        "0000000000000000000000000000000c"
+      ],
+      "SeriesName": "Invented Drama",
+      "SeriesId": "0000000000000000000000000000000b",
+      "SeasonId": "0000000000000000000000000000000d",
+      "SeriesPrimaryImageTag": "0000000000000000000000000000000e",
+      "SeasonName": "Season 2",
+      "VideoType": "VideoFile",
+      "ImageTags": {
+        "Primary": "0000000000000000000000000000000f"
+      },
+      "BackdropImageTags": [],
+      "ParentLogoImageTag": "00000000000000000000000000000010",
+      "ImageBlurHashes": {
+        "Primary": {
+          "0000000000000000000000000000000f": "LEHV6nWB2yk8pyo0adR*.7kCMdnj",
+          "0000000000000000000000000000000e": "LEHV6nWB2yk8pyo0adR*.7kCMdnj",
+          "00000000000000000000000000000011": "LEHV6nWB2yk8pyo0adR*.7kCMdnj"
+        },
+        "Logo": {
+          "00000000000000000000000000000010": "LEHV6nWB2yk8pyo0adR*.7kCMdnj"
+        },
+        "Thumb": {
+          "00000000000000000000000000000012": "LEHV6nWB2yk8pyo0adR*.7kCMdnj"
+        },
+        "Backdrop": {
+          "0000000000000000000000000000000c": "LEHV6nWB2yk8pyo0adR*.7kCMdnj"
+        }
+      },
+      "ParentThumbItemId": "0000000000000000000000000000000b",
+      "ParentThumbImageTag": "00000000000000000000000000000012",
+      "ParentPrimaryImageItemId": "0000000000000000000000000000000d",
+      "ParentPrimaryImageTag": "00000000000000000000000000000011",
+      "LocationType": "FileSystem",
+      "MediaType": "Video",
+      "OriginalLanguage": "en"
+    },
+    {
+      "Name": "Episode Two",
+      "ServerId": "server-id",
+      "Id": "00000000000000000000000000000013",
+      "DateCreated": "2026-10-11T12:28:37.0661144Z",
+      "HasSubtitles": true,
+      "Container": "mkv",
+      "PremiereDate": "2011-10-30T00:00:00.0000000Z",
+      "ChannelId": null,
+      "CommunityRating": 8.524,
+      "RunTimeTicks": 25982080000,
+      "ProductionYear": 2011,
+      "IndexNumber": 3,
+      "ParentIndexNumber": 2,
+      "IsFolder": false,
+      "Type": "Episode",
+      "ParentLogoItemId": "0000000000000000000000000000000b",
+      "ParentBackdropItemId": "0000000000000000000000000000000b",
+      "ParentBackdropImageTags": [
+        "0000000000000000000000000000000c"
+      ],
+      "SeriesName": "Invented Drama",
+      "SeriesId": "0000000000000000000000000000000b",
+      "SeasonId": "0000000000000000000000000000000d",
+      "SeriesPrimaryImageTag": "0000000000000000000000000000000e",
+      "SeasonName": "Season 2",
+      "VideoType": "VideoFile",
+      "ImageTags": {
+        "Primary": "00000000000000000000000000000014"
+      },
+      "BackdropImageTags": [],
+      "ParentLogoImageTag": "00000000000000000000000000000010",
+      "ImageBlurHashes": {
+        "Primary": {
+          "00000000000000000000000000000014": "LEHV6nWB2yk8pyo0adR*.7kCMdnj",
+          "0000000000000000000000000000000e": "LEHV6nWB2yk8pyo0adR*.7kCMdnj",
+          "00000000000000000000000000000011": "LEHV6nWB2yk8pyo0adR*.7kCMdnj"
+        },
+        "Logo": {
+          "00000000000000000000000000000010": "LEHV6nWB2yk8pyo0adR*.7kCMdnj"
+        },
+        "Thumb": {
+          "00000000000000000000000000000012": "LEHV6nWB2yk8pyo0adR*.7kCMdnj"
+        },
+        "Backdrop": {
+          "0000000000000000000000000000000c": "LEHV6nWB2yk8pyo0adR*.7kCMdnj"
+        }
+      },
+      "ParentThumbItemId": "0000000000000000000000000000000b",
+      "ParentThumbImageTag": "00000000000000000000000000000012",
+      "ParentPrimaryImageItemId": "0000000000000000000000000000000d",
+      "ParentPrimaryImageTag": "00000000000000000000000000000011",
+      "LocationType": "FileSystem",
+      "MediaType": "Video",
+      "OriginalLanguage": "en"
+    },
+    {
+      "Name": "Episode Three",
+      "ServerId": "server-id",
+      "Id": "00000000000000000000000000000015",
+      "DateCreated": "2026-10-11T11:46:33.6128734Z",
+      "HasSubtitles": true,
+      "Container": "mkv",
+      "PremiereDate": "2011-11-06T00:00:00.0000000Z",
+      "ChannelId": null,
+      "CommunityRating": 8.137,
+      "RunTimeTicks": 26044800000,
+      "ProductionYear": 2011,
+      "IndexNumber": 4,
+      "ParentIndexNumber": 2,
+      "IsFolder": false,
+      "Type": "Episode",
+      "ParentLogoItemId": "0000000000000000000000000000000b",
+      "ParentBackdropItemId": "0000000000000000000000000000000b",
+      "ParentBackdropImageTags": [
+        "0000000000000000000000000000000c"
+      ],
+      "SeriesName": "Invented Drama",
+      "SeriesId": "0000000000000000000000000000000b",
+      "SeasonId": "0000000000000000000000000000000d",
+      "SeriesPrimaryImageTag": "0000000000000000000000000000000e",
+      "SeasonName": "Season 2",
+      "VideoType": "VideoFile",
+      "ImageTags": {
+        "Primary": "00000000000000000000000000000016"
+      },
+      "BackdropImageTags": [],
+      "ParentLogoImageTag": "00000000000000000000000000000010",
+      "ImageBlurHashes": {
+        "Primary": {
+          "00000000000000000000000000000016": "LEHV6nWB2yk8pyo0adR*.7kCMdnj",
+          "0000000000000000000000000000000e": "LEHV6nWB2yk8pyo0adR*.7kCMdnj",
+          "00000000000000000000000000000011": "LEHV6nWB2yk8pyo0adR*.7kCMdnj"
+        },
+        "Logo": {
+          "00000000000000000000000000000010": "LEHV6nWB2yk8pyo0adR*.7kCMdnj"
+        },
+        "Thumb": {
+          "00000000000000000000000000000012": "LEHV6nWB2yk8pyo0adR*.7kCMdnj"
+        },
+        "Backdrop": {
+          "0000000000000000000000000000000c": "LEHV6nWB2yk8pyo0adR*.7kCMdnj"
+        }
+      },
+      "ParentThumbItemId": "0000000000000000000000000000000b",
+      "ParentThumbImageTag": "00000000000000000000000000000012",
+      "ParentPrimaryImageItemId": "0000000000000000000000000000000d",
+      "ParentPrimaryImageTag": "00000000000000000000000000000011",
+      "LocationType": "FileSystem",
+      "MediaType": "Video",
+      "OriginalLanguage": "en"
+    },
+    {
+      "Name": "Episode Four",
+      "ServerId": "server-id",
+      "Id": "00000000000000000000000000000017",
+      "DateCreated": "2026-10-11T11:44:57.5502298Z",
+      "HasSubtitles": true,
+      "Container": "mkv",
+      "PremiereDate": "2012-02-26T00:00:00.0000000Z",
+      "ChannelId": null,
+      "CommunityRating": 8.435,
+      "RunTimeTicks": 25657600000,
+      "ProductionYear": 2012,
+      "IndexNumber": 10,
+      "ParentIndexNumber": 2,
+      "IsFolder": false,
+      "Type": "Episode",
+      "ParentLogoItemId": "0000000000000000000000000000000b",
+      "ParentBackdropItemId": "0000000000000000000000000000000b",
+      "ParentBackdropImageTags": [
+        "0000000000000000000000000000000c"
+      ],
+      "SeriesName": "Invented Drama",
+      "SeriesId": "0000000000000000000000000000000b",
+      "SeasonId": "0000000000000000000000000000000d",
+      "SeriesPrimaryImageTag": "0000000000000000000000000000000e",
+      "SeasonName": "Season 2",
+      "VideoType": "VideoFile",
+      "ImageTags": {
+        "Primary": "00000000000000000000000000000018"
+      },
+      "BackdropImageTags": [],
+      "ParentLogoImageTag": "00000000000000000000000000000010",
+      "ImageBlurHashes": {
+        "Primary": {
+          "00000000000000000000000000000018": "LEHV6nWB2yk8pyo0adR*.7kCMdnj",
+          "0000000000000000000000000000000e": "LEHV6nWB2yk8pyo0adR*.7kCMdnj",
+          "00000000000000000000000000000011": "LEHV6nWB2yk8pyo0adR*.7kCMdnj"
+        },
+        "Logo": {
+          "00000000000000000000000000000010": "LEHV6nWB2yk8pyo0adR*.7kCMdnj"
+        },
+        "Thumb": {
+          "00000000000000000000000000000012": "LEHV6nWB2yk8pyo0adR*.7kCMdnj"
+        },
+        "Backdrop": {
+          "0000000000000000000000000000000c": "LEHV6nWB2yk8pyo0adR*.7kCMdnj"
+        }
+      },
+      "ParentThumbItemId": "0000000000000000000000000000000b",
+      "ParentThumbImageTag": "00000000000000000000000000000012",
+      "ParentPrimaryImageItemId": "0000000000000000000000000000000d",
+      "ParentPrimaryImageTag": "00000000000000000000000000000011",
+      "LocationType": "FileSystem",
+      "MediaType": "Video",
+      "OriginalLanguage": "en"
+    }
+  ],
+  "TotalRecordCount": 4503,
+  "StartIndex": 0
+}

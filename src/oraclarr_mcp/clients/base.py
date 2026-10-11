@@ -26,6 +26,14 @@ class BearerAuth:
     async def before_request(self, client): pass
     async def on_auth_failure(self, client): return False
 
+class MediaBrowserTokenAuth:
+    """Jellyfin 12.x: X-Emby-Token is rejected (401); only this header works."""
+    def __init__(self, key: str): self._key = key
+    def headers(self) -> dict[str, str]:
+        return {"Authorization": f'MediaBrowser Token="{self._key}"'}
+    async def before_request(self, client): pass
+    async def on_auth_failure(self, client): return False
+
 class BaseClient:
     def __init__(self, name: str, type: str, base_url: str, auth: AuthStrategy, timeout: int):
         self.name = name

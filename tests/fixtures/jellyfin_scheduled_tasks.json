@@ -1,0 +1,78 @@
+[
+  {
+    "Name": "Audio Normalization",
+    "State": "Idle",
+    "Id": "0000000000000000000000000000001e",
+    "LastExecutionResult": {
+      "StartTimeUtc": "2026-10-11T18:50:09.9000885Z",
+      "EndTimeUtc": "2026-10-11T18:50:10.1194338Z",
+      "Status": "Completed",
+      "Name": "Audio Normalization",
+      "Key": "AudioNormalization",
+      "Id": "0000000000000000000000000000001e"
+    },
+    "Triggers": [
+      {
+        "Type": "IntervalTrigger",
+        "IntervalTicks": 864000000000
+      }
+    ],
+    "Description": "Scans files for audio normalization data.",
+    "Category": "Library",
+    "IsHidden": false,
+    "Key": "AudioNormalization"
+  },
+  {
+    "Name": "Check for metadata updates.",
+    "State": "Idle",
+    "Id": "0000000000000000000000000000001f",
+    "Triggers": [],
+    "Description": "Checks TheTvdb's API Update endpoint for updates periodically and updates metadata accordingly.",
+    "Category": "TheTVDB",
+    "IsHidden": false,
+    "Key": "CheckForMetadataUpdatesTask"
+  },
+  {
+    "Name": "Clean Activity Log",
+    "State": "Idle",
+    "Id": "00000000000000000000000000000020",
+    "Triggers": [],
+    "Description": "Deletes activity log entries older than the configured age.",
+    "Category": "Maintenance",
+    "IsHidden": false,
+    "Key": "CleanActivityLog"
+  },
+  {
+    "Name": "Clean Cache Directory",
+    "State": "Idle",
+    "Id": "00000000000000000000000000000021",
+    "LastExecutionResult": {
+      "StartTimeUtc": "2026-10-11T18:50:10.0716141Z",
+      "EndTimeUtc": "2026-10-11T18:50:10.372262Z",
+      "Status": "Completed",
+      "Name": "Clean Cache Directory",
+      "Key": "DeleteCacheFiles",
+      "Id": "00000000000000000000000000000021"
+    },
+    "Triggers": [
+      {
+        "Type": "IntervalTrigger",
+        "IntervalTicks": 864000000000
+      }
+    ],
+    "Description": "Deletes cache files no longer needed by the system.",
+    "Category": "Maintenance",
+    "IsHidden": false,
+    "Key": "DeleteCacheFiles"
+  },
+  {
+    "Name": "Clean Example Plugin Cache",
+    "State": "Idle",
+    "Id": "00000000000000000000000000000022",
+    "Triggers": [],
+    "Description": "Clear Example Plugin cache of unused rows.",
+    "Category": "Example Plugin",
+    "IsHidden": false,
+    "Key": "CPBIntroSkipperCleanCache"
+  }
+]

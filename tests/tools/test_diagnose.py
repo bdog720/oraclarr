@@ -97,3 +97,110 @@ async def test_diagnose_caps_matches_per_instance():
     res = await diagnose({"sonarr": ManyArr()}, title="Show")
     assert len(res["matches"]) == 20
     assert res["truncated"] is True
+
+
+class FakeJf:
+    type = "jellyfin"
+
+    def __init__(self, name="jellyfin", items=None, fail=False):
+        self.name = name
+        self._items = items if items is not None else []
+        self._fail = fail
+        self.searched = []
+
+    async def search_items(self, term, limit):
+        self.searched.append((term, limit))
+        if self._fail:
+            raise RuntimeError("jellyfin down")
+        return self._items, len(self._items)
+
+
+class IdArr(FakeArr):
+    async def lookup_library(self, term, media):
+        return [{"title": "Show", "id": 7, "tvdbId": 111, "tmdbId": 0, "imdbId": None}]
+
+
+async def test_diagnose_marks_in_jellyfin_by_tvdb():
+    jf = FakeJf(items=[{"Name": "Show", "ProviderIds": {"Tvdb": "111"}}])
+    res = await diagnose({"sonarr": IdArr(), "jellyfin": jf}, title="Show")
+    assert res["matches"][0]["in_jellyfin"] is True
+    assert jf.searched == [("Show", 50)]
+
+
+async def test_diagnose_marks_in_jellyfin_by_tmdb_and_imdb():
+    class MovieArr(FakeArr):
+        name = "radarr"; type = "radarr"
+        async def lookup_library(self, term, media):
+            return [{"title": "Film", "id": 3, "tmdbId": 555, "imdbId": "tt9"}]
+    by_tmdb = FakeJf(items=[{"Name": "Film", "ProviderIds": {"Tmdb": "555"}}])
+    by_imdb = FakeJf(items=[{"Name": "Film", "ProviderIds": {"Imdb": "tt9"}}])
+    for jf in (by_tmdb, by_imdb):
+        res = await diagnose({"radarr": MovieArr(), "jellyfin": jf}, title="Film")
+        assert res["matches"][0]["in_jellyfin"] is True
+
+
+async def test_diagnose_no_id_match_is_false():
+    jf = FakeJf(items=[{"Name": "Show", "ProviderIds": {"Tvdb": "999"}}])
+    res = await diagnose({"sonarr": IdArr(), "jellyfin": jf}, title="Show")
+    assert res["matches"][0]["in_jellyfin"] is False
+
+
+async def test_diagnose_ignores_zero_ids():
+    jf = FakeJf(items=[{"Name": "Show", "ProviderIds": {"Tmdb": "0"}}])
+    res = await diagnose({"sonarr": IdArr(), "jellyfin": jf}, title="Show")
+    assert res["matches"][0]["in_jellyfin"] is False
+
+
+async def test_diagnose_matches_provider_ids_case_insensitively():
+    jf = FakeJf(items=[{"Name": "Show", "ProviderIds": {"tvdb": "111"}}])
+    res = await diagnose({"sonarr": IdArr(), "jellyfin": jf}, title="Show")
+    assert res["matches"][0]["in_jellyfin"] is True
+
+
+async def test_diagnose_jellyfin_down_gives_null_and_error():
+    res = await diagnose({"sonarr": IdArr(), "jellyfin": FakeJf(fail=True)}, title="Show")
+    assert res["matches"][0]["in_jellyfin"] is None
+    assert res["errors"][0]["instance"] == "jellyfin"
+    assert res["matches"][0]["in_library"] is True
+
+
+async def test_diagnose_one_jellyfin_down_uses_the_other():
+    up = FakeJf(name="jf-up", items=[{"Name": "Show", "ProviderIds": {"Tvdb": "111"}}])
+    down = FakeJf(name="jf-down", fail=True)
+    res = await diagnose({"sonarr": IdArr(), "jf-up": up, "jf-down": down}, title="Show")
+    assert res["matches"][0]["in_jellyfin"] is True
+    assert [e["instance"] for e in res["errors"]] == ["jf-down"]
+
+
+async def test_diagnose_without_jellyfin_has_no_key():
+    res = await diagnose({"sonarr": IdArr()}, title="Show")
+    assert "in_jellyfin" not in res["matches"][0]
+
+
+class TruncatedJf(FakeJf):
+    async def search_items(self, term, limit):
+        self.searched.append((term, limit))
+        return [{"Name": "Other", "ProviderIds": {"Tvdb": "999"}}], 120
+
+
+async def test_diagnose_truncated_search_without_match_is_unknown():
+    res = await diagnose({"sonarr": IdArr(), "jellyfin": TruncatedJf()}, title="Show")
+    assert res["matches"][0]["in_jellyfin"] is None
+
+
+async def test_diagnose_truncated_search_with_match_is_true():
+    class Hit(TruncatedJf):
+        async def search_items(self, term, limit):
+            return [{"Name": "Show", "ProviderIds": {"Tvdb": "111"}}], 120
+    res = await diagnose({"sonarr": IdArr(), "jellyfin": Hit()}, title="Show")
+    assert res["matches"][0]["in_jellyfin"] is True
+
+
+async def test_diagnose_malformed_jellyfin_item_keeps_arr_results():
+    class Bad(FakeJf):
+        async def search_items(self, term, limit):
+            return ["not-a-dict"], 1
+    res = await diagnose({"sonarr": IdArr(), "jellyfin": Bad()}, title="Show")
+    assert res["matches"][0]["in_library"] is True
+    assert res["matches"][0]["in_jellyfin"] is None
+    assert res["errors"][0]["instance"] == "jellyfin"
