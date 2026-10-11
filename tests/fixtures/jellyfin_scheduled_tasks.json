@@ -1,0 +1,78 @@
+[
+  {
+    "Name": "Audio Normalization",
+    "State": "Idle",
+    "Id": "ec2f221fd8e7706b3d3afd2c4591b4d7",
+    "LastExecutionResult": {
+      "StartTimeUtc": "2026-10-11T18:50:09.9000885Z",
+      "EndTimeUtc": "2026-10-11T18:50:10.1194338Z",
+      "Status": "Completed",
+      "Name": "Audio Normalization",
+      "Key": "AudioNormalization",
+      "Id": "ec2f221fd8e7706b3d3afd2c4591b4d7"
+    },
+    "Triggers": [
+      {
+        "Type": "IntervalTrigger",
+        "IntervalTicks": 864000000000
+      }
+    ],
+    "Description": "Scans files for audio normalization data.",
+    "Category": "Library",
+    "IsHidden": false,
+    "Key": "AudioNormalization"
+  },
+  {
+    "Name": "Check for metadata updates.",
+    "State": "Idle",
+    "Id": "7053f526af0895e6d7e11bd42f0ec871",
+    "Triggers": [],
+    "Description": "Checks TheTvdb's API Update endpoint for updates periodically and updates metadata accordingly.",
+    "Category": "TheTVDB",
+    "IsHidden": false,
+    "Key": "CheckForMetadataUpdatesTask"
+  },
+  {
+    "Name": "Clean Activity Log",
+    "State": "Idle",
+    "Id": "b461ef918ab28520928183e794350e3c",
+    "Triggers": [],
+    "Description": "Deletes activity log entries older than the configured age.",
+    "Category": "Maintenance",
+    "IsHidden": false,
+    "Key": "CleanActivityLog"
+  },
+  {
+    "Name": "Clean Cache Directory",
+    "State": "Idle",
+    "Id": "241d4fcb19a1d557ee62428e411da609",
+    "LastExecutionResult": {
+      "StartTimeUtc": "2026-10-11T18:50:10.0716141Z",
+      "EndTimeUtc": "2026-10-11T18:50:10.372262Z",
+      "Status": "Completed",
+      "Name": "Clean Cache Directory",
+      "Key": "DeleteCacheFiles",
+      "Id": "241d4fcb19a1d557ee62428e411da609"
+    },
+    "Triggers": [
+      {
+        "Type": "IntervalTrigger",
+        "IntervalTicks": 864000000000
+      }
+    ],
+    "Description": "Deletes cache files no longer needed by the system.",
+    "Category": "Maintenance",
+    "IsHidden": false,
+    "Key": "DeleteCacheFiles"
+  },
+  {
+    "Name": "Clean Intro Skipper Cache",
+    "State": "Idle",
+    "Id": "b7cabb1a9d27d0f0177c6e370ad35384",
+    "Triggers": [],
+    "Description": "Clear Intro Skipper cache of unused rows.",
+    "Category": "Intro Skipper",
+    "IsHidden": false,
+    "Key": "CPBIntroSkipperCleanCache"
+  }
+]

@@ -1,0 +1,55 @@
+[
+  {
+    "PlayState": {
+      "CanSeek": false,
+      "IsPaused": false,
+      "IsMuted": false,
+      "RepeatMode": "RepeatNone",
+      "PlaybackOrder": "Default"
+    },
+    "AdditionalUsers": [],
+    "Capabilities": {
+      "PlayableMediaTypes": [
+        "Audio",
+        "Video"
+      ],
+      "SupportedCommands": [
+        "MoveUp",
+        "MoveDown",
+        "MoveLeft",
+        "MoveRight",
+        "PageUp"
+      ],
+      "SupportsMediaControl": true,
+      "SupportsPersistentIdentifier": false
+    },
+    "RemoteEndPoint": "192.0.2.10",
+    "PlayableMediaTypes": [
+      "Audio",
+      "Video"
+    ],
+    "Id": "session-id",
+    "UserId": "user-id",
+    "UserName": "user",
+    "Client": "Jellyfin Web",
+    "LastActivityDate": "2026-10-11T22:03:18.5197216Z",
+    "LastPlaybackCheckIn": "0001-01-01T00:00:00.0000000Z",
+    "DeviceName": "device",
+    "DeviceId": "device-id",
+    "ApplicationVersion": "12.2.0",
+    "IsActive": true,
+    "SupportsMediaControl": true,
+    "SupportsRemoteControl": true,
+    "NowPlayingQueue": [],
+    "HasCustomDeviceName": false,
+    "ServerId": "server-id",
+    "UserPrimaryImageTag": "tag",
+    "SupportedCommands": [
+      "MoveUp",
+      "MoveDown",
+      "MoveLeft",
+      "MoveRight",
+      "PageUp"
+    ]
+  }
+]
