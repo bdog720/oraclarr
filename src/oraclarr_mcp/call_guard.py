@@ -27,6 +27,9 @@ def guarded(name: str, fn: Callable[..., Awaitable[Any]], *, budget_s: float,
                     raise
                 result = {"error": "tool_timeout", "tool": name,
                           "after_s": round(budget_s + grace_s, 2)}
+        except Exception as exc:  # noqa: BLE001 - FastMCP would echo it unredacted
+            log.exception("tool %s failed", name)
+            result = {"error": "tool_error", "tool": name, "message": str(exc)}
         finally:
             reset_deadline(token)
         size = len(json.dumps(result, default=str))

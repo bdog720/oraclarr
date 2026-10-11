@@ -5,6 +5,9 @@ class FakeArr:
     async def queue(self):
         return [{"title": "Show.S03E04", "downloadId": "H1", "status": "downloading",
                  "trackedDownloadState": "downloading", "size": 1000, "sizeleft": 400}]
+    async def queue_page(self, limit):
+        recs = await self.queue()
+        return recs[:limit], len(recs)
 
 class FakeQbit:
     name="qbit"; type="qbittorrent"
@@ -69,3 +72,24 @@ async def test_queue_reports_failing_arr_in_errors():
     res = await get_queues({"sonarr": Dead(), "qbit": FakeQbit()})
     assert res["items"] == []
     assert res["errors"][0]["instance"] == "sonarr"
+
+
+class PagedArr(FakeArr):
+    async def queue_page(self, limit):
+        rec = (await self.queue())[0]
+        return [rec, rec], 300  # upstream holds more than one page
+
+
+async def test_queue_total_comes_from_upstream_total_records():
+    res = await get_queues({"sonarr": PagedArr()}, limit=500)
+    assert len(res["items"]) == 2
+    assert res["total"] == 300
+    assert res["truncated"] is True
+
+
+async def test_queue_tolerates_torrent_with_null_state():
+    class NullState(FakeQbit):
+        async def torrents(self):
+            return [{"hash": "h1", "state": None, "progress": 0.1}]
+    res = await get_queues({"sonarr": FakeArr(), "qbit": NullState()})
+    assert res["items"][0]["stalled"] is False

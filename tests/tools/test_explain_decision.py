@@ -62,3 +62,23 @@ async def test_explain_reports_failing_instance_and_keeps_peers():
                                  title="Anime")
     assert [m["instance"] for m in res["matches"]] == ["sonarr"]
     assert res["errors"][0]["instance"] == "broken"
+
+
+class OneBadHistory(FakeArr):
+    async def lookup_library(self, term, media):
+        return [{"title": "Anime A", "id": 9, "qualityProfileId": 3},
+                {"title": "Anime B", "id": 10, "qualityProfileId": 3}]
+    async def item_history(self, item_id, media):
+        if item_id == 10:
+            raise RuntimeError("history 500")
+        return await super().item_history(item_id, media)
+
+
+async def test_explain_one_failing_history_keeps_other_items():
+    res = await explain_decision({"sonarr": OneBadHistory()}, title="Anime")
+    by = {m["title"]: m for m in res["matches"]}
+    assert by["Anime A"]["recent_grabs"][0]["score"] == -100
+    assert by["Anime B"]["recent_grabs"] == []
+    assert by["Anime B"]["history_error"] == "history 500"
+    assert "history_error" not in by["Anime A"]
+    assert res["errors"] == []

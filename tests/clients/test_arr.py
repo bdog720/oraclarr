@@ -89,3 +89,14 @@ async def test_wanted_page_uses_kind_path_and_page_size():
     assert params["includeSeries"] == "true"
     assert records == [{"title": "Ep"}] and total == 3
     await c.aclose()
+
+
+@respx.mock
+async def test_queue_page_returns_records_and_total():
+    route = respx.get("http://h/api/v3/queue").mock(return_value=httpx.Response(
+        200, json={"records": [{"title": "A"}], "totalRecords": 300}))
+    c = _client()
+    records, total = await c.queue_page(100)
+    assert route.calls.last.request.url.params["pageSize"] == "100"
+    assert records == [{"title": "A"}] and total == 300
+    await c.aclose()
