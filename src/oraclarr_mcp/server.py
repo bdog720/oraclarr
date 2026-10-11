@@ -89,13 +89,14 @@ def build_server(
         """Prowlarr indexer health and stats."""
         return await get_indexers(clients)
 
-    async def _get_transcodes() -> list[dict]:
+    async def _get_transcodes(limit: int = 50) -> list[dict]:
         """Tdarr transcode queue and node health."""
-        return await get_transcodes(clients)
+        return await get_transcodes(clients, limit)
 
-    async def _get_upcoming(service: str | None = None, days: int = 7) -> list[dict]:
+    async def _get_upcoming(service: str | None = None, days: int = 7,
+                            limit: int = 100) -> list[dict]:
         """Upcoming episodes, games, and movie releases across arr instances (max 90 days)."""
-        return await get_upcoming(clients, service, days)
+        return await get_upcoming(clients, service, days, limit)
 
     register("stack_health", _stack_health)
     register("get_queues", _get_queues)

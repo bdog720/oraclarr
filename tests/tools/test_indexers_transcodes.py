@@ -20,3 +20,34 @@ async def test_get_transcodes():
     res = await get_transcodes({"tdarr": FakeTdarr()})
     d = res[0]["data"]
     assert d["staged"][0]["file"] == "a.mkv" and "n1" in d["nodes"]
+
+
+class RichProwlarr(FakeProwlarr):
+    async def indexers(self):
+        return [{"name": "nyaa", "enable": True, "protocol": "torrent", "priority": 25,
+                 "fields": [{"name": "baseUrl", "value": "https://x"}], "capabilities": {}}]
+    async def indexer_stats(self):
+        return {"indexers": [{"indexerName": "nyaa", "numberOfQueries": 10,
+                              "numberOfGrabs": 2, "numberOfFailedQueries": 1,
+                              "numberOfFailedGrabs": 0, "averageResponseTime": 350,
+                              "indexerId": 4}]}
+
+
+async def test_get_indexers_projects_fields():
+    d = (await get_indexers({"prowlarr": RichProwlarr()}))[0]["data"]
+    assert d["indexers"] == [{"name": "nyaa", "enabled": True, "protocol": "torrent",
+                              "priority": 25}]
+    assert d["stats"] == [{"name": "nyaa", "queries": 10, "grabs": 2, "failed_queries": 1,
+                           "failed_grabs": 0, "avg_response_ms": 350}]
+
+
+class BigTdarr(FakeTdarr):
+    async def staged(self):
+        return [{"file": f"{i}.mkv"} for i in range(5)]
+
+
+async def test_get_transcodes_bounds_staged():
+    row = (await get_transcodes({"tdarr": BigTdarr()}, limit=2))[0]
+    assert row["data"]["staged_count"] == 5
+    assert [s["file"] for s in row["data"]["staged"]] == ["0.mkv", "1.mkv"]
+    assert row["total"] == 5 and row["truncated"] is True

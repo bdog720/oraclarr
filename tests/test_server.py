@@ -128,3 +128,11 @@ def test_media_tools_expose_limits():
     assert _params(mcp, "search_media")["limit"]["default"] == 20
     assert _params(mcp, "get_wanted")["limit"]["default"] == 50
     assert _params(mcp, "get_history")["limit"]["default"] == 30
+
+
+def test_transcode_and_upcoming_expose_limits():
+    cfg = Config(server=ServerSettings(toolsets=["media", "transcode"]), defaults=Defaults(),
+                 instances={"sonarr": Instance(type="sonarr", url="http://h:8989", api_key="K")})
+    mcp = build_server(cfg, clients={})
+    assert _params(mcp, "get_transcodes")["limit"]["default"] == 50
+    assert _params(mcp, "get_upcoming")["limit"]["default"] == 100

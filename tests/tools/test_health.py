@@ -20,3 +20,8 @@ async def test_stack_health_surfaces_unreachable():
         async def system_status(self): raise __import__("httpx").ConnectError("down")
     res = await stack_health({"sonarr": Dead()})
     assert res[0]["status"] == "unreachable"
+
+
+async def test_stack_health_projects_disks():
+    res = await stack_health({"sonarr": FakeArr(ok=True)})
+    assert res[0]["data"]["disks"] == [{"path": "/tv", "free_space": 5, "total_space": 100}]
