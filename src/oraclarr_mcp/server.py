@@ -15,6 +15,7 @@ from .tools.search import search_media
 from .tools.indexers import get_indexers
 from .tools.transcodes import get_transcodes
 from .tools.upcoming import get_upcoming
+from .tools.library import get_library
 
 TOOL_SPECS: list[ToolSpec] = [
     tool_spec("stack_health", "read", "always"),
@@ -28,6 +29,7 @@ TOOL_SPECS: list[ToolSpec] = [
     tool_spec("get_indexers", "read", "media"),
     tool_spec("get_transcodes", "read", "transcode"),
     tool_spec("get_upcoming", "read", "media"),
+    tool_spec("get_library", "read", "library"),
 ]
 
 
@@ -124,6 +126,16 @@ def build_server(
         per instance (max 200); `truncated` and `total` show when more exist."""
         return await get_upcoming(clients, service, days, limit)
 
+    async def _get_library(section: str | None = None, term: str | None = None,
+                           limit: int = 20) -> list[dict] | dict:
+        """Jellyfin libraries (item counts, scan state and progress), scheduled tasks, playback
+        sessions with transcode details, and recently added items; `term=` searches series and
+        movies by name. `section=` returns one area in full: libraries, recent, sessions or
+        tasks. Use this instead of reading `jellyfin.db` for a token and curling Jellyfin over
+        SSH. For file paths and sizes, use `search_media`. Lists stop at `limit` (max 100);
+        `truncated` and `total` show when more exist."""
+        return await get_library(clients, section, term, limit)
+
     register("stack_health", _stack_health)
     register("get_queues", _get_queues)
     register("diagnose", _diagnose)
@@ -135,4 +147,5 @@ def build_server(
     register("get_indexers", _get_indexers)
     register("get_transcodes", _get_transcodes)
     register("get_upcoming", _get_upcoming)
+    register("get_library", _get_library)
     return mcp

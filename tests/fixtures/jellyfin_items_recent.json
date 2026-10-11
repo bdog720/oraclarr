@@ -1,0 +1,285 @@
+{
+  "Items": [
+    {
+      "Name": "Resolve",
+      "ServerId": "server-id",
+      "Id": "cfc832b32c5ab80137e1440e605c495e",
+      "DateCreated": "2026-10-11T21:36:38.831636Z",
+      "HasSubtitles": true,
+      "Container": "mkv",
+      "PremiereDate": "2026-09-28T00:00:00.0000000Z",
+      "ChannelId": null,
+      "CommunityRating": 6.5,
+      "RunTimeTicks": 14200520000,
+      "ProductionYear": 2026,
+      "IndexNumber": 14,
+      "ParentIndexNumber": 3,
+      "IsFolder": false,
+      "Type": "Episode",
+      "ParentLogoItemId": "a41371ad8df25ce4d60c2c80801e8717",
+      "ParentBackdropItemId": "a41371ad8df25ce4d60c2c80801e8717",
+      "ParentBackdropImageTags": [
+        "5180358985e8bc7380be864949988350"
+      ],
+      "SeriesName": "Mushoku Tensei: Jobless Reincarnation",
+      "SeriesId": "a41371ad8df25ce4d60c2c80801e8717",
+      "SeasonId": "44a5c31743917ddb0d984a5bc826f346",
+      "SeriesPrimaryImageTag": "a2f8f1f4ddc7e591fb50d6d3d5d1b10f",
+      "SeasonName": "Season 3",
+      "VideoType": "VideoFile",
+      "ImageTags": {
+        "Primary": "c64dda6198b5d38507f49595a4fb6c66"
+      },
+      "BackdropImageTags": [],
+      "ParentLogoImageTag": "ce0c04d6ee7da1fcc21dba76c6938a59",
+      "ImageBlurHashes": {
+        "Primary": {
+          "c64dda6198b5d38507f49595a4fb6c66": "WREnha}=D*VunORjIpWCs:S2s.t69uNH%2xZRkR+$%oLRkoJt6WX",
+          "a2f8f1f4ddc7e591fb50d6d3d5d1b10f": "dPJR59?b%g_2~ps,xZxu?axaWBRk^%xtbIWVELxujEIV",
+          "e56ce0bd9c60c71fe7904976b22e5b8a": "dFJGj94.yW=|*|0Ktlaf^R0e9aR6^+EK%M=zO@%foz-V"
+        },
+        "Logo": {
+          "ce0c04d6ee7da1fcc21dba76c6938a59": "NSHxg2I;0L-UIUoz%0kDo#%La|azE1M{o0R*ozoL"
+        },
+        "Thumb": {
+          "4b2be7cd7357117d4cb60726a3e2fbb6": "WpN9LF?GIBw{Sh%1?wtRV@jvofs:tnbcfkozWEaeW[oMxsXTNen~"
+        },
+        "Backdrop": {
+          "5180358985e8bc7380be864949988350": "WjE|6|xvpKyDS~gOp3WGo#ainioME2baobj=jEadt8jEoJogR*kC"
+        }
+      },
+      "ParentThumbItemId": "a41371ad8df25ce4d60c2c80801e8717",
+      "ParentThumbImageTag": "4b2be7cd7357117d4cb60726a3e2fbb6",
+      "ParentPrimaryImageItemId": "44a5c31743917ddb0d984a5bc826f346",
+      "ParentPrimaryImageTag": "e56ce0bd9c60c71fe7904976b22e5b8a",
+      "LocationType": "FileSystem",
+      "MediaType": "Video"
+    },
+    {
+      "Name": "What Lies Ahead",
+      "ServerId": "server-id",
+      "Id": "0c8a5f739cace8106a1a10bc9a7e65d0",
+      "DateCreated": "2026-10-11T12:53:09.5705362Z",
+      "HasSubtitles": true,
+      "Container": "mkv",
+      "PremiereDate": "2011-10-16T00:00:00.0000000Z",
+      "ChannelId": null,
+      "CommunityRating": 8.355,
+      "RunTimeTicks": 37774080000,
+      "ProductionYear": 2011,
+      "IndexNumber": 1,
+      "ParentIndexNumber": 2,
+      "IsFolder": false,
+      "Type": "Episode",
+      "ParentLogoItemId": "da9347eee0493fefac8bcf12f62f5fa6",
+      "ParentBackdropItemId": "da9347eee0493fefac8bcf12f62f5fa6",
+      "ParentBackdropImageTags": [
+        "e47154589620d3d32165db85a68a0f9e"
+      ],
+      "SeriesName": "The Walking Dead",
+      "SeriesId": "da9347eee0493fefac8bcf12f62f5fa6",
+      "SeasonId": "09665de5c4c76c6da19ba3451955769f",
+      "SeriesPrimaryImageTag": "2365b206421ee21dadba37f2ab535ec0",
+      "SeasonName": "Season 2",
+      "VideoType": "VideoFile",
+      "ImageTags": {
+        "Primary": "7629fc94ff3aa2f4d396a025a975d303"
+      },
+      "BackdropImageTags": [],
+      "ParentLogoImageTag": "7b88bde2ab0e473ea470a5daddd33b71",
+      "ImageBlurHashes": {
+        "Primary": {
+          "7629fc94ff3aa2f4d396a025a975d303": "WCE.j{xo0L4=n.-m?=%0IoIps;xYR~oLxb%0M{I?-hSxIuxZxWRo",
+          "2365b206421ee21dadba37f2ab535ec0": "dJE2{-nl4;xt_0j?M}WCoIoJt6ayt6WBV[j[0Nt6%KWB",
+          "00222a8024060ebb08fc731042c9b439": "dbFi3+IUIVoe~pIURjkBogM{ofj[%2oeWBaz-:xaNGj@"
+        },
+        "Logo": {
+          "7b88bde2ab0e473ea470a5daddd33b71": "HjLqa.t7WBWBt6j[M{Rjof01t6ofofazWBj[WBWB"
+        },
+        "Thumb": {
+          "ffe9281517378f71856548627f73fa02": "WhL;T#j[WB-:xu%M~qoct7j[xtt7D%adt7RjRjRk%Kt7R*WAWCR%"
+        },
+        "Backdrop": {
+          "e47154589620d3d32165db85a68a0f9e": "WPDvZ6RRD*t6xsWC-.R+R+M}WCs:~nWCM}oyRkj[_0RkIWoyofoe"
+        }
+      },
+      "ParentThumbItemId": "da9347eee0493fefac8bcf12f62f5fa6",
+      "ParentThumbImageTag": "ffe9281517378f71856548627f73fa02",
+      "ParentPrimaryImageItemId": "09665de5c4c76c6da19ba3451955769f",
+      "ParentPrimaryImageTag": "00222a8024060ebb08fc731042c9b439",
+      "LocationType": "FileSystem",
+      "MediaType": "Video",
+      "OriginalLanguage": "en"
+    },
+    {
+      "Name": "Save the Last One",
+      "ServerId": "server-id",
+      "Id": "40358f73693dde521c4289bbd47b6052",
+      "DateCreated": "2026-10-11T12:28:37.0661144Z",
+      "HasSubtitles": true,
+      "Container": "mkv",
+      "PremiereDate": "2011-10-30T00:00:00.0000000Z",
+      "ChannelId": null,
+      "CommunityRating": 8.524,
+      "RunTimeTicks": 25982080000,
+      "ProductionYear": 2011,
+      "IndexNumber": 3,
+      "ParentIndexNumber": 2,
+      "IsFolder": false,
+      "Type": "Episode",
+      "ParentLogoItemId": "da9347eee0493fefac8bcf12f62f5fa6",
+      "ParentBackdropItemId": "da9347eee0493fefac8bcf12f62f5fa6",
+      "ParentBackdropImageTags": [
+        "e47154589620d3d32165db85a68a0f9e"
+      ],
+      "SeriesName": "The Walking Dead",
+      "SeriesId": "da9347eee0493fefac8bcf12f62f5fa6",
+      "SeasonId": "09665de5c4c76c6da19ba3451955769f",
+      "SeriesPrimaryImageTag": "2365b206421ee21dadba37f2ab535ec0",
+      "SeasonName": "Season 2",
+      "VideoType": "VideoFile",
+      "ImageTags": {
+        "Primary": "56bb4f6097fc0b3b5dcfa26f08746ec7"
+      },
+      "BackdropImageTags": [],
+      "ParentLogoImageTag": "7b88bde2ab0e473ea470a5daddd33b71",
+      "ImageBlurHashes": {
+        "Primary": {
+          "56bb4f6097fc0b3b5dcfa26f08746ec7": "WIC~@,Rj0KocD%t6?bRjjuxtE1M{xuofxaV@M|xb?aWCM{j?bIxa",
+          "2365b206421ee21dadba37f2ab535ec0": "dJE2{-nl4;xt_0j?M}WCoIoJt6ayt6WBV[j[0Nt6%KWB",
+          "00222a8024060ebb08fc731042c9b439": "dbFi3+IUIVoe~pIURjkBogM{ofj[%2oeWBaz-:xaNGj@"
+        },
+        "Logo": {
+          "7b88bde2ab0e473ea470a5daddd33b71": "HjLqa.t7WBWBt6j[M{Rjof01t6ofofazWBj[WBWB"
+        },
+        "Thumb": {
+          "ffe9281517378f71856548627f73fa02": "WhL;T#j[WB-:xu%M~qoct7j[xtt7D%adt7RjRjRk%Kt7R*WAWCR%"
+        },
+        "Backdrop": {
+          "e47154589620d3d32165db85a68a0f9e": "WPDvZ6RRD*t6xsWC-.R+R+M}WCs:~nWCM}oyRkj[_0RkIWoyofoe"
+        }
+      },
+      "ParentThumbItemId": "da9347eee0493fefac8bcf12f62f5fa6",
+      "ParentThumbImageTag": "ffe9281517378f71856548627f73fa02",
+      "ParentPrimaryImageItemId": "09665de5c4c76c6da19ba3451955769f",
+      "ParentPrimaryImageTag": "00222a8024060ebb08fc731042c9b439",
+      "LocationType": "FileSystem",
+      "MediaType": "Video",
+      "OriginalLanguage": "en"
+    },
+    {
+      "Name": "Cherokee Rose",
+      "ServerId": "server-id",
+      "Id": "6005e3eee8dabb2ae9373afca9a76181",
+      "DateCreated": "2026-10-11T11:46:33.6128734Z",
+      "HasSubtitles": true,
+      "Container": "mkv",
+      "PremiereDate": "2011-11-06T00:00:00.0000000Z",
+      "ChannelId": null,
+      "CommunityRating": 8.137,
+      "RunTimeTicks": 26044800000,
+      "ProductionYear": 2011,
+      "IndexNumber": 4,
+      "ParentIndexNumber": 2,
+      "IsFolder": false,
+      "Type": "Episode",
+      "ParentLogoItemId": "da9347eee0493fefac8bcf12f62f5fa6",
+      "ParentBackdropItemId": "da9347eee0493fefac8bcf12f62f5fa6",
+      "ParentBackdropImageTags": [
+        "e47154589620d3d32165db85a68a0f9e"
+      ],
+      "SeriesName": "The Walking Dead",
+      "SeriesId": "da9347eee0493fefac8bcf12f62f5fa6",
+      "SeasonId": "09665de5c4c76c6da19ba3451955769f",
+      "SeriesPrimaryImageTag": "2365b206421ee21dadba37f2ab535ec0",
+      "SeasonName": "Season 2",
+      "VideoType": "VideoFile",
+      "ImageTags": {
+        "Primary": "0681a2ac19ef7e1613ea8d8b270c9130"
+      },
+      "BackdropImageTags": [],
+      "ParentLogoImageTag": "7b88bde2ab0e473ea470a5daddd33b71",
+      "ImageBlurHashes": {
+        "Primary": {
+          "0681a2ac19ef7e1613ea8d8b270c9130": "WJDS8jD*0fIpNb.6?a9aRkwv$*%fSgM|%LRkoJa#IVsA-pJ7RkRQ",
+          "2365b206421ee21dadba37f2ab535ec0": "dJE2{-nl4;xt_0j?M}WCoIoJt6ayt6WBV[j[0Nt6%KWB",
+          "00222a8024060ebb08fc731042c9b439": "dbFi3+IUIVoe~pIURjkBogM{ofj[%2oeWBaz-:xaNGj@"
+        },
+        "Logo": {
+          "7b88bde2ab0e473ea470a5daddd33b71": "HjLqa.t7WBWBt6j[M{Rjof01t6ofofazWBj[WBWB"
+        },
+        "Thumb": {
+          "ffe9281517378f71856548627f73fa02": "WhL;T#j[WB-:xu%M~qoct7j[xtt7D%adt7RjRjRk%Kt7R*WAWCR%"
+        },
+        "Backdrop": {
+          "e47154589620d3d32165db85a68a0f9e": "WPDvZ6RRD*t6xsWC-.R+R+M}WCs:~nWCM}oyRkj[_0RkIWoyofoe"
+        }
+      },
+      "ParentThumbItemId": "da9347eee0493fefac8bcf12f62f5fa6",
+      "ParentThumbImageTag": "ffe9281517378f71856548627f73fa02",
+      "ParentPrimaryImageItemId": "09665de5c4c76c6da19ba3451955769f",
+      "ParentPrimaryImageTag": "00222a8024060ebb08fc731042c9b439",
+      "LocationType": "FileSystem",
+      "MediaType": "Video",
+      "OriginalLanguage": "en"
+    },
+    {
+      "Name": "18 Miles Out",
+      "ServerId": "server-id",
+      "Id": "133b6c1f9cd53298a1129953b5280dd0",
+      "DateCreated": "2026-10-11T11:44:57.5502298Z",
+      "HasSubtitles": true,
+      "Container": "mkv",
+      "PremiereDate": "2012-02-26T00:00:00.0000000Z",
+      "ChannelId": null,
+      "CommunityRating": 8.435,
+      "RunTimeTicks": 25657600000,
+      "ProductionYear": 2012,
+      "IndexNumber": 10,
+      "ParentIndexNumber": 2,
+      "IsFolder": false,
+      "Type": "Episode",
+      "ParentLogoItemId": "da9347eee0493fefac8bcf12f62f5fa6",
+      "ParentBackdropItemId": "da9347eee0493fefac8bcf12f62f5fa6",
+      "ParentBackdropImageTags": [
+        "e47154589620d3d32165db85a68a0f9e"
+      ],
+      "SeriesName": "The Walking Dead",
+      "SeriesId": "da9347eee0493fefac8bcf12f62f5fa6",
+      "SeasonId": "09665de5c4c76c6da19ba3451955769f",
+      "SeriesPrimaryImageTag": "2365b206421ee21dadba37f2ab535ec0",
+      "SeasonName": "Season 2",
+      "VideoType": "VideoFile",
+      "ImageTags": {
+        "Primary": "17de896f19fe04c578dfedac39480213"
+      },
+      "BackdropImageTags": [],
+      "ParentLogoImageTag": "7b88bde2ab0e473ea470a5daddd33b71",
+      "ImageBlurHashes": {
+        "Primary": {
+          "17de896f19fe04c578dfedac39480213": "WjIqW9t7x@kWR-xu}[M{RjkWRjt6$$r?Rjt7V@WC%Mw^t7bvR%S2",
+          "2365b206421ee21dadba37f2ab535ec0": "dJE2{-nl4;xt_0j?M}WCoIoJt6ayt6WBV[j[0Nt6%KWB",
+          "00222a8024060ebb08fc731042c9b439": "dbFi3+IUIVoe~pIURjkBogM{ofj[%2oeWBaz-:xaNGj@"
+        },
+        "Logo": {
+          "7b88bde2ab0e473ea470a5daddd33b71": "HjLqa.t7WBWBt6j[M{Rjof01t6ofofazWBj[WBWB"
+        },
+        "Thumb": {
+          "ffe9281517378f71856548627f73fa02": "WhL;T#j[WB-:xu%M~qoct7j[xtt7D%adt7RjRjRk%Kt7R*WAWCR%"
+        },
+        "Backdrop": {
+          "e47154589620d3d32165db85a68a0f9e": "WPDvZ6RRD*t6xsWC-.R+R+M}WCs:~nWCM}oyRkj[_0RkIWoyofoe"
+        }
+      },
+      "ParentThumbItemId": "da9347eee0493fefac8bcf12f62f5fa6",
+      "ParentThumbImageTag": "ffe9281517378f71856548627f73fa02",
+      "ParentPrimaryImageItemId": "09665de5c4c76c6da19ba3451955769f",
+      "ParentPrimaryImageTag": "00222a8024060ebb08fc731042c9b439",
+      "LocationType": "FileSystem",
+      "MediaType": "Video",
+      "OriginalLanguage": "en"
+    }
+  ],
+  "TotalRecordCount": 4503,
+  "StartIndex": 0
+}

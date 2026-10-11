@@ -1,0 +1,54 @@
+[
+  {
+    "_id": "/media/downloads/tv-sonarr/Avatar The Last Airbender S01E10 Jet 1080p FLAC 2 0 AVC REMUX-FraMeSToR/Avatar The Last Airbender S01E10 Jet 1080p FLAC 2 0 AVC REMUX-FraMeSToR.mkv",
+    "workerType": "transcodegpu",
+    "start": 1791756922182,
+    "job": {
+      "version": "2.94.02",
+      "footprintId": "R5E35Dbfn",
+      "jobId": "z3AiRS5Ch",
+      "start": 1791756922182,
+      "type": "transcode",
+      "fileId": "R5E35Dbfn()2.94.02()transcode()z3AiRS5Ch()1791756922182.txt"
+    },
+    "originalLibraryFile": {
+      "_trimmed_bytes": 1603
+    },
+    "lastCompletedCacheFile": {},
+    "status": "processing",
+    "handling": "",
+    "nodeID": "gWNBjK5u1",
+    "inLimbo": false,
+    "workerGenus": "flow",
+    "flowPluginHandler": {
+      "_trimmed_bytes": 53763
+    },
+    "workDir": "/transcode/tdarr-workDir2-z3AiRS5Ch"
+  },
+  {
+    "_id": "/media/downloads/tv-sonarr/Avatar The Last Airbender S01E09 The Waterbending Scroll 1080p FLAC 2 0 AVC REMUX-FraMeSToR/Avatar The Last Airbender S01E09 The Waterbending Scroll 1080p FLAC 2 0 AVC REMUX-FraMeSToR.mkv",
+    "workerType": "transcodegpu",
+    "start": 1791756923706,
+    "job": {
+      "version": "2.94.02",
+      "footprintId": "Y5iXu3gej",
+      "jobId": "X00w_fmgmqA",
+      "start": 1791756923706,
+      "type": "transcode",
+      "fileId": "Y5iXu3gej()2.94.02()transcode()X00w_fmgmqA()1791756923706.txt"
+    },
+    "originalLibraryFile": {
+      "_trimmed_bytes": 1703
+    },
+    "lastCompletedCacheFile": {},
+    "status": "processing",
+    "handling": "",
+    "nodeID": "r2kOx44B5",
+    "inLimbo": false,
+    "workerGenus": "flow",
+    "flowPluginHandler": {
+      "_trimmed_bytes": 54487
+    },
+    "workDir": "/transcode/tdarr-workDir2-X00w_fmgmqA"
+  }
+]

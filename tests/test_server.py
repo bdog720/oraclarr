@@ -12,12 +12,12 @@ def _registered_tool_names(mcp) -> list[str]:
     return list(mcp._tool_manager._tools.keys())
 
 
-def test_tool_specs_cover_all_eleven_tools():
+def test_tool_specs_cover_all_twelve_tools():
     names = {s.name for s in TOOL_SPECS}
     assert names == {
         "stack_health", "get_queues", "diagnose", "explain_decision",
         "get_quality_config", "get_history", "get_wanted", "search_media",
-        "get_indexers", "get_transcodes", "get_upcoming",
+        "get_indexers", "get_transcodes", "get_upcoming", "get_library",
     }
 
 
@@ -139,11 +139,11 @@ def test_transcode_and_upcoming_expose_limits():
 
 
 BOUNDED_TOOLS = {"get_queues", "diagnose", "explain_decision", "get_history", "get_wanted",
-                 "search_media", "get_upcoming", "get_transcodes"}
+                 "search_media", "get_upcoming", "get_transcodes", "get_library"}
 
 
 def test_every_tool_description_says_when_to_use_it_instead_of_ssh():
-    cfg = Config(server=ServerSettings(toolsets=["media", "downloads", "transcode"]),
+    cfg = Config(server=ServerSettings(toolsets=["media", "downloads", "transcode", "library"]),
                  defaults=Defaults(),
                  instances={"sonarr": Instance(type="sonarr", url="http://h:8989", api_key="K")})
     tools = build_server(cfg, clients={})._tool_manager._tools
@@ -152,3 +152,15 @@ def test_every_tool_description_says_when_to_use_it_instead_of_ssh():
         assert "instead of" in tool.description and "SSH" in tool.description, name
         if name in BOUNDED_TOOLS:
             assert "truncated" in tool.description, name
+
+
+def test_get_library_registers_only_with_library_toolset():
+    base = dict(defaults=Defaults(),
+                instances={"jellyfin": Instance(type="jellyfin", url="http://h:8096",
+                                                api_key="K")})
+    without = build_server(Config(server=ServerSettings(toolsets=["media"]), **base), clients={})
+    with_lib = build_server(Config(server=ServerSettings(toolsets=["library"]), **base),
+                            clients={})
+    assert "get_library" not in _registered_tool_names(without)
+    assert "get_library" in _registered_tool_names(with_lib)
+    assert _params(with_lib, "get_library")["limit"]["default"] == 20

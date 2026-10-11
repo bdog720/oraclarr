@@ -27,3 +27,12 @@ async def test_sportarr_routes_to_arr_client():
     assert isinstance(c, ArrClient)
     assert c.type == "sportarr"
     await c.aclose()
+
+
+async def test_jellyfin_routes_to_jellyfin_client():
+    from oraclarr_mcp.clients.jellyfin import JellyfinClient
+    cfg = _cfg({"jellyfin": Instance(type="jellyfin", url="http://h:8096", api_key="K")})
+    c = build_clients(cfg)["jellyfin"]
+    assert isinstance(c, JellyfinClient)
+    assert c.auth.headers() == {"Authorization": 'MediaBrowser Token="K"'}
+    await c.aclose()

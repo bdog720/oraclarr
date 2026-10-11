@@ -1,0 +1,112 @@
+{
+  "OperatingSystemDisplayName": "",
+  "HasPendingRestart": true,
+  "IsShuttingDown": false,
+  "SupportsLibraryMonitor": true,
+  "WebSocketPortNumber": 8096,
+  "CompletedInstallations": [
+    {
+      "Guid": "c83d86bba1e04c35a113e2101cf4ee6b",
+      "Name": "Intro Skipper",
+      "Version": "192.0.2.10",
+      "Changelog": "- See the full changelog at [GitHub](https://github.com/intro-skipper/intro-skipper/releases/tag/12.0/v12.0.5.0)\n",
+      "SourceUrl": "https://github.com/intro-skipper/intro-skipper/releases/download/12.0/v12.0.5.0/intro-skipper-v12.0.5.0.zip",
+      "Checksum": "d3fc1c17efa61ed85e86228f3c2c940f",
+      "PackageInfo": {
+        "name": "Intro Skipper",
+        "description": "Analyzes the audio of television episodes and detects introduction sequences.",
+        "overview": "Automatically detect and skip intros in television episodes",
+        "owner": "AbandonedCart, rlauuzo, jumoog (forked from ConfusedPolarBear)",
+        "category": "MoviesAndShows",
+        "guid": "c83d86bba1e04c35a113e2101cf4ee6b",
+        "versions": [
+          {
+            "version": "192.0.2.10",
+            "VersionNumber": "192.0.2.10",
+            "changelog": "- See the full changelog at [GitHub](https://github.com/intro-skipper/intro-skipper/releases/tag/12.0/v12.0.5.0)\n",
+            "targetAbi": "192.0.2.10",
+            "sourceUrl": "https://github.com/intro-skipper/intro-skipper/releases/download/12.0/v12.0.5.0/intro-skipper-v12.0.5.0.zip",
+            "checksum": "d3fc1c17efa61ed85e86228f3c2c940f",
+            "timestamp": "2026-10-09T19:44:43Z",
+            "repositoryName": "Intro Skipper",
+            "repositoryUrl": "https://intro-skipper.org/manifest.json"
+          },
+          {
+            "version": "192.0.2.10",
+            "VersionNumber": "192.0.2.10",
+            "changelog": "- See the full changelog at [GitHub](https://github.com/intro-skipper/intro-skipper/releases/tag/12.0/v12.0.4.0)\n",
+            "targetAbi": "192.0.2.10",
+            "sourceUrl": "https://github.com/intro-skipper/intro-skipper/releases/download/12.0/v12.0.4.0/intro-skipper-v12.0.4.0.zip",
+            "checksum": "de89ee9cf3e05d41bb02e584769ba1b0",
+            "timestamp": "2026-09-11T12:15:53Z",
+            "repositoryName": "Intro Skipper",
+            "repositoryUrl": "https://intro-skipper.org/manifest.json"
+          },
+          {
+            "version": "192.0.2.10",
+            "VersionNumber": "192.0.2.10",
+            "changelog": "- See the full changelog at [GitHub](https://github.com/intro-skipper/intro-skipper/releases/tag/12.0/v12.0.3.0)\n",
+            "targetAbi": "192.0.2.10",
+            "sourceUrl": "https://github.com/intro-skipper/intro-skipper/releases/download/12.0/v12.0.3.0/intro-skipper-v12.0.3.0.zip",
+            "checksum": "cfc6b79bafb52b5ceb05f0280612a12f",
+            "timestamp": "2026-09-09T17:15:42Z",
+            "repositoryName": "Intro Skipper",
+            "repositoryUrl": "https://intro-skipper.org/manifest.json"
+          },
+          {
+            "version": "192.0.2.10",
+            "VersionNumber": "192.0.2.10",
+            "changelog": "- See the full changelog at [GitHub](https://github.com/intro-skipper/intro-skipper/releases/tag/12.0/v12.0.2.0)\n",
+            "targetAbi": "192.0.2.10",
+            "sourceUrl": "https://github.com/intro-skipper/intro-skipper/releases/download/12.0/v12.0.2.0/intro-skipper-v12.0.2.0.zip",
+            "checksum": "8263029dd66563493b74c3b7c4ce7a38",
+            "timestamp": "2026-08-30T12:37:57Z",
+            "repositoryName": "Intro Skipper",
+            "repositoryUrl": "https://intro-skipper.org/manifest.json"
+          },
+          {
+            "version": "192.0.2.10",
+            "VersionNumber": "192.0.2.10",
+            "changelog": "- See the full changelog at [GitHub](https://github.com/intro-skipper/intro-skipper/releases/tag/12.0/v1.12.0.1)\n",
+            "targetAbi": "192.0.2.10",
+            "sourceUrl": "https://github.com/intro-skipper/intro-skipper/releases/download/12.0/v1.12.0.1/intro-skipper-v1.12.0.1.zip",
+            "checksum": "0c3fcb5472ab5ee3f5fff3748b45aa61",
+            "timestamp": "2026-07-04T17:47:17Z",
+            "repositoryName": "Intro Skipper",
+            "repositoryUrl": "https://intro-skipper.org/manifest.json"
+          }
+        ],
+        "imageUrl": "https://cdn.jsdelivr.net/gh/intro-skipper/manifest@a434e00edba70493794e25917cc8d3326d5a85c6/images/intro-skipper/logo.png"
+      }
+    }
+  ],
+  "CanSelfRestart": true,
+  "CanLaunchWebBrowser": false,
+  "ProgramDataPath": "/config",
+  "WebPath": "/jellyfin/jellyfin-web",
+  "ItemsByNamePath": "/config/metadata",
+  "CachePath": "/cache",
+  "LogPath": "/config/log",
+  "InternalMetadataPath": "/config/metadata",
+  "TranscodingTempPath": "/cache/transcodes",
+  "CastReceiverApplications": [
+    {
+      "Id": "F007D354",
+      "Name": "Stable"
+    },
+    {
+      "Id": "6F511C87",
+      "Name": "Unstable"
+    }
+  ],
+  "HasUpdateAvailable": false,
+  "EncoderLocation": "System",
+  "SystemArchitecture": "X64",
+  "LocalAddress": "http://host:8096",
+  "ServerName": "MediaServer",
+  "Version": "12.2.0",
+  "ProductName": "Jellyfin Server",
+  "OperatingSystem": "",
+  "Id": "server-id",
+  "StartupWizardCompleted": true
+}

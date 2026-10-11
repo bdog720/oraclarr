@@ -1,0 +1,53 @@
+{
+  "Items": [
+    {
+      "Name": "The Rookie",
+      "ServerId": "server-id",
+      "Id": "b0bcfe45794386efcf0a6f97abb7446c",
+      "DateCreated": "2026-05-29T11:40:23.5221876Z",
+      "PremiereDate": "2018-10-16T00:00:00.0000000Z",
+      "Path": "/tv/The Rookie (2018)",
+      "OfficialRating": "AU-MA 15+",
+      "ChannelId": null,
+      "CommunityRating": 8.546,
+      "RunTimeTicks": 0,
+      "ProductionYear": 2018,
+      "ProviderIds": {
+        "Imdb": "tt7587890",
+        "Tmdb": "79744",
+        "Tvdb": "350665"
+      },
+      "IsFolder": true,
+      "Type": "Series",
+      "Status": "Continuing",
+      "AirDays": [],
+      "ImageTags": {
+        "Logo": "168622e5f58697b3aec49496da581dcf",
+        "Thumb": "c90fd51bff92f42728d208912b98cfa1",
+        "Primary": "78d194904d01e0f0b1f3d977fe2b670c"
+      },
+      "BackdropImageTags": [
+        "affa8dd59cc29b1aa3b1aff1dc0f4e1d"
+      ],
+      "ImageBlurHashes": {
+        "Backdrop": {
+          "affa8dd59cc29b1aa3b1aff1dc0f4e1d": "WzJi:t-Q-O%1s.R*}-ocs+oKR-WXskbHt6n$Rns:xsf*xYs.WCjZ"
+        },
+        "Logo": {
+          "168622e5f58697b3aec49496da581dcf": "HMLENU%M%Moft7ofD%xuD%00%M%Mxut7M{WBIUM{"
+        },
+        "Thumb": {
+          "c90fd51bff92f42728d208912b98cfa1": "WPDKD7OZO@nlf6tlysSPM|%Kt6NdC9ozRltPWXSO%~kCn,NLNIt7"
+        },
+        "Primary": {
+          "78d194904d01e0f0b1f3d977fe2b670c": "dFG[lv?t5@?a*0yDW9I@uNE-E8RPLNx[x]aL.Qs.Q.i_"
+        }
+      },
+      "LocationType": "FileSystem",
+      "MediaType": "Unknown",
+      "EndDate": "2026-05-04T00:00:00.0000000Z"
+    }
+  ],
+  "TotalRecordCount": 1,
+  "StartIndex": 0
+}

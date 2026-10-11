@@ -94,3 +94,62 @@ async def test_max_upcoming_fits_under_cap():
         return await upcoming.get_upcoming(clients, None, 7, limit)
 
     _assert_full_and_ok(await _run(tool), upcoming.MAX_LIMIT)
+
+
+from oraclarr_mcp.tools import library  # noqa: E402
+
+
+class FakeJf:
+    type = "jellyfin"
+
+    def __init__(self, name, item):
+        self.name, self.item = name, item
+
+    async def search_items(self, term, limit): return [self.item] * limit, 10**6
+    async def recent_items(self, limit): return [self.item] * limit, 10**6
+
+
+def _jf(item):
+    return {f"jellyfin{i}": FakeJf(f"jellyfin{i}", item) for i in range(2)}
+
+
+async def test_max_library_search_and_recent_fit_under_cap():
+    # Live search rows are ~250 B; pad to 600 B for long paths, two Jellyfin servers.
+    item = _padded(library.search_row, {
+        "Name": "N", "Type": "Series", "ProductionYear": 2018, "Path": "/tv/N",
+        "DateCreated": "2026-01-01T00:00:00Z",
+        "ProviderIds": {"Tvdb": "1", "Tmdb": "2", "Imdb": "tt3"}}, "Path", 600)
+    clients = _jf(item)
+
+    async def search(limit):
+        return await library.get_library(clients, None, "n", limit)
+
+    async def recent(limit):
+        return await library.get_library(clients, "recent", None, limit)
+
+    for tool in (search, recent):
+        _assert_full_and_ok(await _run(tool), library.MAX_LIMIT)
+
+
+from oraclarr_mcp.tools import transcodes  # noqa: E402
+
+
+async def test_max_transcodes_fits_under_cap():
+    # Live: status ~160 B, nodes ~12 KB compact; staged _id paths ~200 B (pad to 400).
+    staged_item = {"_id": "/media/" + "p" * 400, "status": "processing",
+                   "workerType": "transcodegpu", "nodeID": "node1", "start": 1791756922182,
+                   "flowPluginHandler": {"blob": "x" * 55_000}}
+
+    class Tdarr:
+        name = "tdarr"; type = "tdarr"
+        async def status(self): return {"status": "x" * 160}
+        async def nodes(self): return {"n1": {"blob": "y" * 12_500}}
+        async def staged(self): return [staged_item] * 1000
+
+    async def tool(limit):
+        return await transcodes.get_transcodes({"tdarr": Tdarr()}, limit)
+
+    out = await _run(tool)
+    assert isinstance(out, list), out
+    assert out[0]["status"] == "ok"
+    assert len(out[0]["data"]["staged"]) == transcodes.MAX_LIMIT
