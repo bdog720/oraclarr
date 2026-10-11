@@ -58,54 +58,30 @@ All read-only and outcome-oriented (not one-per-endpoint, which keeps the model 
 
 ## Install
 
-There are **two ways to run Oraclarr — pick one, you don't need both:**
+There are two ways to run Oraclarr. Pick one:
 
-- **🐳 Docker (recommended)** — a small always-on container that lives next to your
-  arr stack. Best for homelabs; works great with Portainer, Dockge, Unraid, etc.
-- **🐍 Python (uv)** — run it directly on your machine with no container. Best for
-  local development, or if you simply don't use Docker.
+- **🐳 Docker (recommended).** A small always-on container next to your arr stack. Works with Dockge, Portainer, Unraid and plain `docker compose`.
+- **🐍 Python (uv).** Runs directly on your machine with no container. Handy for local development, or if you don't use Docker.
 
-Both options need the same two files. Make them from the templates in this repo —
-[`config.example.yaml`](config.example.yaml) (your service URLs) and
-[`.env.example`](.env.example) (your API keys / passwords):
-
-- **If you cloned the repo:** `cp config.example.yaml config.yaml` and
-  `cp .env.example .env`, then edit them.
-- **If you're pasting into Dockge/Portainer:** open those two example files above,
-  copy their contents into a `config.yaml` and a `.env` in your stack folder, and
-  fill in your details.
-
-See [Configuration](#configuration) below for exactly what goes in `config.yaml`.
-Your `config.yaml` and `.env` are never committed — your URLs and secrets stay on
-your machine. Now follow **one** of the two options below.
+Either way, every setting is an environment variable that starts with `ORACLARR_`. With Docker that means one `.env` file next to the compose file, and Dockge and Portainer show both in their editors. Start from [`.env.example`](.env.example). [Configuration](#configuration) lists every variable. Your `.env` is never committed.
 
 ---
 
 ### Option A — Docker (recommended)
 
-Oraclarr runs as a long-running container that serves MCP over HTTP at
-`http://<host>:7979/mcp`. You need three things in one folder: your `config.yaml`,
-your `.env`, and a `docker-compose.yml`.
+Oraclarr runs as a long-running container that serves MCP over HTTP at `http://<host>:7979/mcp`. You need two files in one folder: `docker-compose.yml` and `.env`.
 
-**Using a stack manager (Dockge, Portainer, etc.):** create a new stack, paste the
-compose below into the editor, and put your `config.yaml` and `.env` in the same
-stack folder. Hit deploy.
-
-> **Create `config.yaml` as a real file *before* you deploy.** The compose mounts
-> `./config.yaml` into the container. If that file doesn't exist yet, Docker
-> silently creates an empty **directory** at the mount point and the container
-> exits with `IsADirectoryError: Is a directory: '/config/config.yaml'`. If you hit
-> that: stop the stack, delete the `config.yaml` *directory* in the stack folder,
-> create `config.yaml` as a file, and redeploy.
+**Using a stack manager (Dockge, Portainer, etc.):** create a new stack, paste the compose below into the editor, and paste your settings into the stack's `.env`. Hit deploy.
 
 **Using the command line:**
 
 ```bash
 cp docker-compose.example.yml docker-compose.yml
+cp .env.example .env    # then fill in your URLs and keys
 docker compose up -d
 ```
 
-Either way, this is the compose file — copy/paste it as-is:
+This is the compose file. You don't edit it when you add or remove a service:
 
 ```yaml
 services:
@@ -114,59 +90,41 @@ services:
     container_name: oraclarr
     restart: unless-stopped
     ports:
-      - "7979:7979"           # left side is the host port — change it if 7979 is taken
-    volumes:
-      - ./config.yaml:/config/config.yaml:ro
-    environment:
-      SONARR_KEY: ${SONARR_KEY}
-      SONARR_ANIME_KEY: ${SONARR_ANIME_KEY}
-      RADARR_KEY: ${RADARR_KEY}
-      PROWLARR_KEY: ${PROWLARR_KEY}
-      QBIT_USER: ${QBIT_USER}
-      QBIT_PASS: ${QBIT_PASS}
-      PROFILARR_KEY: ${PROFILARR_KEY}
-      SPORTARR_KEY: ${SPORTARR_KEY}
-      JELLYFIN_KEY: ${JELLYFIN_KEY}
+      - "7979:7979"           # left side is the host port; change it if 7979 is taken
+    env_file: .env
 ```
 
-The keys on the right (`${SONARR_KEY}` …) are read from your `.env` file. Then
-[connect Claude Desktop](#connect-claude-desktop).
+Then [connect Claude Desktop](#connect-claude-desktop).
 
 ---
 
 ### Option B — Python (uv)
 
-Run Oraclarr directly, no Docker. Requires Python 3.12+ and
-[`uv`](https://docs.astral.sh/uv/).
+Run Oraclarr directly, no Docker. Requires Python 3.12+ and [`uv`](https://docs.astral.sh/uv/).
 
-**From PyPI (no clone needed):** the package is published as
-[`oraclarr-mcp`](https://pypi.org/project/oraclarr-mcp/). Point `ORACLARR_CONFIG`
-at your `config.yaml` and run it with `uvx`:
-
-```bash
-ORACLARR_CONFIG=config.yaml uvx oraclarr-mcp
-```
-
-**From a clone (for development):**
-
-```bash
-uv sync
-ORACLARR_CONFIG=config.yaml uv run python -m oraclarr_mcp
-```
-
-This speaks MCP over **stdio** — the client launches the process for you, so you
-register it in your client's config rather than connecting to a URL:
+The package is on PyPI as [`oraclarr-mcp`](https://pypi.org/project/oraclarr-mcp/). It speaks MCP over **stdio**, so your client starts the process and passes the settings in its `env` block:
 
 ```json
 "oraclarr": {
   "command": "uvx",
   "args": ["oraclarr-mcp"],
-  "env": { "ORACLARR_CONFIG": "/absolute/path/to/config.yaml" }
+  "env": {
+    "ORACLARR_SONARR_URL": "http://192.168.1.10:8989",
+    "ORACLARR_SONARR_API_KEY": "your-key",
+    "ORACLARR_RADARR_URL": "http://192.168.1.10:7878",
+    "ORACLARR_RADARR_API_KEY": "your-key"
+  }
 }
 ```
 
-(From a clone instead of PyPI, use `"command": "uv"`, `"args": ["run", "python",
-"-m", "oraclarr_mcp"]`, and add `"cwd"` pointing at the repo.)
+**From a clone (for development):** put the same `ORACLARR_*` lines in a `.env` in the repo folder (it's read at startup), then:
+
+```bash
+uv sync
+uv run python -m oraclarr_mcp
+```
+
+In a client config, use `"command": "uv"`, `"args": ["run", "python", "-m", "oraclarr_mcp"]` and a `"cwd"` pointing at the repo.
 
 ---
 
@@ -219,35 +177,69 @@ The Python path (Option B) always uses stdio and ignores these entirely.
 | `ORACLARR_TRANSPORT` | `http` | How clients reach the server. `http` = long-running service (Docker). `stdio` = the client launches the process (the Python path). You don't normally set this by hand — your install method picks it. |
 | `ORACLARR_HTTP_HOST` | `0.0.0.0` | Which network interface to listen on. `0.0.0.0` means "reachable on your LAN" — leave as-is for Docker. |
 | `ORACLARR_HTTP_PORT` | `7979` | Port *inside* the container. To change the port you reach it on, edit the `ports:` line in the compose instead. |
-| `ORACLARR_CONFIG` | `/config/config.yaml` | Where the container reads `config.yaml`. Leave as-is. |
+| `ORACLARR_CONFIG` | `/config/config.yaml` | Where the container looks for an optional config.yaml. Leave as-is. |
 
 ## Configuration
 
-Instances are named in `config.yaml`; `type` selects the client, so any number of instances of any type (e.g. two Sonarrs) just work. Secrets are referenced as `${ENV_VAR}` and pulled from `.env`:
+Each service is an *instance* with a name you choose. Its settings are variables named `ORACLARR_<NAME>_<FIELD>`, and an instance exists as soon as its `_URL` is set:
 
-```yaml
-server:
-  allow_writes: false              # read-only; writes are a future phase
-  toolsets: [media, downloads, transcode, library]
-  tool_budget_seconds: 30          # per tool call; slow instances report status "timeout"
-  max_output_bytes: 200000         # safety net for oversized responses
-defaults:
-  timeout_seconds: 10
-instances:
-  sonarr:       { type: sonarr,       url: http://host:8989, api_key: ${SONARR_KEY} }
-  sonarr-anime: { type: sonarr,       url: http://host:8990, api_key: ${SONARR_ANIME_KEY} }
-  radarr:       { type: radarr,       url: http://host:7878, api_key: ${RADARR_KEY} }
-  prowlarr:     { type: prowlarr,     url: http://host:9696, api_key: ${PROWLARR_KEY} }
-  qbit:         { type: qbittorrent,  url: http://host:8080, username: ${QBIT_USER}, password: ${QBIT_PASS} }
-  tdarr:        { type: tdarr,        url: http://host:8265 }
-  profilarr:    { type: profilarr,    url: http://host:6868, api_key: ${PROFILARR_KEY} }
-  sportarr:     { type: sportarr,     url: http://host:1867, api_key: ${SPORTARR_KEY} }
-  jellyfin:     { type: jellyfin,     url: http://host:8096, api_key: ${JELLYFIN_KEY} }
+```
+ORACLARR_SONARR_URL=http://192.168.1.10:8989
+ORACLARR_SONARR_API_KEY=your-key
+
+ORACLARR_SONARR_ANIME_TYPE=sonarr           # a second Sonarr, named sonarr-anime
+ORACLARR_SONARR_ANIME_URL=http://192.168.1.10:8990
+ORACLARR_SONARR_ANIME_API_KEY=your-key
+
+ORACLARR_QBITTORRENT_URL=http://192.168.1.10:8080
+ORACLARR_QBITTORRENT_USERNAME=admin
+ORACLARR_QBITTORRENT_PASSWORD=your-password
 ```
 
-Jellyfin needs an API key (Dashboard → API Keys). `get_library` only registers when `library` is in `toolsets`.
+| Field | Needed for |
+|---|---|
+| `_URL` | every instance |
+| `_TYPE` | only when the name isn't a service type. Types: `sonarr`, `radarr`, `sportarr`, `prowlarr`, `qbittorrent`, `tdarr`, `profilarr`, `jellyfin` |
+| `_API_KEY` | Sonarr, Radarr, Sportarr, Prowlarr, Profilarr, Jellyfin |
+| `_USERNAME`, `_PASSWORD` | qBittorrent |
+| `_ENABLED` | optional; `false` switches an instance off without deleting its lines |
 
-Every tool call has a time budget, set by `tool_budget_seconds`. If an instance doesn't answer in time, it comes back as `status: "timeout"` and the other instances still return their data. List results carry only the useful fields and stop at each tool's `limit`. When there is more, `truncated` and `total` say so. API keys and passwords from your config show up as `***` in responses and log lines (values shorter than four characters are left alone).
+Underscores in the name become dashes in the instance name, so `SONARR_ANIME` shows up as `sonarr-anime`. Blank values count as unset, so you can keep lines for services you don't run. A misspelled `ORACLARR_` variable stops the container with a message that names it, instead of failing quietly later.
+
+Server settings are optional:
+
+| Variable | Default | What it does |
+|---|---|---|
+| `ORACLARR_TOOLSETS` | `media,downloads,transcode,library` | Which groups of tools are offered |
+| `ORACLARR_TOOL_BUDGET_SECONDS` | `30` | Time limit per tool call; slow instances report `status: "timeout"` |
+| `ORACLARR_MAX_OUTPUT_BYTES` | `200000` | Safety net for oversized responses |
+| `ORACLARR_TIMEOUT_SECONDS` | `10` | Timeout for each request to a service |
+| `ORACLARR_ALLOW_WRITES` | `false` | Read-only for now; writes are a future phase |
+
+Jellyfin needs an API key (Dashboard → API Keys). `get_library` only registers when `library` is in the toolsets.
+
+Every tool call has a time budget, set by `ORACLARR_TOOL_BUDGET_SECONDS`. If an instance doesn't answer in time, it comes back as `status: "timeout"` and the other instances still return their data. List results carry only the useful fields and stop at each tool's `limit`. When there is more, `truncated` and `total` say so. API keys and passwords show up as `***` in responses and log lines (values shorter than four characters are left alone).
+
+### Alternative: a config file
+
+Oraclarr still reads a `config.yaml` if one exists at `ORACLARR_CONFIG` (`/config/config.yaml` in the container); [`config.example.yaml`](config.example.yaml) shows the format. If you use both, instances from both are loaded, and an `ORACLARR_` variable wins over the same setting in the file. With Docker, mount the file with `- ./config.yaml:/config/config.yaml:ro`.
+
+### Migrating from `config.yaml`
+
+Up to 1.2.0 the setup used `config.yaml` plus an `environment:` block in the compose file. That setup still works on 1.3.0 without changes. To move to `.env` only:
+
+1. Add a block per instance to `.env`:
+
+   | `config.yaml` | `.env` |
+   |---|---|
+   | `sonarr: { type: sonarr, url: …, api_key: … }` | `ORACLARR_SONARR_URL=…` and `ORACLARR_SONARR_API_KEY=…` |
+   | `sonarr-anime: { type: sonarr, … }` | `ORACLARR_SONARR_ANIME_TYPE=sonarr`, plus `_URL` and `_API_KEY` |
+   | `qbit: { type: qbittorrent, username: …, password: … }` | `ORACLARR_QBIT_TYPE=qbittorrent`, plus `_URL`, `_USERNAME` and `_PASSWORD` |
+   | `server: { toolsets: [a, b] }` | `ORACLARR_TOOLSETS=a,b` |
+
+2. In the compose file, replace the `environment:` block and the `config.yaml` volume line with `env_file: .env`.
+3. Redeploy (in Dockge: **Update**).
+4. Once everything answers, delete `config.yaml`. Keeping it does no harm, because `.env` wins.
 
 ## Roadmap
 
