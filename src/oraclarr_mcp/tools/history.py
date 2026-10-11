@@ -2,7 +2,7 @@ from ..clients.base import BaseClient
 from ._arr import arr_clients
 from ._util import Bounded, bounded, clamp, fan_out
 
-MAX_LIMIT = 200
+MAX_LIMIT = 80
 
 
 def _event(r: dict) -> dict:

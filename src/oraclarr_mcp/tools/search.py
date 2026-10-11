@@ -2,7 +2,7 @@ from ..clients.base import BaseClient
 from ._arr import arr_clients, media_kind
 from ._util import Bounded, bounded, clamp, fan_out
 
-MAX_LIMIT = 200
+MAX_LIMIT = 100
 
 
 def _item(i: dict) -> dict:
