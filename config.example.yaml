@@ -1,6 +1,8 @@
 server:
   allow_writes: false
   toolsets: [media, downloads, transcode]
+  tool_budget_seconds: 30     # per tool call, shared across all instances it queries
+  max_output_bytes: 200000    # safety net; a hit means a tool returned too much
 defaults:
   timeout_seconds: 10
 instances:

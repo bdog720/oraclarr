@@ -226,6 +226,8 @@ Instances are named in `config.yaml`; `type` selects the client, so any number o
 server:
   allow_writes: false              # read-only; writes are a future phase
   toolsets: [media, downloads, transcode]
+  tool_budget_seconds: 30          # per tool call; slow instances report status "timeout"
+  max_output_bytes: 200000         # safety net for oversized responses
 defaults:
   timeout_seconds: 10
 instances:
@@ -238,6 +240,8 @@ instances:
   profilarr:    { type: profilarr,    url: http://host:6868, api_key: ${PROFILARR_KEY} }
   sportarr:     { type: sportarr,     url: http://host:1867, api_key: ${SPORTARR_KEY} }
 ```
+
+Every tool call has a time budget, set by `tool_budget_seconds`. If an instance doesn't answer in time, it comes back as `status: "timeout"` and the other instances still return their data. List results carry only the useful fields and stop at each tool's `limit`. When there is more, `truncated` and `total` say so. API keys and passwords from your config show up as `***` in responses and log lines (values shorter than four characters are left alone).
 
 ## Roadmap
 
