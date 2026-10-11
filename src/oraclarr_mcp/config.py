@@ -4,7 +4,7 @@ from collections.abc import Mapping
 from pathlib import Path
 from typing import Literal
 import yaml
-from pydantic import BaseModel, Field, ValidationError
+from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
 INSTANCE_TYPES = {"sonarr", "radarr", "sportarr", "prowlarr", "qbittorrent", "tdarr", "profilarr",
                   "jellyfin"}
@@ -92,6 +92,7 @@ def parse_env(env: Mapping[str, str]) -> tuple[dict, dict]:
 
 
 class ServerSettings(BaseModel):
+    model_config = ConfigDict(hide_input_in_errors=True)
     allow_writes: bool = False
     toolsets: list[str] = ["media", "downloads", "transcode", "library"]
     tool_budget_seconds: float = Field(default=30, gt=0)
@@ -99,10 +100,13 @@ class ServerSettings(BaseModel):
 
 
 class Defaults(BaseModel):
+    model_config = ConfigDict(hide_input_in_errors=True)
     timeout_seconds: int = 10
 
 
 class Instance(BaseModel):
+    # Validation errors must not echo input: an instance dict holds API keys.
+    model_config = ConfigDict(hide_input_in_errors=True)
     type: Literal["sonarr", "radarr", "sportarr", "prowlarr", "qbittorrent", "tdarr",
                   "profilarr", "jellyfin"]
     url: str
@@ -114,15 +118,16 @@ class Instance(BaseModel):
 
 
 class Config(BaseModel):
+    model_config = ConfigDict(hide_input_in_errors=True)
     server: ServerSettings = ServerSettings()
     defaults: Defaults = Defaults()
     instances: dict[str, Instance]
 
 
-def _interpolate(raw: str) -> str:
+def _interpolate(raw: str, env: Mapping[str, str]) -> str:
     def repl(m: re.Match) -> str:
         var = m.group(1)
-        val = os.environ.get(var)
+        val = env.get(var)
         if val is None:
             raise ConfigError(f"Environment variable {var} referenced in config is not set")
         return val
@@ -130,24 +135,65 @@ def _interpolate(raw: str) -> str:
     return _ENV_RE.sub(repl, raw)
 
 
-def load_config(path: Path) -> Config:
-    p = Path(path)
+def _read_file(p: Path, env: Mapping[str, str]) -> dict:
     if p.is_dir():
         raise ConfigError(
             f"Config path {p} is a directory, not a file. In Docker this usually means "
             f"the config.yaml file did not exist on the host when the container started, "
-            f"so a directory was created at the mount point. Create config.yaml as a file "
-            f"(copy config.example.yaml) and recreate the container."
+            f"so a directory was created at the mount point. Remove that mount (settings "
+            f"can live in .env), or create config.yaml as a file and recreate the container."
         )
     if not p.exists():
-        raise ConfigError(
-            f"Config file not found: {p}. Copy config.example.yaml to config.yaml and "
-            f"point ORACLARR_CONFIG at it (or mount it into the container at this path)."
-        )
-    raw = p.read_text()
-    interpolated = _interpolate(raw)
-    data = yaml.safe_load(interpolated)
+        return {}
+    data = yaml.safe_load(_interpolate(p.read_text(), env)) or {}
+    if not isinstance(data, dict):
+        raise ConfigError(f"Config file {p} must contain a YAML mapping")
+    return data
+
+
+def _no_instances_message(p: Path | None) -> str:
+    if p is None:
+        where = "No config file was given"
+    elif not p.exists():
+        where = f"Config file {p} not found"
+    else:
+        where = f"Config file {p} lists no instances"
+    return (f"No instances configured. {where}, and no ORACLARR_<NAME>_URL variables are "
+            f"set. Set ORACLARR_<NAME>_URL (plus _API_KEY) in .env, or copy "
+            f"config.example.yaml to config.yaml.")
+
+
+def load_settings(path: Path | None, env: Mapping[str, str]) -> Config:
+    """config.yaml (optional) overlaid with ORACLARR_* variables; env wins per field."""
+    p = Path(path) if path is not None else None
+    data = _read_file(p, env) if p is not None else {}
+    sections, env_instances = parse_env(env)
+    for section, values in sections.items():
+        if values:
+            data[section] = {**(data.get(section) or {}), **values}
+    merged: dict[str, dict] = {}
+    for name, inst in (data.get("instances") or {}).items():
+        if not isinstance(inst, dict):
+            raise ConfigError(f"instance '{name}' in {p} must be a mapping of settings")
+        merged[name] = dict(inst)
+    for name, fields in env_instances.items():
+        merged[name] = {**merged.get(name, {}), **fields}
+    if not merged:
+        raise ConfigError(_no_instances_message(p))
+    for name, inst in merged.items():
+        if not inst.get("url"):
+            raise ConfigError(f"instance '{name}' has no URL: set {env_name(name, 'URL')}")
+        if not inst.get("type"):
+            if name not in INSTANCE_TYPES:
+                raise ConfigError(f"instance '{name}' needs {env_name(name, 'TYPE')} "
+                                  f"(one of: {', '.join(sorted(INSTANCE_TYPES))})")
+            inst["type"] = name
+    data["instances"] = merged
     try:
         return Config.model_validate(data)
     except ValidationError as e:
-        raise ConfigError(str(e)) from e
+        raise ConfigError(str(e)) from None
+
+
+def load_config(path: Path) -> Config:
+    return load_settings(path, os.environ)
