@@ -31,10 +31,10 @@ Once registered, you just ask your MCP client. Oraclarr picks the right tool and
 | You ask… | Oraclarr runs | …and tells you |
 |----------|---------------|----------------|
 | "Is anything in my stack down?" | `stack_health` | which services are unreachable, unhealthy, or low on disk |
-| "Why hasn't the new episode of *X* downloaded yet?" | `diagnose` | where *X* is in the wanted → grab → download → import pipeline |
+| "Why hasn't the new episode of *X* downloaded yet?" | `diagnose` | whether *X* is in your library, sitting in the download queue, or still on the wanted list |
 | "Why did a sub-only release get grabbed when I only allow English dubs?" | `explain_decision` | the release that was grabbed, its custom-format score, and the language formats that matched |
-| "Why does Profilarr keep upgrading stuff that already looks fine?" | `explain_decision` + `get_quality_config` | the profile cutoff/upgrade thresholds vs. the current file's score |
-| "What's stuck downloading right now?" | `get_queues` | unified queue with progress, ETA, and stall flags |
+| "Why does Profilarr keep upgrading stuff that already looks fine?" | `explain_decision` + `get_quality_config` | the profile's cutoff and upgrade thresholds next to the scores of recent grabs |
+| "What's stuck downloading right now?" | `get_queues` | a unified queue with progress and stall flags |
 
 ## Tools
 
