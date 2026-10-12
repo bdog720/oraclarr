@@ -222,3 +222,35 @@ async def get_containers(clients: dict[str, BaseClient], name: str | None = None
         return await _summary(c, limit)
 
     return await fan_out(sel, collect)
+
+
+BRIEF_KEYS = ("name", "state", "health", "exit_code", "restart_count", "finished_at")
+_DEFAULT_PORTS = {"http": 80, "https": 443}
+
+
+def instance_port(client) -> int | None:
+    url = getattr(getattr(client, "http", None), "base_url", None)
+    if url is None:
+        return None
+    return url.port or _DEFAULT_PORTS.get(url.scheme)
+
+
+def _shares_network(x: dict, owner: dict) -> bool:
+    mode = (x.get("HostConfig") or {}).get("NetworkMode") or ""
+    return mode in (f"container:{owner.get('Id')}", f"container:{_name(owner)}")
+
+
+async def containers_for_ports(c, ports: set[int]) -> dict[int, list[dict] | None]:
+    """For each port: the container publishing it, then containers sharing its network
+    (qBittorrent runs in Gluetun's namespace; Gluetun publishes 8080)."""
+    listing = await c.containers()
+    groups: dict[int, list[dict] | None] = {}
+    for port in ports:
+        owner = next((x for x in listing if port in _ports(x)), None)
+        groups[port] = None if owner is None else (
+            [owner] + [x for x in listing if _shares_network(x, owner)])
+    ids = list({x["Id"]: None for g in groups.values() if g for x in g})
+    details = dict(zip(ids, await c.inspect_many(ids)))
+    return {port: None if g is None else
+            [{k: container_row(x, details.get(x["Id"]))[k] for k in BRIEF_KEYS} for x in g]
+            for port, g in groups.items()}
