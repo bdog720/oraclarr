@@ -303,3 +303,34 @@ async def test_logs_strip_ansi_and_cap_escaped_size():
 async def test_logs_unknown_container_is_not_found():
     out = await get_containers({"docker": FakeLogs(b"")}, name="nope", section="logs")
     assert out[0]["data"]["error"] == "not_found"
+
+
+SECRET = "0123456789abcdef0123456789abcdef"
+
+
+def _guarded_tool():
+    from oraclarr_mcp.call_guard import guarded
+    from oraclarr_mcp.redact import Redactor
+    return guarded("get_containers", get_containers, budget_s=5, max_bytes=200_000,
+                   redactor=Redactor([SECRET]))
+
+
+async def test_logs_redact_secrets_before_cutting():
+    fake = FakeLogs(_log_bytes([(1, "x" * 380 + " " + SECRET)]))
+    out = await _guarded_tool()(clients={"docker": fake}, name="sonarr", section="logs")
+    assert SECRET[:8] not in json.dumps(out)
+
+
+async def test_logs_match_runs_on_redacted_text():
+    fake = FakeLogs(_log_bytes([(1, "API_KEY=" + SECRET), (1, "plain " + SECRET)]))
+    out = await _guarded_tool()(clients={"docker": fake}, name="sonarr", section="logs",
+                                match=SECRET[:6])
+    assert out[0]["data"]["matched_of"] == 0
+
+
+async def test_health_output_redacted_before_cutting():
+    inspects = _default_inspects()
+    inspects["qbittorrent"]["State"]["Health"]["Log"][-1]["Output"] = "y" * 290 + SECRET
+    out = await _guarded_tool()(clients={"docker": FakeDocker(None, inspects)},
+                                name="qbittorrent")
+    assert SECRET[:8] not in json.dumps(out)

@@ -1,4 +1,5 @@
 import json
+import re
 from pathlib import Path
 
 import httpx
@@ -7,7 +8,8 @@ import respx
 
 from oraclarr_mcp.clients.base import NoAuth
 from oraclarr_mcp.clients.docker import (CACHE_TTL_S, DockerClient, DockerProxyRefused,
-                                         demux, slim_inspect, slim_listing)
+                                         DockerRequestFailed, demux, slim_inspect,
+                                         slim_listing)
 
 FX = Path(__file__).parent.parent / "fixtures"
 B = "http://h"
@@ -160,7 +162,7 @@ async def test_403_raises_proxy_refused_without_query_string():
     with pytest.raises(DockerProxyRefused) as e:
         await _client().logs("abc", tail=5, since=123)
     msg = str(e.value)
-    assert "/containers/abc/logs" in msg and "-allowGET" in msg and "tail" not in msg
+    assert "/containers/<id>/logs" in msg and "-allowGET" in msg and "tail" not in msg
 
 
 @respx.mock
@@ -178,3 +180,45 @@ async def test_client_only_sends_get():
     await c.inspect_many(ids[:3])
     await c.logs(ids[0], tail=1)
     assert {call.request.method for call in respx.calls} == {"GET"}
+
+
+HEX64 = re.compile(r"[0-9a-f]{64}")
+CID = "ab" * 32
+
+
+@respx.mock
+async def test_403_message_hides_container_id():
+    respx.get(f"{B}/containers/{CID}/json").mock(return_value=httpx.Response(403))
+    with pytest.raises(DockerProxyRefused) as e:
+        await _client().inspect(CID)
+    assert not HEX64.search(str(e.value)) and "/containers/<id>/json" in str(e.value)
+
+
+@respx.mock
+async def test_logs_error_hides_id_and_query():
+    respx.get(f"{B}/containers/{CID}/logs").mock(return_value=httpx.Response(501))
+    with pytest.raises(DockerRequestFailed) as e:
+        await _client().logs(CID, tail=50)
+    msg = str(e.value)
+    assert "501" in msg and "/containers/<id>/logs" in msg
+    assert not HEX64.search(msg) and "tail" not in msg
+
+
+@respx.mock
+async def test_inspect_many_survives_one_failing_and_one_hung_inspect():
+    respx.get(f"{B}/containers/c1/json").mock(return_value=httpx.Response(500))
+    respx.get(f"{B}/containers/c2/json").mock(side_effect=httpx.ReadTimeout("slow"))
+    respx.get(f"{B}/containers/c3/json").mock(
+        return_value=httpx.Response(200, json=_fx("inspect_sonarr")))
+    out = await _client().inspect_many(["c1", "c2", "c3"])
+    assert out[0] is None and out[1] is None and out[2]["Name"] == "/sonarr"
+
+
+@respx.mock
+async def test_inspect_error_is_not_cached():
+    route = respx.get(f"{B}/containers/c1/json").mock(
+        side_effect=[httpx.Response(500), httpx.Response(200, json=_fx("inspect_sonarr"))])
+    c = _client()
+    assert (await c.inspect_many(["c1"]))[0] is None
+    assert (await c.inspect_many(["c1"]))[0]["Name"] == "/sonarr"
+    assert route.call_count == 2

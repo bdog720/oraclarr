@@ -106,3 +106,15 @@ def test_scrub_masks_portainer_style_tokens():
 def test_new_patterns_leave_ordinary_text_alone():
     text = "Password reset page loaded; secrets manager ok; see http://host:8989/path"
     assert Redactor([]).scrub(text) == text
+
+
+def test_scrub_masks_json_password_fields():
+    out = Redactor([]).scrub('{"user":"bob","password":"hunter2x","client_secret": "S9"}')
+    assert "hunter2x" not in out and "S9" not in out and '"user":"bob"' in out
+
+
+def test_url_credential_pattern_is_linear_on_dotted_text():
+    import time
+    t0 = time.monotonic()
+    Redactor([]).scrub("a." * 25000)
+    assert time.monotonic() - t0 < 1.0
