@@ -1,0 +1,34 @@
+{
+ "Id": "1717171717171717171717171717171717171717171717171717171717171717",
+ "Name": "/diskusage",
+ "Created": "2026-09-29T17:01:01.889204306Z",
+ "RestartCount": 0,
+ "State": {
+  "Status": "created",
+  "Running": false,
+  "Paused": false,
+  "Restarting": false,
+  "OOMKilled": false,
+  "Dead": false,
+  "Pid": 0,
+  "ExitCode": 0,
+  "Error": "",
+  "StartedAt": "0001-01-01T00:00:00Z",
+  "FinishedAt": "0001-01-01T00:00:00Z"
+ },
+ "Config": {
+  "Image": "example/diskusage:latest",
+  "Tty": false,
+  "Labels": {
+   "com.docker.compose.project": "diskusage-stack",
+   "com.docker.compose.service": "diskusage"
+  }
+ },
+ "HostConfig": {
+  "NetworkMode": "diskusage-stack_default",
+  "RestartPolicy": {
+   "Name": "unless-stopped",
+   "MaximumRetryCount": 0
+  }
+ }
+}

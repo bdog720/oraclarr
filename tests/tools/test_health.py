@@ -1,5 +1,11 @@
+from types import SimpleNamespace
+
+import httpx
+
 from oraclarr_mcp.tools.health import stack_health
 from oraclarr_mcp.clients.arr import ArrClient
+
+from .test_containers import FakeDocker, _default_inspects
 
 class FakeArr(ArrClient):
     def __init__(self, ok=True): self._ok = ok; self.name="sonarr"; self.type="sonarr"
@@ -117,3 +123,93 @@ async def test_stack_health_truenas_uses_one_batch():
     row = (await stack_health({"truenas": BatchTn()}))[0]
     assert row["status"] == "ok"
     assert row["data"] == {"version": "25.10.7", "pools_healthy": True, "alerts": {}}
+
+
+class FakeDockerHealth(FakeDocker):
+    async def version(self):
+        return {"Version": "28.3.1", "ApiVersion": "1.51"}
+
+
+def _down(name, type, url):
+    class Down:
+        async def system_status(self):
+            raise httpx.ConnectError("down")
+        async def transfer_info(self):
+            raise httpx.ConnectError("down")
+    d = Down()
+    d.name, d.type = name, type
+    d.http = SimpleNamespace(base_url=httpx.URL(url))
+    return d
+
+
+async def test_stack_health_docker_row_counts_from_list():
+    res = await stack_health({"docker": FakeDockerHealth()})
+    data = res[0]["data"]
+    assert data["version"] == "28.3.1"
+    assert data["containers"]["running"] == 23 and "problems" not in data["containers"]
+
+
+async def test_unreachable_instance_gets_port_owner_and_network_sharers():
+    clients = {"qbit": _down("qbit", "qbittorrent", "http://192.0.2.10:8080"),
+               "docker": FakeDockerHealth(None, _default_inspects())}
+    res = await stack_health(clients)
+    row = next(r for r in res if r["instance"] == "qbit")
+    assert row["status"] == "unreachable"
+    assert [c["name"] for c in row["container"]] == ["gluetun", "qbittorrent"]
+    assert set(row["container"][0]) == {"name", "state", "health", "exit_code",
+                                        "restart_count", "finished_at"}
+
+
+async def test_unpublished_port_gives_null_container():
+    clients = {"x": _down("x", "sonarr", "http://h:4444"), "docker": FakeDockerHealth()}
+    res = await stack_health(clients)
+    assert next(r for r in res if r["instance"] == "x")["container"] is None
+
+
+async def test_instance_target_is_host_and_explicit_port():
+    from oraclarr_mcp.tools.containers import instance_target
+    assert instance_target(_down("a", "sonarr", "https://h")) == ("h", None)
+    assert instance_target(_down("a", "sonarr", "http://Sonarr-Anime:8989")) == (
+        "sonarr-anime", 8989)
+    assert instance_target(SimpleNamespace()) is None
+
+
+async def test_url_hostname_matches_container_before_port():
+    # sonarr publishes 8989; sonarr-anime is reached by container name on its own 8989.
+    clients = {"sonarr-anime": _down("sonarr-anime", "sonarr", "http://sonarr-anime:8989"),
+               "docker": FakeDockerHealth(None, _default_inspects())}
+    res = await stack_health(clients)
+    row = next(r for r in res if r["instance"] == "sonarr-anime")
+    assert [c["name"] for c in row["container"]] == ["sonarr-anime"]
+
+
+async def test_no_explicit_port_and_unknown_host_skips_join():
+    clients = {"sonarr": _down("sonarr", "sonarr", "https://sonarr.example.com"),
+               "docker": FakeDockerHealth()}
+    res = await stack_health(clients)
+    assert "container" not in next(r for r in res if r["instance"] == "sonarr")
+
+
+async def test_no_join_with_two_docker_instances():
+    d2 = FakeDockerHealth()
+    d2.name = "docker2"
+    clients = {"qbit": _down("qbit", "qbittorrent", "http://h:8080"),
+               "docker": FakeDockerHealth(), "docker2": d2}
+    res = await stack_health(clients)
+    assert "container" not in next(r for r in res if r["instance"] == "qbit")
+
+
+async def test_docker_failure_leaves_rows_unchanged():
+    class Broken(FakeDockerHealth):
+        async def containers(self):
+            raise httpx.ConnectError("proxy down")
+    clients = {"qbit": _down("qbit", "qbittorrent", "http://h:8080"), "docker": Broken()}
+    res = await stack_health(clients)
+    assert "container" not in next(r for r in res if r["instance"] == "qbit")
+    assert next(r for r in res if r["instance"] == "docker")["status"] == "unreachable"
+
+
+async def test_healthy_rows_get_no_container_field():
+    clients = {"sonarr": FakeArr(ok=True), "docker": FakeDockerHealth()}
+    res = await stack_health(clients)
+    assert "container" not in next(r for r in res if r["instance"] == "sonarr")
