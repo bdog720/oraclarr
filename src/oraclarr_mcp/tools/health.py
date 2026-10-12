@@ -42,8 +42,43 @@ async def _summary(c: BaseClient) -> dict:
         return {"version": info.get("version"),
                 "pools_healthy": all(p.get("healthy") for p in pools or []),
                 "alerts": dict(Counter(a.get("level") for a in active))}
+    if c.type == "docker":
+        from .containers import container_counts, container_row
+        version, listing = await asyncio.gather(c.version(), c.containers())
+        rows = [container_row(x, None) for x in listing]
+        return {"version": version.get("Version"),
+                "containers": container_counts(rows, with_problems=False)}
     return {}
+
+JOIN_STATUSES = ("unreachable", "timeout")
+
+
+async def _join_containers(clients: dict[str, BaseClient], rows: list[dict]) -> None:
+    """Attach container state to unreachable rows, matched by published port. Only with
+    exactly one docker instance: with two hosts a port could match the wrong container."""
+    from ._util import probe
+    from .containers import containers_for_ports, instance_port
+    dockers = [c for c in clients.values() if c.type == "docker"]
+    if len(dockers) != 1:
+        return
+    want = {}
+    for r in rows:
+        if r["status"] in JOIN_STATUSES and r["type"] != "docker":
+            port = instance_port(clients.get(r["instance"]))
+            if port:
+                want[r["instance"]] = port
+    if not want:
+        return
+    res = await probe(dockers[0], lambda c: containers_for_ports(c, set(want.values())))
+    if res.status != "ok":
+        return
+    for r in rows:
+        if r["instance"] in want:
+            r["container"] = res.data.get(want[r["instance"]])
+
 
 async def stack_health(clients: dict[str, BaseClient]) -> list[dict]:
     from ._util import fan_out
-    return await fan_out(clients, _summary)
+    rows = await fan_out(clients, _summary)
+    await _join_containers(clients, rows)
+    return rows
