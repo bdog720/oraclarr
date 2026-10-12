@@ -93,3 +93,81 @@ async def test_queue_tolerates_torrent_with_null_state():
             return [{"hash": "h1", "state": None, "progress": 0.1}]
     res = await get_queues({"sonarr": FakeArr(), "qbit": NullState()})
     assert res["items"][0]["stalled"] is False
+
+
+class FakeCl:
+    type = "cleanuparr"
+
+    def __init__(self, name="cleanuparr", strikes=None, total=None, fail=False, bad=False):
+        self.name = name
+        self._strikes = strikes if strikes is not None else []
+        self._total = total
+        self._fail = fail
+        self._bad = bad
+        self.page_sizes = []
+
+    async def strikes(self, page_size):
+        self.page_sizes.append(page_size)
+        if self._fail:
+            raise RuntimeError("cleanuparr down")
+        if self._bad:
+            return ["not-a-dict"], 1
+        total = self._total if self._total is not None else len(self._strikes)
+        return self._strikes, total
+
+
+H1_STRIKE = {"downloadId": "H1", "totalStrikes": 4, "strikesByType": {"Stalled": 4},
+             "isMarkedForRemoval": True, "hasDryRunStrikes": False}
+
+
+async def test_queue_shows_cleanuparr_strikes():
+    cl = FakeCl(strikes=[H1_STRIKE])
+    res = await get_queues({"sonarr": FakeArr(), "qbit": FakeQbit(), "cleanuparr": cl})
+    assert res["items"][0]["cleanuparr"] == {"strikes": 4, "by_type": {"Stalled": 4},
+                                             "marked_for_removal": True, "dry_run": False}
+    assert cl.page_sizes == [500]
+
+
+async def test_queue_strike_match_is_case_insensitive():
+    cl = FakeCl(strikes=[{**H1_STRIKE, "downloadId": "h1"}])
+    res = await get_queues({"sonarr": FakeArr(), "cleanuparr": cl})
+    assert res["items"][0]["cleanuparr"]["strikes"] == 4
+
+
+async def test_queue_without_strike_is_zero():
+    cl = FakeCl(strikes=[{**H1_STRIKE, "downloadId": "OTHER"}])
+    res = await get_queues({"sonarr": FakeArr(), "cleanuparr": cl})
+    assert res["items"][0]["cleanuparr"] == {"strikes": 0}
+
+
+async def test_queue_truncated_strikes_without_match_is_unknown():
+    cl = FakeCl(strikes=[{**H1_STRIKE, "downloadId": "OTHER"}], total=900)
+    res = await get_queues({"sonarr": FakeArr(), "cleanuparr": cl})
+    assert res["items"][0]["cleanuparr"] is None
+
+
+async def test_queue_cleanuparr_down_gives_null_and_error():
+    res = await get_queues({"sonarr": FakeArr(), "cleanuparr": FakeCl(fail=True)})
+    assert res["items"][0]["cleanuparr"] is None
+    assert res["items"][0]["title"] == "Show.S03E04"
+    assert [e["instance"] for e in res["errors"]] == ["cleanuparr"]
+
+
+async def test_queue_one_cleanuparr_down_uses_the_other():
+    up = FakeCl(name="cl-up", strikes=[H1_STRIKE])
+    down = FakeCl(name="cl-down", fail=True)
+    res = await get_queues({"sonarr": FakeArr(), "cl-up": up, "cl-down": down})
+    assert res["items"][0]["cleanuparr"]["strikes"] == 4
+    assert [e["instance"] for e in res["errors"]] == ["cl-down"]
+
+
+async def test_queue_malformed_cleanuparr_reply_fails_only_that_instance():
+    res = await get_queues({"sonarr": FakeArr(), "cleanuparr": FakeCl(bad=True)})
+    assert res["items"][0]["title"] == "Show.S03E04"
+    assert res["items"][0]["cleanuparr"] is None
+    assert res["errors"][0]["instance"] == "cleanuparr"
+
+
+async def test_queue_without_cleanuparr_has_no_key():
+    res = await get_queues({"sonarr": FakeArr()})
+    assert "cleanuparr" not in res["items"][0]
