@@ -30,7 +30,7 @@ Once registered, you just ask your MCP client. Oraclarr picks the right tool and
 
 | You ask… | Oraclarr runs | …and tells you |
 |----------|---------------|----------------|
-| "Is anything in my stack down?" | `stack_health` | which services are unreachable, unhealthy, or low on disk |
+| "Is anything in my stack down?" | `stack_health` | which services are unreachable, unhealthy, or low on disk, and for one that's down, its container's state and exit code |
 | "Why hasn't the new episode of *X* downloaded yet?" | `diagnose` | whether *X* is in your library, sitting in the download queue, or still on the wanted list |
 | "Why did a sub-only release get grabbed when I only allow English dubs?" | `explain_decision` | the release that was grabbed, its custom-format score, and the language formats that matched |
 | "Why does Profilarr keep upgrading stuff that already looks fine?" | `explain_decision` + `get_quality_config` | the profile's cutoff and upgrade thresholds next to the scores of recent grabs |
@@ -39,6 +39,8 @@ Once registered, you just ask your MCP client. Oraclarr picks the right tool and
 | "Why is Cleanuparr about to remove this download?" | `get_queues` + `get_cleanup` | the strikes against it and their type, whether it's marked for removal, and the rules that apply |
 | "Is the box under I/O pressure, and how much RAM is actually free?" | `get_host` | CPU busy and iowait, I/O pressure, free and available memory, swap, ARC against its max, GPU heat and VRAM |
 | "How full are the pools, and what's using the space?" | `get_host` | pool capacity, fragmentation and scrub state, then `section="datasets"` for the biggest datasets |
+| "Which containers are down, and what did they exit with?" | `get_containers` | problem containers first (unhealthy, restarting, OOM-killed, or stopped with a non-zero exit code) and their restart counts |
+| "What errors has Sonarr logged today?" | `get_containers` | with `name="sonarr", section="logs", match="error", since="1d"`, the matching log lines with timestamps |
 
 ## Tools
 
@@ -60,6 +62,7 @@ All read-only and outcome-oriented (not one-per-endpoint, which keeps the model 
 | `get_library` | Jellyfin libraries, scan progress, tasks, playback and transcodes, recent additions, name search |
 | `get_cleanup` | Cleanuparr dry-run state, cleaner schedules, seeding and stall rules, strikes |
 | `get_host` | Host CPU/iowait, memory, swap, ARC, GPU, pools, datasets, disk temperatures, TrueNAS alerts |
+| `get_containers` | Docker containers: state, health, restart counts, exit codes, and a filtered log tail |
 
 ## Install
 
@@ -204,7 +207,7 @@ ORACLARR_QBITTORRENT_PASSWORD=your-password
 | Field | Needed for |
 |---|---|
 | `_URL` | every instance |
-| `_TYPE` | only when the name isn't a service type. Types: `sonarr`, `radarr`, `sportarr`, `prowlarr`, `qbittorrent`, `tdarr`, `profilarr`, `jellyfin`, `cleanuparr`, `netdata`, `truenas` |
+| `_TYPE` | only when the name isn't a service type. Types: `sonarr`, `radarr`, `sportarr`, `prowlarr`, `qbittorrent`, `tdarr`, `profilarr`, `jellyfin`, `cleanuparr`, `netdata`, `truenas`, `docker` |
 | `_API_KEY` | Sonarr, Radarr, Sportarr, Prowlarr, Profilarr, Jellyfin, Cleanuparr, TrueNAS |
 | `_USERNAME`, `_PASSWORD` | qBittorrent |
 | `_ENABLED` | optional; `false` switches an instance off without deleting its lines |
@@ -216,7 +219,7 @@ Server settings are optional:
 
 | Variable | Default | What it does |
 |---|---|---|
-| `ORACLARR_TOOLSETS` | `media,downloads,transcode,library,host` | Which groups of tools are offered |
+| `ORACLARR_TOOLSETS` | `media,downloads,transcode,library,host,containers` | Which groups of tools are offered |
 | `ORACLARR_TOOL_BUDGET_SECONDS` | `30` | Time limit per tool call; slow instances report `status: "timeout"` |
 | `ORACLARR_MAX_OUTPUT_BYTES` | `200000` | Safety net for oversized responses |
 | `ORACLARR_TIMEOUT_SECONDS` | `10` | Timeout for each request to a service |
@@ -276,6 +279,51 @@ volumes:
 ```
 
 Leave out the `NVIDIA_*` lines and the `deploy:` block if you don't have an NVIDIA GPU; `get_host` then reports the GPU as not available. Point `ORACLARR_NETDATA_URL` at `http://<host>:20999`. Netdata's API has no login, so keep that port on your LAN.
+
+### Containers (Docker)
+
+`get_containers` reads Docker through [socket-proxy](https://github.com/wollomatic/socket-proxy), a small container that sits in front of the Docker socket and passes on only the requests you allow. Oraclarr never gets the socket itself. The rules below allow GET requests for the container list, one container's details, its logs, the Docker version and a ping. The proxy refuses everything else, including start, stop, `exec`, and the `archive` and `export` endpoints that can copy files out of a container.
+
+Add it to the same compose stack as Oraclarr:
+
+```yaml
+  docker-proxy:
+    image: wollomatic/socket-proxy:1.13.1
+    container_name: docker-proxy
+    restart: unless-stopped
+    user: "65534:<docker group id>"
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    mem_limit: 64M
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    command:
+      - '-loglevel=info'
+      - '-listenip=0.0.0.0'
+      - '-allowfrom=oraclarr'
+      - '-allowGET=(/v1\.[0-9]+)?/(version|_ping|containers/json|containers/[a-zA-Z0-9][a-zA-Z0-9_.-]*/(json|logs))'
+      - '-allowhealthcheck'
+      - '-watchdoginterval=3600'
+      - '-stoponwatchdog'
+    healthcheck:
+      test: ["CMD", "./healthcheck"]
+      interval: 30s
+      timeout: 5s
+      retries: 2
+```
+
+Get the Docker group ID with `stat -c '%g' /var/run/docker.sock` and put it in `user:`. Keep the single quotes around the `command` items so the backslash in the regex survives. `-allowfrom=oraclarr` has to match your Oraclarr service name, and the proxy publishes no port, so nothing else on the network can reach it. Then point Oraclarr at it:
+
+```
+ORACLARR_DOCKER_URL=http://docker-proxy:2375
+```
+
+Add that line in the same step as updating to 1.6.0. An older image doesn't know the `docker` type and won't start.
+
+A container's details include its environment variables, which usually hold API keys. Oraclarr drops them, along with mounts and most labels, as soon as the response arrives, so they never reach a tool result. Log lines get the same redaction as every other response, plus patterns for passwords and credentials inside URLs. A service that prints a secret in plain prose can still get through, so treat log output with some care.
+
+`stack_health` uses the same data. When a service is unreachable, its row shows the container that publishes its port, plus any container sharing that container's network (qBittorrent behind Gluetun, for example).
 
 ### Migrating from `config.yaml`
 
