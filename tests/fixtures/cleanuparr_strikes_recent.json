@@ -1,0 +1,42 @@
+[
+  {
+    "id": "01a12d3f-857e-7b0a-83ea-43a0612a7b7b",
+    "type": "Stalled",
+    "createdAt": "2026-10-11T23:15:00.094994+00:00",
+    "downloadId": "0000000000000000000000000000000000000001",
+    "title": "Example.Show.S01E01.1080p.WEB-DL-GROUP",
+    "isDryRun": false
+  },
+  {
+    "id": "01a12d3f-8546-7448-84a2-2fabeefbb5ae",
+    "type": "Stalled",
+    "createdAt": "2026-10-11T23:15:00.0382139+00:00",
+    "downloadId": "0000000000000000000000000000000000000002",
+    "title": "Example.Show.S01E02.1080p.WEB-DL-GROUP",
+    "isDryRun": false
+  },
+  {
+    "id": "01a12d3a-f1f9-728b-8e08-7a6642efe388",
+    "type": "Stalled",
+    "createdAt": "2026-10-11T23:10:00.1852135+00:00",
+    "downloadId": "0000000000000000000000000000000000000001",
+    "title": "Example.Show.S01E01.1080p.WEB-DL-GROUP",
+    "isDryRun": false
+  },
+  {
+    "id": "01a12d3a-f17d-736f-bb64-dc14bf4ad074",
+    "type": "Stalled",
+    "createdAt": "2026-10-11T23:10:00.0617344+00:00",
+    "downloadId": "0000000000000000000000000000000000000002",
+    "title": "Example.Show.S01E02.1080p.WEB-DL-GROUP",
+    "isDryRun": false
+  },
+  {
+    "id": "01a12d36-5e39-7669-ab25-e4d3bd5148d1",
+    "type": "Stalled",
+    "createdAt": "2026-10-11T23:05:00.2171305+00:00",
+    "downloadId": "0000000000000000000000000000000000000001",
+    "title": "Example.Show.S01E01.1080p.WEB-DL-GROUP",
+    "isDryRun": false
+  }
+]

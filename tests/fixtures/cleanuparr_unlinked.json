@@ -1,0 +1,13 @@
+{
+  "enabled": false,
+  "targetCategory": "cleanuparr-unlinked",
+  "useTag": false,
+  "ignoredRootDirs": [
+    "/incomplete"
+  ],
+  "categories": [
+    "radarr",
+    "tv-sonarr",
+    "sonarr-anime"
+  ]
+}
