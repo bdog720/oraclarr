@@ -19,6 +19,7 @@ from .tools.library import get_library
 from .tools.cleanup import get_cleanup
 from .tools.host import get_host
 from .tools.containers import get_containers
+from .tools.jobs import get_jobs
 
 TOOL_SPECS: list[ToolSpec] = [
     tool_spec("stack_health", "read", "always"),
@@ -36,6 +37,7 @@ TOOL_SPECS: list[ToolSpec] = [
     tool_spec("get_cleanup", "read", "downloads"),
     tool_spec("get_host", "read", "host"),
     tool_spec("get_containers", "read", "containers"),
+    tool_spec("get_jobs", "read", "media"),
 ]
 
 
@@ -179,6 +181,18 @@ def build_server(
         exist."""
         return await get_containers(clients, name, section, lines, since, match, limit)
 
+    async def _get_jobs(service: str | None = None, section: str | None = None,
+                        include_routine: bool = False, limit: int = 50) -> list[dict] | dict:
+        """What the arrs and Jellyfin are doing: running and queued commands with
+        progress (rename, refresh, search) and the series or movies they act on, failed
+        commands, recently finished ones (routine housekeeping hidden unless
+        `include_routine`), and Jellyfin's running or failed tasks such as a library scan.
+        `section="schedule"` lists each arr's scheduled tasks with last and next run. The
+        arr keeps finished commands for a few minutes only. Use this instead of the arr's
+        System > Tasks page or checking progress over SSH. Lists stop at `limit` (max 50);
+        `truncated` and `total` show when more exist."""
+        return await get_jobs(clients, service, section, include_routine, limit)
+
     register("stack_health", _stack_health)
     register("get_queues", _get_queues)
     register("diagnose", _diagnose)
@@ -194,4 +208,5 @@ def build_server(
     register("get_cleanup", _get_cleanup)
     register("get_host", _get_host)
     register("get_containers", _get_containers)
+    register("get_jobs", _get_jobs)
     return mcp
