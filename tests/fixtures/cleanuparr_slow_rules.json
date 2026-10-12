@@ -1,0 +1,18 @@
+[
+  {
+    "resetStrikesOnProgress": true,
+    "maxTimeHours": 24,
+    "ignoreWhileAltSpeedActive": true,
+    "minSpeed": "100KB",
+    "ignoreAboveSize": "25GB",
+    "id": "00000000-0000-7000-8000-000000000004",
+    "name": "Public - Slow",
+    "enabled": true,
+    "maxStrikes": 8,
+    "privacyType": "Public",
+    "minCompletionPercentage": 0,
+    "maxCompletionPercentage": 90,
+    "deletePrivateTorrentsFromClient": false,
+    "changeCategory": false
+  }
+]

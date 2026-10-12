@@ -1,0 +1,24 @@
+{
+  "enabled": true,
+  "cronExpression": "0 0/5 * ? * * *",
+  "useAdvancedScheduling": false,
+  "failedImport": {
+    "maxStrikes": 5,
+    "ignorePrivate": true,
+    "deletePrivate": false,
+    "skipIfNotFoundInClient": true,
+    "patterns": [
+      "title mismatch",
+      "manual import required",
+      "no files found",
+      "unpack failed"
+    ],
+    "patternMode": "Include",
+    "changeCategory": false,
+    "forceImport": false,
+    "forceImportMaxTries": 3
+  },
+  "ignoredDownloads": [],
+  "processNoContentId": false,
+  "downloadingMetadataMaxStrikes": 0
+}
