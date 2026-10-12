@@ -93,6 +93,18 @@ async def _arr_summary(c, include_routine: bool, limit: int) -> Bounded:
                    total=total, truncated=shown < total)
 
 
+
+def _schedule_row(t: dict) -> dict:
+    return {"name": t.get("name"), "interval_min": t.get("interval"),
+            "last_run": t.get("lastExecution"), "next_run": t.get("nextExecution"),
+            "last_duration_s": duration_s(t.get("lastDuration"))}
+
+
+async def _schedule(c, limit: int) -> Bounded:
+    rows = sorted((_schedule_row(t) for t in await c.system_tasks()),
+                  key=lambda r: r["next_run"] or "~")
+    return bounded(rows, limit)
+
 async def get_jobs(clients: dict[str, BaseClient], service: str | None = None,
                    section: str | None = None, include_routine: bool = False,
                    limit: int = 50) -> list[dict] | dict:
@@ -110,6 +122,8 @@ async def get_jobs(clients: dict[str, BaseClient], service: str | None = None,
             return dict(NOT_SUPPORTED)
         if c.type == "jellyfin":
             return {"tasks": [_task(t) for t in await c.scheduled_tasks() if _notable(t)]}
+        if section == "schedule":
+            return await _schedule(c, limit)
         return await _arr_summary(c, include_routine, limit)
 
     return await fan_out(sel, collect)

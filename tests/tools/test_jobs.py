@@ -187,3 +187,22 @@ async def test_other_types_are_ignored():
         name = "netdata"; type = "netdata"
     out = await get_jobs({"netdata": Netdata(), "sonarr": FakeArr()})
     assert [r["instance"] for r in out] == ["sonarr"]
+
+
+async def test_schedule_rows_sorted_by_next_run():
+    out = await get_jobs({"sonarr": FakeArr(tasks=SONARR_TASKS)}, section="schedule")
+    rows = out[0]["data"]
+    assert set(rows[0]) == {"name", "interval_min", "last_run", "next_run", "last_duration_s"}
+    nxt = [r["next_run"] for r in rows]
+    assert nxt == sorted(nxt) and len(rows) == len(SONARR_TASKS)
+    assert all(isinstance(r["last_duration_s"], float) for r in rows if r["last_run"])
+
+
+async def test_schedule_is_bounded_and_skips_jellyfin():
+    clients = {"sonarr": FakeArr(tasks=SONARR_TASKS), "jellyfin": FakeJf(),
+               "sportarr": FakeSportarr()}
+    out = await get_jobs(clients, section="schedule", limit=3)
+    assert [r["instance"] for r in out] == ["sonarr", "sportarr"]
+    son = out[0]
+    assert len(son["data"]) == 3 and son["truncated"] is True
+    assert "not_supported" in out[1]["data"]
