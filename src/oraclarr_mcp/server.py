@@ -17,6 +17,7 @@ from .tools.transcodes import get_transcodes
 from .tools.upcoming import get_upcoming
 from .tools.library import get_library
 from .tools.cleanup import get_cleanup
+from .tools.host import get_host
 
 TOOL_SPECS: list[ToolSpec] = [
     tool_spec("stack_health", "read", "always"),
@@ -32,6 +33,7 @@ TOOL_SPECS: list[ToolSpec] = [
     tool_spec("get_upcoming", "read", "media"),
     tool_spec("get_library", "read", "library"),
     tool_spec("get_cleanup", "read", "downloads"),
+    tool_spec("get_host", "read", "host"),
 ]
 
 
@@ -148,6 +150,16 @@ def build_server(
         `limit` (max 100); `truncated` and `total` show when more exist."""
         return await get_cleanup(clients, section, limit)
 
+    async def _get_host(section: str | None = None, limit: int = 50) -> list[dict] | dict:
+        """Host health from Netdata and TrueNAS: CPU busy and iowait, load, I/O pressure,
+        memory (free and available reported separately), swap, ZFS ARC size against its
+        max, GPU temperature/power/VRAM, pool capacity/fragmentation/scrub, and TrueNAS
+        alerts. `section=` returns datasets (space used), disks (temperatures) or alerts in
+        full. Use this instead of running `free`, `uptime`, `nvidia-smi`, `zpool list`,
+        `zfs list` or `du` over SSH. Lists stop at `limit` (max 200); `truncated` and
+        `total` show when more exist."""
+        return await get_host(clients, section, limit)
+
     register("stack_health", _stack_health)
     register("get_queues", _get_queues)
     register("diagnose", _diagnose)
@@ -161,4 +173,5 @@ def build_server(
     register("get_upcoming", _get_upcoming)
     register("get_library", _get_library)
     register("get_cleanup", _get_cleanup)
+    register("get_host", _get_host)
     return mcp
