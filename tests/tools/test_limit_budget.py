@@ -8,7 +8,7 @@ import json
 from oraclarr_mcp.call_guard import guarded
 from oraclarr_mcp.config import ServerSettings
 from oraclarr_mcp.redact import Redactor
-from oraclarr_mcp.tools import containers, history, search, upcoming, wanted
+from oraclarr_mcp.tools import containers, history, jobs, search, upcoming, wanted
 
 CAP = ServerSettings().max_output_bytes
 ARR = [("sonarr", "sonarr"), ("sonarr-anime", "sonarr"), ("radarr", "radarr"),
@@ -279,3 +279,31 @@ async def test_max_log_lines_fit_under_cap():
     out = await _run(tool)
     assert out[0]["status"] == "ok"
     assert len(out[0]["data"]["lines"]) == containers.MAX_LINES
+
+
+class FakeJobsArr:
+    def __init__(self, name, type):
+        self.name, self.type = name, type
+        pad = "x" * 300
+        self.cmds = [{"id": i, "name": f"Cmd{i}", "commandName": "C" * 60, "status": s,
+                      "result": "successful", "trigger": "manual",
+                      "queued": "2026-10-13T01:00:00Z", "started": "2026-10-13T01:00:00Z",
+                      "ended": "2026-10-13T01:00:01Z", "duration": "00:00:01.0000000",
+                      "message": pad, "body": {"seriesIds": list(range(10))}}
+                     for s in ("started", "failed", "completed") for i in range(200)]
+
+    async def commands(self): return self.cmds
+    async def titles(self, kind, ids): return ["T" * 60] * min(5, len(ids))
+    async def system_tasks(self): return []
+
+
+async def test_max_jobs_fits_under_cap():
+    clients = {n: FakeJobsArr(n, t) for n, t in ARR if t != "sportarr"}
+
+    async def tool(limit):
+        return await jobs.get_jobs(clients, limit=limit)
+
+    out = await _run(tool)
+    assert isinstance(out, list) and all(r["status"] == "ok" for r in out)
+    assert all(sum(len(r["data"][k]) for k in ("active", "failed", "recent")) == jobs.MAX_LIMIT
+               for r in out)
