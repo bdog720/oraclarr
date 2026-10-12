@@ -96,8 +96,9 @@ def test_zero_budget_is_rejected(tmp_path):
         load_config(p)
 
 
-def test_default_toolsets_include_library_and_host():
-    assert ServerSettings().toolsets == ["media", "downloads", "transcode", "library", "host"]
+def test_default_toolsets_include_library_host_and_containers():
+    assert ServerSettings().toolsets == ["media", "downloads", "transcode", "library", "host",
+                                         "containers"]
 
 
 def test_jellyfin_type_is_accepted(tmp_path, monkeypatch):

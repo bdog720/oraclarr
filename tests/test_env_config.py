@@ -290,3 +290,10 @@ def test_truenas_requires_https():
         load_settings(None, {"ORACLARR_TRUENAS_URL": "http://h", "ORACLARR_TRUENAS_API_KEY": KEY})
     msg = str(e.value)
     assert "ORACLARR_TRUENAS_URL" in msg and "https://" in msg and KEY not in msg
+
+
+def test_docker_type_inferred_without_key():
+    cfg = load_settings(None, {"ORACLARR_DOCKER_URL": "http://docker-proxy:2375"})
+    inst = cfg.instances["docker"]
+    assert inst.type == "docker" and inst.url == "http://docker-proxy:2375"
+    assert inst.api_key is None
