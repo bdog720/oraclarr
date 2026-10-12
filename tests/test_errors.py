@@ -26,3 +26,12 @@ def test_write_timeout_maps_timeout():
 
 def test_pool_timeout_maps_timeout():
     assert status_for_exception(httpx.PoolTimeout("x")) == "timeout"
+
+
+def test_truenas_errors_map_to_statuses():
+    from oraclarr_mcp.clients.truenas import (TruenasAuthError, TruenasCallError,
+                                              TruenasConnectError)
+    assert status_for_exception(TruenasAuthError("x")) == "auth_failed"
+    assert status_for_exception(TruenasConnectError("x")) == "unreachable"
+    assert status_for_exception(ConnectionRefusedError()) == "unreachable"
+    assert status_for_exception(TruenasCallError("x")) == "error"

@@ -53,3 +53,12 @@ async def test_netdata_routes_to_netdata_client():
     c = build_clients(cfg)["netdata"]
     assert isinstance(c, NetdataClient)
     await c.aclose()
+
+
+async def test_truenas_routes_to_truenas_client():
+    from oraclarr_mcp.clients.truenas import TruenasClient
+    cfg = _cfg({"truenas": Instance(type="truenas", url="https://h", api_key="K",
+                                    verify_tls=False)})
+    c = build_clients(cfg)["truenas"]
+    assert isinstance(c, TruenasClient) and c.type == "truenas"
+    await c.aclose()
