@@ -7,6 +7,7 @@ from .clients.qbittorrent import QbitClient, QbitCookieAuth
 from .clients.tdarr import TdarrClient
 from .clients.profilarr import ProfilarrClient
 from .clients.jellyfin import JellyfinClient
+from .clients.cleanuparr import CleanuparrClient
 
 def _make(name: str, inst: Instance, timeout: int) -> BaseClient:
     t = inst.type
@@ -23,6 +24,8 @@ def _make(name: str, inst: Instance, timeout: int) -> BaseClient:
     if t == "jellyfin":
         return JellyfinClient(name, t, inst.url, MediaBrowserTokenAuth(inst.api_key or ""),
                               timeout)
+    if t == "cleanuparr":
+        return CleanuparrClient(name, t, inst.url, ApiKeyHeaderAuth(inst.api_key or ""), timeout)
     raise ValueError(f"unknown instance type {t}")
 
 def build_clients(cfg: Config) -> dict[str, BaseClient]:

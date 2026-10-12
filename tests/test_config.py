@@ -107,3 +107,10 @@ def test_jellyfin_type_is_accepted(tmp_path, monkeypatch):
                  "  jellyfin: { type: jellyfin, url: http://h:8096, api_key: ${JELLYFIN_KEY} }\n")
     cfg = load_config(p)
     assert cfg.instances["jellyfin"].type == "jellyfin"
+
+
+def test_cleanuparr_type_inferred_from_env_name():
+    from oraclarr_mcp.config import load_settings
+    cfg = load_settings(None, {"ORACLARR_CLEANUPARR_URL": "http://h:11011",
+                               "ORACLARR_CLEANUPARR_API_KEY": "k123"})
+    assert cfg.instances["cleanuparr"].type == "cleanuparr"

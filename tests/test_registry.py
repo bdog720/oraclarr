@@ -36,3 +36,12 @@ async def test_jellyfin_routes_to_jellyfin_client():
     assert isinstance(c, JellyfinClient)
     assert c.auth.headers() == {"Authorization": 'MediaBrowser Token="K"'}
     await c.aclose()
+
+
+async def test_cleanuparr_routes_to_cleanuparr_client():
+    from oraclarr_mcp.clients.cleanuparr import CleanuparrClient
+    cfg = _cfg({"cleanuparr": Instance(type="cleanuparr", url="http://h:11011", api_key="K")})
+    c = build_clients(cfg)["cleanuparr"]
+    assert isinstance(c, CleanuparrClient)
+    assert c.auth.headers() == {"X-Api-Key": "K"}
+    await c.aclose()
