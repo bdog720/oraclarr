@@ -1,0 +1,21 @@
+[
+  {
+    "name": "cpu",
+    "title": "CPU Usage",
+    "vertical_label": "%CPU",
+    "identifiers": null
+  },
+  {
+    "name": "disktemp",
+    "title": "Disk Temperature {identifier}",
+    "vertical_label": "Celsius",
+    "identifiers": [
+      "sde | Type: HDD | Model: USB Mass Storage | Serial: SERIAL",
+      "sda | Type: HDD | Model: ST4000VN006-3CW1 | Serial: SERIAL",
+      "sdc | Type: HDD | Model: ST4000VN006-3CW1 | Serial: SERIAL",
+      "sdd | Type: HDD | Model: ST4000VN006-3CW1 | Serial: SERIAL",
+      "sdb | Type: SSD | Model: SAMSUNG MZ7LN256 | Serial: SERIAL",
+      "nvme0n1 | Type: SSD | Model: KINGSTON SKC3000S1024G | Serial: SERIAL"
+    ]
+  }
+]

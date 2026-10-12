@@ -1,0 +1,13 @@
+{
+  "result": {
+    "labels": [
+      "time"
+    ],
+    "point": {
+      "value": 0,
+      "arp": 1,
+      "pa": 2
+    },
+    "data": []
+  }
+}

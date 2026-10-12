@@ -1,0 +1,27 @@
+[
+  {
+    "uuid": "00000000-0000-0000-0000-000000000001",
+    "source": "",
+    "klass": "AppUpdate",
+    "args": {
+      "count": 1,
+      "plural": "",
+      "apps": "dockge"
+    },
+    "node": "Controller A",
+    "key": "{\"apps\": \"dockge\", \"count\": 1, \"plural\": \"\"}",
+    "datetime": {
+      "$date": 1791744348000
+    },
+    "last_occurrence": {
+      "$date": 1791744348000
+    },
+    "dismissed": false,
+    "mail": null,
+    "text": "Updates are available for %(count)d application%(plural)s: %(apps)s",
+    "id": "00000000-0000-0000-0000-000000000001",
+    "level": "INFO",
+    "formatted": "Updates are available for 1 application: dockge",
+    "one_shot": true
+  }
+]
