@@ -33,3 +33,9 @@ def test_instance_result_accepts_timeout_status_and_fields():
     assert d["after_s"] == 1.5
     assert d["total"] == 3
     assert d["truncated"] is True
+
+
+def test_domain_includes_containers():
+    from typing import get_args
+    from oraclarr_mcp.models import Domain
+    assert "containers" in get_args(Domain)

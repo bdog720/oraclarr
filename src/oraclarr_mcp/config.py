@@ -7,7 +7,7 @@ import yaml
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
 INSTANCE_TYPES = {"sonarr", "radarr", "sportarr", "prowlarr", "qbittorrent", "tdarr", "profilarr",
-                  "jellyfin", "cleanuparr", "netdata", "truenas"}
+                  "jellyfin", "cleanuparr", "netdata", "truenas", "docker"}
 _ENV_RE = re.compile(r"\$\{([A-Z0-9_]+)\}")
 
 
@@ -98,7 +98,7 @@ def parse_env(env: Mapping[str, str]) -> tuple[dict, dict]:
 class ServerSettings(BaseModel):
     model_config = ConfigDict(hide_input_in_errors=True)
     allow_writes: bool = False
-    toolsets: list[str] = ["media", "downloads", "transcode", "library", "host"]
+    toolsets: list[str] = ["media", "downloads", "transcode", "library", "host", "containers"]
     tool_budget_seconds: float = Field(default=30, gt=0)
     max_output_bytes: int = Field(default=200_000, gt=0)
 
@@ -112,7 +112,7 @@ class Instance(BaseModel):
     # Validation errors must not echo input: an instance dict holds API keys.
     model_config = ConfigDict(hide_input_in_errors=True)
     type: Literal["sonarr", "radarr", "sportarr", "prowlarr", "qbittorrent", "tdarr",
-                  "profilarr", "jellyfin", "cleanuparr", "netdata", "truenas"]
+                  "profilarr", "jellyfin", "cleanuparr", "netdata", "truenas", "docker"]
     url: str
     enabled: bool = True
     verify_tls: bool = True
