@@ -74,7 +74,9 @@ def _newest(cmd: dict) -> str:
 
 async def _arr_summary(c, include_routine: bool, limit: int) -> Bounded:
     cmds = await c.commands()
-    active = [x for x in cmds if x.get("status") in ACTIVE]
+    # Running before queued: the arr may list a long queue ahead of the running command.
+    active = sorted((x for x in cmds if x.get("status") in ACTIVE),
+                    key=lambda x: x.get("status") != "started")
     failed = [x for x in cmds if x.get("status") in FAILED]
     recent = sorted((x for x in cmds if x.get("status") not in ACTIVE + FAILED
                      and (include_routine or x.get("name") not in ROUTINE)),

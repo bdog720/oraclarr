@@ -206,3 +206,11 @@ async def test_schedule_is_bounded_and_skips_jellyfin():
     son = out[0]
     assert len(son["data"]) == 3 and son["truncated"] is True
     assert "not_supported" in out[1]["data"]
+
+
+async def test_started_command_survives_a_long_queue():
+    cmds = [_cmd(i, "EpisodeSearch", "queued", {"episodeIds": [i]}) for i in range(60)]
+    cmds.append(RENAME)  # the arr may list the running command after the queue
+    d = _data(await get_jobs({"sonarr": FakeArr(commands=cmds)}))
+    assert d["active"][0]["name"] == "RenameSeries"
+    assert len(d["active"]) == MAX_LIMIT and d["counts"]["active"] == 61
