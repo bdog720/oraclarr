@@ -6,6 +6,7 @@ and common key/token patterns are masked even when the value is unknown
 """
 import logging
 import re
+from contextvars import ContextVar
 from typing import Any, Callable, Iterable
 from .config import Config
 
@@ -17,6 +18,11 @@ _PATTERNS = (
     re.compile(r"(?i)((?:x-api-key|x-emby-token):\s*)\S+"),
     re.compile(r"(?i)(authorization:\s*bearer\s+)\S+"),
     re.compile(r'(?i)(mediabrowser\s+token=")[^"]+'),
+    # Container logs can print secrets oraclarr does not know.
+    re.compile(r"(?i)((?:password|passwd|pwd|secret)\"?\s*[=:]\s*\"?)[^&\s\"',]+"),
+    # Scheme length is bounded: unbounded, this is quadratic on long dotted text.
+    re.compile(r"(?i)(\b[a-z][a-z0-9+.-]{0,31}://[^/\s:@]+:)[^@\s/]+(?=@)"),
+    re.compile(r"(ptr_)[A-Za-z0-9+/=_-]{8,}"),
 )
 
 
@@ -88,3 +94,13 @@ def install_log_redaction(redactor: Redactor) -> Callable:
 
     logging.setLogRecordFactory(factory)
     return previous
+
+
+# The redactor of the tool call in progress. `guarded` sets it, so a tool can redact
+# text before it cuts or filters it: a cut secret no longer matches the full value.
+_ACTIVE: ContextVar["Redactor | None"] = ContextVar("oraclarr_active_redactor", default=None)
+
+
+def scrub_text(text: str) -> str:
+    r = _ACTIVE.get()
+    return r.scrub(text) if r is not None else text

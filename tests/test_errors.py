@@ -35,3 +35,8 @@ def test_truenas_errors_map_to_statuses():
     assert status_for_exception(TruenasConnectError("x")) == "unreachable"
     assert status_for_exception(ConnectionRefusedError()) == "unreachable"
     assert status_for_exception(TruenasCallError("x")) == "error"
+
+
+def test_docker_proxy_refused_maps_auth_failed():
+    from oraclarr_mcp.clients.docker import DockerProxyRefused
+    assert status_for_exception(DockerProxyRefused("x")) == "auth_failed"

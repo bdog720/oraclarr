@@ -1,0 +1,34 @@
+{
+ "Id": "0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c",
+ "Name": "/sonarr",
+ "Created": "2026-10-05T00:49:46.965302995Z",
+ "RestartCount": 0,
+ "State": {
+  "Status": "running",
+  "Running": true,
+  "Paused": false,
+  "Restarting": false,
+  "OOMKilled": false,
+  "Dead": false,
+  "Pid": 0,
+  "ExitCode": 0,
+  "Error": "",
+  "StartedAt": "2026-10-09T18:45:13.312900437Z",
+  "FinishedAt": "2026-10-09T11:46:45.53179949Z"
+ },
+ "Config": {
+  "Image": "lscr.io/linuxserver/sonarr:latest",
+  "Tty": false,
+  "Labels": {
+   "com.docker.compose.project": "arr",
+   "com.docker.compose.service": "sonarr"
+  }
+ },
+ "HostConfig": {
+  "NetworkMode": "arr-net",
+  "RestartPolicy": {
+   "Name": "unless-stopped",
+   "MaximumRetryCount": 0
+  }
+ }
+}

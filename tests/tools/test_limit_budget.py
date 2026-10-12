@@ -8,7 +8,7 @@ import json
 from oraclarr_mcp.call_guard import guarded
 from oraclarr_mcp.config import ServerSettings
 from oraclarr_mcp.redact import Redactor
-from oraclarr_mcp.tools import history, search, upcoming, wanted
+from oraclarr_mcp.tools import containers, history, search, upcoming, wanted
 
 CAP = ServerSettings().max_output_bytes
 ARR = [("sonarr", "sonarr"), ("sonarr-anime", "sonarr"), ("radarr", "radarr"),
@@ -233,3 +233,49 @@ async def test_max_host_datasets_fit_under_cap():
         return await host.get_host({"truenas": Tn()}, "datasets", limit)
 
     _assert_full_and_ok(await _run(tool), host.MAX_LIMIT)
+
+LIVE_MAX_CONTAINER_ROW = 370  # largest projected row on the live stack, 2026-10-12
+
+
+class FakeDockerBudget:
+    name = "docker"; type = "docker"
+
+    def __init__(self, n, raw=b""):
+        pad = "x" * LIVE_MAX_CONTAINER_ROW  # row ends up ~620 B: above the live max
+        self.listing = [{"Id": f"{i:064x}", "Names": [f"/{pad}{i}"], "Image": "img:1",
+                         "State": "running", "Status": "Up 2 days (healthy)",
+                         "Ports": [{"PublicPort": 1000 + i}],
+                         "Labels": {}, "HostConfig": {"NetworkMode": "bridge"}}
+                        for i in range(n)]
+        self.raw = raw
+
+    async def containers(self): return self.listing
+    async def inspect(self, cid): return {"State": {"Status": "running"}, "Config": {"Tty": False}}
+    async def inspect_many(self, ids): return [await self.inspect(i) for i in ids]
+    async def logs(self, cid, tail, since=None): return self.raw
+
+
+async def test_max_containers_fits_under_cap():
+    fake = FakeDockerBudget(containers.MAX_LIMIT + 50)
+
+    async def tool(limit):
+        return await containers.get_containers({"docker": fake}, limit=limit)
+
+    out = await _run(tool)
+    assert out[0]["status"] == "ok"
+    assert len(out[0]["data"]["containers"]) == containers.MAX_LIMIT
+
+
+async def test_max_log_lines_fit_under_cap():
+    line = ("2026-10-12T06:00:00.1Z " + "\U0001F600" * 1000 + "\n").encode()
+    frame = bytes([1, 0, 0, 0]) + len(line).to_bytes(4, "big") + line
+    fake = FakeDockerBudget(1, raw=frame * containers.MAX_LINES)
+    name = fake.listing[0]["Names"][0][1:]
+
+    async def tool(limit):
+        return await containers.get_containers({"docker": fake}, name=name, section="logs",
+                                               lines=limit)
+
+    out = await _run(tool)
+    assert out[0]["status"] == "ok"
+    assert len(out[0]["data"]["lines"]) == containers.MAX_LINES
