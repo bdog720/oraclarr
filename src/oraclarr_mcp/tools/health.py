@@ -37,7 +37,7 @@ async def _summary(c: BaseClient) -> dict:
         info, cpu = await asyncio.gather(c.info(), c.latest("system.cpu"))
         return {"version": info.get("version"), "collecting": bool(cpu)}
     if c.type == "truenas":
-        info, pools, alerts = await asyncio.gather(c.system_info(), c.pools(), c.alerts())
+        info, pools, alerts = await c.summary()  # one TrueNAS login, not three
         active = [a for a in alerts or [] if not a.get("dismissed")]
         return {"version": info.get("version"),
                 "pools_healthy": all(p.get("healthy") for p in pools or []),

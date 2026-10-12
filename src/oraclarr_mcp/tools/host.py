@@ -37,9 +37,11 @@ def _iso(d) -> str | None:
 def _cpu(cpu: dict, load: dict, pressure: dict):
     if not cpu:
         return NA
-    return {"busy_pct": round(sum(v for k, v in cpu.items() if k != "iowait"), 1),
+    return {"busy_pct": round(sum(v for k, v in cpu.items()
+                                  if k != "iowait" and v is not None), 1),
             "iowait_pct": round(cpu.get("iowait") or 0, 1),
-            "load": [round(load[k], 2) for k in ("load1", "load5", "load15")] if load else None,
+            "load": [None if load.get(k) is None else round(load[k], 2)
+                     for k in ("load1", "load5", "load15")] if load else None,
             "io_pressure_pct": pressure.get("some 60") if pressure else None}
 
 
@@ -131,7 +133,7 @@ def _disk(item: dict) -> dict:
 
 
 async def _truenas_summary(c) -> dict:
-    info, pools, alerts = await asyncio.gather(c.system_info(), c.pools(), c.alerts())
+    info, pools, alerts = await c.summary()  # one TrueNAS login, not three
     active = _active(alerts)
     return {"system": {"version": info.get("version"),
                        "uptime_hours": round((info.get("uptime_seconds") or 0) / 3600, 1)},

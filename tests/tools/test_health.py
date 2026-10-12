@@ -95,6 +95,8 @@ class FakeTn:
         return [{"healthy": True}, {"healthy": True}]
     async def alerts(self):
         return [{"level": "WARNING", "dismissed": False}, {"level": "INFO", "dismissed": True}]
+    async def summary(self):
+        return await self.system_info(), await self.pools(), await self.alerts()
 
 
 async def test_stack_health_reports_netdata_and_truenas():
@@ -103,3 +105,15 @@ async def test_stack_health_reports_netdata_and_truenas():
     assert rows["netdata"]["data"] == {"version": "v2.12.1", "collecting": True}
     assert rows["truenas"]["data"] == {"version": "25.10.7", "pools_healthy": True,
                                        "alerts": {"WARNING": 1}}
+
+
+class BatchTn:
+    name = "truenas"; type = "truenas"
+    async def summary(self):
+        return ({"version": "25.10.7"}, [{"healthy": True}], [])
+
+
+async def test_stack_health_truenas_uses_one_batch():
+    row = (await stack_health({"truenas": BatchTn()}))[0]
+    assert row["status"] == "ok"
+    assert row["data"] == {"version": "25.10.7", "pools_healthy": True, "alerts": {}}
