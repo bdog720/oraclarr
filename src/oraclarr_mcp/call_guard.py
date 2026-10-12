@@ -5,7 +5,7 @@ import json
 import logging
 from typing import Any, Awaitable, Callable
 from .budget import reset_deadline, set_deadline
-from .redact import Redactor
+from .redact import _ACTIVE, Redactor
 
 log = logging.getLogger("oraclarr_mcp.call_guard")
 
@@ -17,6 +17,7 @@ def guarded(name: str, fn: Callable[..., Awaitable[Any]], *, budget_s: float,
             grace_s: float = BACKSTOP_GRACE_S) -> Callable[..., Awaitable[Any]]:
     async def wrapper(**kwargs: Any) -> Any:
         token = set_deadline(budget_s)
+        active = _ACTIVE.set(redactor)
         try:
             cm = asyncio.timeout(budget_s + grace_s)
             try:
@@ -32,6 +33,7 @@ def guarded(name: str, fn: Callable[..., Awaitable[Any]], *, budget_s: float,
             result = {"error": "tool_error", "tool": name, "message": str(exc)}
         finally:
             reset_deadline(token)
+            _ACTIVE.reset(active)
         size = len(json.dumps(result, default=str))
         if size > max_bytes:
             log.warning("tool %s output is %d bytes, over the %d cap", name, size, max_bytes)

@@ -6,6 +6,7 @@ from datetime import datetime, timezone
 
 from ..clients.base import BaseClient
 from ..clients.docker import demux
+from ..redact import scrub_text
 from ._util import Bounded, bounded, clamp, fan_out
 
 MAX_LIMIT = 200
@@ -140,7 +141,7 @@ async def _detail(c, name: str) -> dict:
     log = health.get("Log") or []
     row["health_detail"] = {
         "status": health.get("Status"), "failing_streak": health.get("FailingStreak"),
-        "last_output": (log[-1].get("Output") or "").strip()[:HEALTH_OUTPUT_CHARS]
+        "last_output": scrub_text((log[-1].get("Output") or "").strip())[:HEALTH_OUTPUT_CHARS]
         if log else None} if health else None
     host = d.get("HostConfig") or {}
     row["restart_policy"] = (host.get("RestartPolicy") or {}).get("Name")
@@ -183,7 +184,10 @@ async def _logs(c, name: str, lines: int, since_ts: int | None, match: str | Non
         return {"error": "not_found", "name": name, "suggestions": []}
     tty = bool((d.get("Config") or {}).get("Tty"))
     raw = await c.logs(x["Id"], MATCH_WINDOW if match else lines, since_ts)
-    parsed = [_parse_line(s, line) for s, line in demux(raw, tty)]
+    # Redact before match and cut: a cut secret no longer matches the full value, and
+    # matching unredacted text would let `match` probe a masked secret.
+    parsed = [(t, s, scrub_text(text))
+              for t, s, text in (_parse_line(s, line) for s, line in demux(raw, tty))]
     result: dict = {"container": _name(x)}
     if match:
         needle = match.lower()
@@ -225,14 +229,14 @@ async def get_containers(clients: dict[str, BaseClient], name: str | None = None
 
 
 BRIEF_KEYS = ("name", "state", "health", "exit_code", "restart_count", "finished_at")
-_DEFAULT_PORTS = {"http": 80, "https": 443}
 
 
-def instance_port(client) -> int | None:
+def instance_target(client) -> tuple[str, int | None] | None:
+    """(hostname, explicit port) of an instance URL; None when the client has no URL."""
     url = getattr(getattr(client, "http", None), "base_url", None)
     if url is None:
         return None
-    return url.port or _DEFAULT_PORTS.get(url.scheme)
+    return (url.host or "").lower(), url.port
 
 
 def _shares_network(x: dict, owner: dict) -> bool:
@@ -240,17 +244,34 @@ def _shares_network(x: dict, owner: dict) -> bool:
     return mode in (f"container:{owner.get('Id')}", f"container:{_name(owner)}")
 
 
-async def containers_for_ports(c, ports: set[int]) -> dict[int, list[dict] | None]:
-    """For each port: the container publishing it, then containers sharing its network
-    (qBittorrent runs in Gluetun's namespace; Gluetun publishes 8080)."""
+def _owner(listing: list[dict], host: str, port: int | None) -> dict | None | bool:
+    """The container behind a URL. Match the hostname to a container name or compose
+    service first; else an explicit port to a published port. False = cannot tell (a
+    reverse-proxy name with an implicit 80/443 would match the proxy, not the service)."""
+    by_name = next((x for x in listing if host in (
+        (_name(x) or "").lower(), ((x.get("Labels") or {}).get(SERVICE) or "").lower())), None)
+    if by_name is not None:
+        return by_name
+    if port is None:
+        return False
+    return next((x for x in listing if port in _ports(x)), None)
+
+
+async def containers_for_targets(c, targets: dict[str, tuple[str, int | None]]
+                                 ) -> dict[str, list[dict] | None]:
+    """Per instance: its container, then containers sharing its network (qBittorrent runs
+    in Gluetun's namespace; Gluetun publishes 8080). None = no container matched;
+    instances that cannot be matched safely are left out."""
     listing = await c.containers()
-    groups: dict[int, list[dict] | None] = {}
-    for port in ports:
-        owner = next((x for x in listing if port in _ports(x)), None)
-        groups[port] = None if owner is None else (
+    groups: dict[str, list[dict] | None] = {}
+    for inst, (host, port) in targets.items():
+        owner = _owner(listing, host, port)
+        if owner is False:
+            continue
+        groups[inst] = None if owner is None else (
             [owner] + [x for x in listing if _shares_network(x, owner)])
     ids = list({x["Id"]: None for g in groups.values() if g for x in g})
     details = dict(zip(ids, await c.inspect_many(ids)))
-    return {port: None if g is None else
+    return {inst: None if g is None else
             [{k: container_row(x, details.get(x["Id"]))[k] for k in BRIEF_KEYS} for x in g]
-            for port, g in groups.items()}
+            for inst, g in groups.items()}

@@ -54,27 +54,28 @@ JOIN_STATUSES = ("unreachable", "timeout")
 
 
 async def _join_containers(clients: dict[str, BaseClient], rows: list[dict]) -> None:
-    """Attach container state to unreachable rows, matched by published port. Only with
-    exactly one docker instance: with two hosts a port could match the wrong container."""
+    """Attach container state to unreachable rows, matched by URL hostname or explicit
+    port. Only with exactly one docker instance: with two hosts a port could match the
+    wrong container."""
     from ._util import probe
-    from .containers import containers_for_ports, instance_port
+    from .containers import containers_for_targets, instance_target
     dockers = [c for c in clients.values() if c.type == "docker"]
     if len(dockers) != 1:
         return
     want = {}
     for r in rows:
         if r["status"] in JOIN_STATUSES and r["type"] != "docker":
-            port = instance_port(clients.get(r["instance"]))
-            if port:
-                want[r["instance"]] = port
+            target = instance_target(clients.get(r["instance"]))
+            if target:
+                want[r["instance"]] = target
     if not want:
         return
-    res = await probe(dockers[0], lambda c: containers_for_ports(c, set(want.values())))
+    res = await probe(dockers[0], lambda c: containers_for_targets(c, want))
     if res.status != "ok":
         return
     for r in rows:
-        if r["instance"] in want:
-            r["container"] = res.data.get(want[r["instance"]])
+        if r["instance"] in res.data:
+            r["container"] = res.data[r["instance"]]
 
 
 async def stack_health(clients: dict[str, BaseClient]) -> list[dict]:

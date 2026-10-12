@@ -166,11 +166,28 @@ async def test_unpublished_port_gives_null_container():
     assert next(r for r in res if r["instance"] == "x")["container"] is None
 
 
-async def test_default_port_from_scheme():
-    from oraclarr_mcp.tools.containers import instance_port
-    assert instance_port(_down("a", "sonarr", "https://h")) == 443
-    assert instance_port(_down("a", "sonarr", "http://h")) == 80
-    assert instance_port(SimpleNamespace()) is None
+async def test_instance_target_is_host_and_explicit_port():
+    from oraclarr_mcp.tools.containers import instance_target
+    assert instance_target(_down("a", "sonarr", "https://h")) == ("h", None)
+    assert instance_target(_down("a", "sonarr", "http://Sonarr-Anime:8989")) == (
+        "sonarr-anime", 8989)
+    assert instance_target(SimpleNamespace()) is None
+
+
+async def test_url_hostname_matches_container_before_port():
+    # sonarr publishes 8989; sonarr-anime is reached by container name on its own 8989.
+    clients = {"sonarr-anime": _down("sonarr-anime", "sonarr", "http://sonarr-anime:8989"),
+               "docker": FakeDockerHealth(None, _default_inspects())}
+    res = await stack_health(clients)
+    row = next(r for r in res if r["instance"] == "sonarr-anime")
+    assert [c["name"] for c in row["container"]] == ["sonarr-anime"]
+
+
+async def test_no_explicit_port_and_unknown_host_skips_join():
+    clients = {"sonarr": _down("sonarr", "sonarr", "https://sonarr.example.com"),
+               "docker": FakeDockerHealth()}
+    res = await stack_health(clients)
+    assert "container" not in next(r for r in res if r["instance"] == "sonarr")
 
 
 async def test_no_join_with_two_docker_instances():

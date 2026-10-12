@@ -1,4 +1,5 @@
 import asyncio
+import re
 import time
 from typing import Any, Awaitable, Callable
 
@@ -11,8 +12,20 @@ INSPECT_CONCURRENCY = 8
 COMPOSE_LABELS = ("com.docker.compose.project", "com.docker.compose.service")
 
 
+_ID_SEGMENT = re.compile(r"/containers/[^/]+/")
+
+
 class DockerProxyRefused(Exception):
     pass
+
+
+class DockerRequestFailed(Exception):
+    pass
+
+
+def _template(path: str) -> str:
+    """Error messages name the endpoint, never the container ID or the query string."""
+    return _ID_SEGMENT.sub("/containers/<id>/", path)
 
 
 def demux(raw: bytes, tty: bool) -> list[tuple[str, str]]:
@@ -71,14 +84,19 @@ class DockerClient(BaseClient):
     async def _get(self, path: str, params: dict | None = None) -> httpx.Response:
         resp = await self._request("GET", path, params=params)
         if resp.status_code == 403:
-            raise DockerProxyRefused(
-                f"the docker proxy refused GET {path}: check -allowGET and -allowfrom")
+            raise DockerProxyRefused(f"the docker proxy refused GET {_template(path)}: "
+                                     "check -allowGET and -allowfrom")
+        return resp
+
+    @staticmethod
+    def _ok(resp: httpx.Response, path: str) -> httpx.Response:
+        if resp.status_code >= 400:
+            raise DockerRequestFailed(
+                f"docker returned {resp.status_code} for GET {_template(path)}")
         return resp
 
     async def _json(self, path: str, params: dict | None = None) -> Any:
-        resp = await self._get(path, params)
-        resp.raise_for_status()
-        return resp.json()
+        return self._ok(await self._get(path, params), path).json()
 
     async def _cached(self, key: str, fetch: Callable[[], Awaitable[Any]]) -> Any:
         now = self._clock()
@@ -104,22 +122,25 @@ class DockerClient(BaseClient):
             resp = await self._get(f"/containers/{cid}/json")
             if resp.status_code == 404:
                 return None
-            resp.raise_for_status()
-            return slim_inspect(resp.json())
+            return slim_inspect(self._ok(resp, f"/containers/{cid}/json").json())
         return await self._cached(f"inspect:{cid}", fetch)
 
     async def inspect_many(self, ids: list[str]) -> list[dict | None]:
         sem = asyncio.Semaphore(INSPECT_CONCURRENCY)
 
         async def one(cid: str) -> dict | None:
+            # One failing or hung inspect must not sink the rest: that row falls back
+            # to list data. A proxy refusal (403) is a config error and still raises.
             async with sem:
-                return await self.inspect(cid)
+                try:
+                    return await self.inspect(cid)
+                except (DockerRequestFailed, httpx.HTTPError):
+                    return None
         return list(await asyncio.gather(*(one(i) for i in ids)))
 
     async def logs(self, cid: str, tail: int, since: int | None = None) -> bytes:
         params: dict[str, Any] = {"stdout": 1, "stderr": 1, "timestamps": 1, "tail": tail}
         if since is not None:
             params["since"] = since
-        resp = await self._get(f"/containers/{cid}/logs", params)
-        resp.raise_for_status()
-        return resp.content
+        path = f"/containers/{cid}/logs"
+        return self._ok(await self._get(path, params), path).content

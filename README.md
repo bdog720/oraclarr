@@ -323,7 +323,7 @@ Add that line in the same step as updating to 1.6.0. An older image doesn't know
 
 A container's details include its environment variables, which usually hold API keys. Oraclarr drops them, along with mounts and most labels, as soon as the response arrives, so they never reach a tool result. Log lines get the same redaction as every other response, plus patterns for passwords and credentials inside URLs. A service that prints a secret in plain prose can still get through, so treat log output with some care.
 
-`stack_health` uses the same data. When a service is unreachable, its row shows the container that publishes its port, plus any container sharing that container's network (qBittorrent behind Gluetun, for example).
+`stack_health` uses the same data. When a service is unreachable, its row shows the container behind its URL, plus any container sharing that container's network (qBittorrent behind Gluetun, for example). Oraclarr matches the URL's hostname against container names first, then an explicit port against published ports. A URL with neither, such as a reverse-proxy name on the default port, gets no container rather than a guess.
 
 ### Migrating from `config.yaml`
 
