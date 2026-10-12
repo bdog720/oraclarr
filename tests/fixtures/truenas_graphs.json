@@ -1,0 +1,21 @@
+[
+  {
+    "name": "cpu",
+    "title": "CPU Usage",
+    "vertical_label": "%CPU",
+    "identifiers": null
+  },
+  {
+    "name": "disktemp",
+    "title": "Disk Temperature {identifier}",
+    "vertical_label": "Celsius",
+    "identifiers": [
+      "sde | Type: HDD | Model: USB Mass Storage | Serial: SERIAL",
+      "sda | Type: HDD | Model: EXAMPLE-HDD-4TB | Serial: SERIAL",
+      "sdc | Type: HDD | Model: EXAMPLE-HDD-4TB | Serial: SERIAL",
+      "sdd | Type: HDD | Model: EXAMPLE-HDD-4TB | Serial: SERIAL",
+      "sdb | Type: SSD | Model: EXAMPLE-SSD-256 | Serial: SERIAL",
+      "nvme0n1 | Type: SSD | Model: EXAMPLE-NVME-1TB | Serial: SERIAL"
+    ]
+  }
+]
