@@ -18,6 +18,7 @@ from .tools.upcoming import get_upcoming
 from .tools.library import get_library
 from .tools.cleanup import get_cleanup
 from .tools.host import get_host
+from .tools.containers import get_containers
 
 TOOL_SPECS: list[ToolSpec] = [
     tool_spec("stack_health", "read", "always"),
@@ -34,6 +35,7 @@ TOOL_SPECS: list[ToolSpec] = [
     tool_spec("get_library", "read", "library"),
     tool_spec("get_cleanup", "read", "downloads"),
     tool_spec("get_host", "read", "host"),
+    tool_spec("get_containers", "read", "containers"),
 ]
 
 
@@ -61,8 +63,10 @@ def build_server(
 
     async def _stack_health() -> list[dict]:
         """Health and status of every configured service: versions, warnings, disk space,
-        Tdarr nodes. Use this instead of `docker ps` or curling service APIs over SSH to
-        check whether a service is up."""
+        Tdarr nodes, container counts. A service that is unreachable or timing out also
+        shows its Docker container's state, exit code and restart count. Use this
+        instead of `docker ps` or curling service APIs over SSH to check whether a
+        service is up."""
         return await stack_health(clients)
 
     async def _get_queues(service: str | None = None, limit: int = 100) -> dict:
@@ -160,6 +164,21 @@ def build_server(
         `total` show when more exist."""
         return await get_host(clients, section, limit)
 
+    async def _get_containers(name: str | None = None, section: str | None = None,
+                              lines: int = 50, since: str | None = None,
+                              match: str | None = None, limit: int = 100) -> list[dict] | dict:
+        """Docker containers on the host: state, health, restart count, exit code (for
+        stopped containers), last stop time, image and published ports, with problems
+        (unhealthy, restarting, dead, OOM-killed, non-zero exit) listed first. `name=`
+        returns one container with its last health-check output, restart policy and
+        network (e.g. qbittorrent runs in gluetun's network). `section="logs"` with `name=`
+        returns the last `lines` log lines (max 200), optionally `since=` ("15m", "2h",
+        "1d" or an ISO time) and `match=` (case-insensitive text filter over the last 2000
+        lines). Use this instead of `docker ps`, `docker inspect` or `docker logs` over
+        SSH. Lists stop at `limit` (max 200); `truncated` and `total` show when more
+        exist."""
+        return await get_containers(clients, name, section, lines, since, match, limit)
+
     register("stack_health", _stack_health)
     register("get_queues", _get_queues)
     register("diagnose", _diagnose)
@@ -174,4 +193,5 @@ def build_server(
     register("get_library", _get_library)
     register("get_cleanup", _get_cleanup)
     register("get_host", _get_host)
+    register("get_containers", _get_containers)
     return mcp
