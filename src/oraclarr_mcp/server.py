@@ -16,6 +16,7 @@ from .tools.indexers import get_indexers
 from .tools.transcodes import get_transcodes
 from .tools.upcoming import get_upcoming
 from .tools.library import get_library
+from .tools.cleanup import get_cleanup
 
 TOOL_SPECS: list[ToolSpec] = [
     tool_spec("stack_health", "read", "always"),
@@ -30,6 +31,7 @@ TOOL_SPECS: list[ToolSpec] = [
     tool_spec("get_transcodes", "read", "transcode"),
     tool_spec("get_upcoming", "read", "media"),
     tool_spec("get_library", "read", "library"),
+    tool_spec("get_cleanup", "read", "downloads"),
 ]
 
 
@@ -64,7 +66,8 @@ def build_server(
     async def _get_queues(service: str | None = None, limit: int = 100) -> dict:
         """Unified active download queue: arr queues joined to qBittorrent torrents
         (progress, stalled). Use this instead of curling Sonarr/Radarr/qBittorrent over
-        SSH. Returns at most `limit` items; `truncated` and `total` show when more exist."""
+        SSH. Returns at most `limit` items (max 400); `truncated` and `total` show when more
+        exist."""
         return await get_queues(clients, service, limit)
 
     async def _diagnose(title: str) -> dict:
@@ -136,6 +139,15 @@ def build_server(
         `truncated` and `total` show when more exist."""
         return await get_library(clients, section, term, limit)
 
+    async def _get_cleanup(section: str | None = None, limit: int = 20) -> list[dict] | dict:
+        """Cleanuparr state: dry-run mode, cleaner jobs and schedules, seeding rules
+        (private/public), unlinked category, stall/slow rules, and strikes (which downloads
+        Cleanuparr has flagged, why, and whether they are marked for removal). `section=`
+        returns one area in full: config, jobs, rules or strikes. Use this instead of copying
+        `cleanuparr.db` or running `docker exec` into Cleanuparr over SSH. Strike lists stop at
+        `limit` (max 100); `truncated` and `total` show when more exist."""
+        return await get_cleanup(clients, section, limit)
+
     register("stack_health", _stack_health)
     register("get_queues", _get_queues)
     register("diagnose", _diagnose)
@@ -148,4 +160,5 @@ def build_server(
     register("get_transcodes", _get_transcodes)
     register("get_upcoming", _get_upcoming)
     register("get_library", _get_library)
+    register("get_cleanup", _get_cleanup)
     return mcp

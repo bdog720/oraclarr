@@ -12,12 +12,12 @@ def _registered_tool_names(mcp) -> list[str]:
     return list(mcp._tool_manager._tools.keys())
 
 
-def test_tool_specs_cover_all_twelve_tools():
+def test_tool_specs_cover_all_thirteen_tools():
     names = {s.name for s in TOOL_SPECS}
     assert names == {
         "stack_health", "get_queues", "diagnose", "explain_decision",
         "get_quality_config", "get_history", "get_wanted", "search_media",
-        "get_indexers", "get_transcodes", "get_upcoming", "get_library",
+        "get_indexers", "get_transcodes", "get_upcoming", "get_library", "get_cleanup",
     }
 
 
@@ -139,7 +139,8 @@ def test_transcode_and_upcoming_expose_limits():
 
 
 BOUNDED_TOOLS = {"get_queues", "diagnose", "explain_decision", "get_history", "get_wanted",
-                 "search_media", "get_upcoming", "get_transcodes", "get_library"}
+                 "search_media", "get_upcoming", "get_transcodes", "get_library",
+                 "get_cleanup"}
 
 
 def test_every_tool_description_says_when_to_use_it_instead_of_ssh():
@@ -164,3 +165,12 @@ def test_get_library_registers_only_with_library_toolset():
     assert "get_library" not in _registered_tool_names(without)
     assert "get_library" in _registered_tool_names(with_lib)
     assert _params(with_lib, "get_library")["limit"]["default"] == 20
+
+
+def test_get_cleanup_registers_with_downloads_toolset():
+    cfg = Config(server=ServerSettings(toolsets=["downloads"]), defaults=Defaults(),
+                 instances={"cleanuparr": Instance(type="cleanuparr", url="http://h:11011",
+                                                   api_key="K")})
+    mcp = build_server(cfg, clients={})
+    assert "get_cleanup" in _registered_tool_names(mcp)
+    assert _params(mcp, "get_cleanup")["limit"]["default"] == 20

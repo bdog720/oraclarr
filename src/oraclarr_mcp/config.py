@@ -7,7 +7,7 @@ import yaml
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
 INSTANCE_TYPES = {"sonarr", "radarr", "sportarr", "prowlarr", "qbittorrent", "tdarr", "profilarr",
-                  "jellyfin"}
+                  "jellyfin", "cleanuparr"}
 _ENV_RE = re.compile(r"\$\{([A-Z0-9_]+)\}")
 
 
@@ -111,7 +111,7 @@ class Instance(BaseModel):
     # Validation errors must not echo input: an instance dict holds API keys.
     model_config = ConfigDict(hide_input_in_errors=True)
     type: Literal["sonarr", "radarr", "sportarr", "prowlarr", "qbittorrent", "tdarr",
-                  "profilarr", "jellyfin"]
+                  "profilarr", "jellyfin", "cleanuparr"]
     url: str
     enabled: bool = True
     read_only: bool = True

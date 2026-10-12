@@ -44,3 +44,36 @@ async def test_stack_health_reports_jellyfin():
     assert row["data"] == {"version": "12.2.0", "pending_restart": True,
                            "update_available": False,
                            "failed_tasks": ["Extract Chapter Images"]}
+
+
+class FakeCl:
+    name = "cleanuparr"; type = "cleanuparr"
+    async def general(self):
+        return {"dryRun": False, "auth": {"apiKey": "SECRET-AUTH-9"}}
+    async def jobs(self):
+        return [{"name": "QueueCleaner", "status": "Scheduled"},
+                {"name": "MalwareBlocker", "status": "Not Scheduled"},
+                {"name": "Seeker", "status": "Scheduled"}]
+
+
+async def test_stack_health_reports_cleanuparr():
+    row = (await stack_health({"cleanuparr": FakeCl()}))[0]
+    assert row["status"] == "ok"
+    assert row["data"] == {"dry_run": False, "scheduled_jobs": ["QueueCleaner", "Seeker"],
+                           "unscheduled_jobs": ["MalwareBlocker"]}
+
+
+async def test_stack_health_cleanuparr_running_job_counts_as_scheduled():
+    import json
+    from pathlib import Path
+    live = json.loads((Path(__file__).parent.parent / "fixtures" / "cleanuparr_jobs.json")
+                      .read_text(encoding="utf-8"))
+    assert any(j["status"] == "Running" for j in live)  # the live state the spec missed
+
+    class LiveCl(FakeCl):
+        async def jobs(self):
+            return live
+
+    d = (await stack_health({"cleanuparr": LiveCl()}))[0]["data"]
+    assert d["unscheduled_jobs"] == [j["name"] for j in live if j["status"] == "Not Scheduled"]
+    assert d["scheduled_jobs"] == [j["name"] for j in live if j["status"] != "Not Scheduled"]
