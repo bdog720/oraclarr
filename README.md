@@ -22,7 +22,7 @@ A locally-run, read-only [MCP](https://modelcontextprotocol.io) server that lets
 
 Oraclarr gives a language model one place to answer the operational "why" questions that normally mean tabbing through six web UIs. It aggregates across your services and returns a single, structured answer without changing anything (it is strictly read-only in this phase).
 
-Covered now: **Sonarr**, **Radarr**, **Sportarr**, **Prowlarr**, **qBittorrent**, **Tdarr**, **Profilarr**, **Jellyfin**, and **Cleanuparr** — including **multiple instances of the same type** (e.g. a separate anime or 4K Sonarr/Radarr). Every tool fans out across all the instances you define and reports each one separately.
+Covered now: **Sonarr**, **Radarr**, **Sportarr**, **Prowlarr**, **qBittorrent**, **Tdarr**, **Profilarr**, **Jellyfin**, **Cleanuparr**, **Netdata**, and **TrueNAS** — including **multiple instances of the same type** (e.g. a separate anime or 4K Sonarr/Radarr). Every tool fans out across all the instances you define and reports each one separately.
 
 ## In practice
 
@@ -37,6 +37,8 @@ Once registered, you just ask your MCP client. Oraclarr picks the right tool and
 | "What's stuck downloading right now?" | `get_queues` | a unified queue with progress and stall flags |
 | "Is the Jellyfin library scan finished, and is anyone transcoding?" | `get_library` | scan state and progress per library, failed tasks, and who is playing what (with transcode reasons) |
 | "Why is Cleanuparr about to remove this download?" | `get_queues` + `get_cleanup` | the strikes against it and their type, whether it's marked for removal, and the rules that apply |
+| "Is the box under I/O pressure, and how much RAM is actually free?" | `get_host` | CPU busy and iowait, I/O pressure, free and available memory, swap, ARC against its max, GPU heat and VRAM |
+| "How full are the pools, and what's using the space?" | `get_host` | pool capacity, fragmentation and scrub state, then `section="datasets"` for the biggest datasets |
 
 ## Tools
 
@@ -57,6 +59,7 @@ All read-only and outcome-oriented (not one-per-endpoint, which keeps the model 
 | `get_upcoming` | What's airing or releasing soon, and will it land? (up to 90 days) |
 | `get_library` | Jellyfin libraries, scan progress, tasks, playback and transcodes, recent additions, name search |
 | `get_cleanup` | Cleanuparr dry-run state, cleaner schedules, seeding and stall rules, strikes |
+| `get_host` | Host CPU/iowait, memory, swap, ARC, GPU, pools, datasets, disk temperatures, TrueNAS alerts |
 
 ## Install
 
@@ -201,10 +204,11 @@ ORACLARR_QBITTORRENT_PASSWORD=your-password
 | Field | Needed for |
 |---|---|
 | `_URL` | every instance |
-| `_TYPE` | only when the name isn't a service type. Types: `sonarr`, `radarr`, `sportarr`, `prowlarr`, `qbittorrent`, `tdarr`, `profilarr`, `jellyfin`, `cleanuparr` |
-| `_API_KEY` | Sonarr, Radarr, Sportarr, Prowlarr, Profilarr, Jellyfin, Cleanuparr |
+| `_TYPE` | only when the name isn't a service type. Types: `sonarr`, `radarr`, `sportarr`, `prowlarr`, `qbittorrent`, `tdarr`, `profilarr`, `jellyfin`, `cleanuparr`, `netdata`, `truenas` |
+| `_API_KEY` | Sonarr, Radarr, Sportarr, Prowlarr, Profilarr, Jellyfin, Cleanuparr, TrueNAS |
 | `_USERNAME`, `_PASSWORD` | qBittorrent |
 | `_ENABLED` | optional; `false` switches an instance off without deleting its lines |
+| `_VERIFY_TLS` | optional; `false` accepts a self-signed certificate (TrueNAS) |
 
 Underscores in the name become dashes in the instance name, so `SONARR_ANIME` shows up as `sonarr-anime`. Blank values count as unset, so you can keep lines for services you don't run. A misspelled `ORACLARR_` variable stops the container with a message that names it, instead of failing quietly later.
 
@@ -212,7 +216,7 @@ Server settings are optional:
 
 | Variable | Default | What it does |
 |---|---|---|
-| `ORACLARR_TOOLSETS` | `media,downloads,transcode,library` | Which groups of tools are offered |
+| `ORACLARR_TOOLSETS` | `media,downloads,transcode,library,host` | Which groups of tools are offered |
 | `ORACLARR_TOOL_BUDGET_SECONDS` | `30` | Time limit per tool call; slow instances report `status: "timeout"` |
 | `ORACLARR_MAX_OUTPUT_BYTES` | `200000` | Safety net for oversized responses |
 | `ORACLARR_TIMEOUT_SECONDS` | `10` | Timeout for each request to a service |
@@ -225,6 +229,53 @@ Every tool call has a time budget, set by `ORACLARR_TOOL_BUDGET_SECONDS`. If an 
 ### Alternative: a config file
 
 Oraclarr still reads a `config.yaml` if one exists at `ORACLARR_CONFIG` (`/config/config.yaml` in the container); [`config.example.yaml`](config.example.yaml) shows the format. If you use both, instances from both are loaded, and an `ORACLARR_` variable wins over the same setting in the file. With Docker, mount the file with `- ./config.yaml:/config/config.yaml:ro`.
+
+### Host metrics (Netdata and TrueNAS)
+
+`get_host` reads two sources. **TrueNAS** supplies pools, datasets, disk temperatures and alerts through its API. Create a dedicated user in the read-only administrators group, give it an API key, and point `ORACLARR_TRUENAS_URL` at `https://` (TrueNAS revokes a key that is ever sent over plain http). Its default certificate is self-signed, so set `ORACLARR_TRUENAS_VERIFY_TLS=false` unless you've installed a trusted one; with verification off, a device on your LAN could intercept the key.
+
+**Netdata** supplies CPU and iowait, free and available memory, swap, the ARC maximum and GPU stats, none of which the TrueNAS API exposes. TrueNAS's own Netdata only listens on localhost, so run a Netdata container next to your stack:
+
+```yaml
+services:
+  netdata:
+    image: netdata/netdata:stable
+    container_name: netdata
+    hostname: truenas
+    restart: unless-stopped
+    pid: host
+    cap_add: [SYS_PTRACE, SYS_ADMIN]
+    security_opt: [apparmor:unconfined]
+    ports:
+      - 20999:19999
+    environment:
+      DO_NOT_TRACK: "1"
+      NVIDIA_VISIBLE_DEVICES: all
+      NVIDIA_DRIVER_CAPABILITIES: all
+    volumes:
+      - netdataconfig:/etc/netdata
+      - netdatalib:/var/lib/netdata
+      - netdatacache:/var/cache/netdata
+      - /etc/passwd:/host/etc/passwd:ro
+      - /etc/group:/host/etc/group:ro
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/os-release:/host/etc/os-release:ro
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu, utility]
+volumes:
+  netdataconfig:
+  netdatalib:
+  netdatacache:
+```
+
+Leave out the `NVIDIA_*` lines and the `deploy:` block if you don't have an NVIDIA GPU; `get_host` then reports the GPU as not available. Point `ORACLARR_NETDATA_URL` at `http://<host>:20999`. Netdata's API has no login, so keep that port on your LAN.
 
 ### Migrating from `config.yaml`
 
@@ -247,8 +298,8 @@ Up to 1.2.0 the setup used `config.yaml` plus an `environment:` block in the com
 
 Oraclarr is built in phases. v1 is deliberately read-only; write capability arrives behind explicit safety gates. The architecture (typed clients + outcome tools + config-selectable toolsets) is designed to extend to other self-hosted suites beyond *arr, too.
 
-- ✅ **Phase 1: read-only diagnostics.** Sonarr, Radarr, Sportarr, Prowlarr, qBittorrent, Tdarr, Profilarr, Jellyfin, Cleanuparr.
-- 🔜 **Phase 2: more services, still read-only.** Seerr, Gluetun, TrueNAS, Unpackerr, ntfy. The architecture also opens up to non-*arr stacks.
+- ✅ **Phase 1: read-only diagnostics.** Sonarr, Radarr, Sportarr, Prowlarr, qBittorrent, Tdarr, Profilarr, Jellyfin, Cleanuparr, TrueNAS.
+- 🔜 **Phase 2: more services, still read-only.** Seerr, Gluetun, Unpackerr, ntfy. The architecture also opens up to non-*arr stacks.
 - 🔭 **Phase 3: safe write actions.** Trigger search, retry, refresh/rescan, approve requests, gated behind `allow_writes` with dry-run previews and an audit log.
 - 🔭 **Phase 4: destructive actions.** Delete media, blocklist, stack control, behind an explicit confirmation and allowlist.
 

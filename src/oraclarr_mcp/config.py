@@ -7,7 +7,7 @@ import yaml
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
 INSTANCE_TYPES = {"sonarr", "radarr", "sportarr", "prowlarr", "qbittorrent", "tdarr", "profilarr",
-                  "jellyfin", "cleanuparr"}
+                  "jellyfin", "cleanuparr", "netdata", "truenas"}
 _ENV_RE = re.compile(r"\$\{([A-Z0-9_]+)\}")
 
 
@@ -26,8 +26,9 @@ _FALSE = {"false", "no", "0", "off"}
 # Longest suffix first, so SONARR_ANIME_API_KEY splits as SONARR_ANIME + API_KEY.
 _FIELDS = sorted({"_URL": "url", "_TYPE": "type", "_API_KEY": "api_key",
                   "_USERNAME": "username", "_PASSWORD": "password",
-                  "_ENABLED": "enabled"}.items(), key=lambda kv: -len(kv[0]))
-_FIELD_HELP = "_TYPE, _URL, _API_KEY, _USERNAME, _PASSWORD, _ENABLED"
+                  "_ENABLED": "enabled", "_VERIFY_TLS": "verify_tls"}.items(),
+                 key=lambda kv: -len(kv[0]))
+_FIELD_HELP = "_TYPE, _URL, _API_KEY, _USERNAME, _PASSWORD, _ENABLED, _VERIFY_TLS"
 
 
 def _parse_bool(value: str) -> bool:
@@ -80,7 +81,7 @@ def parse_env(env: Mapping[str, str]) -> tuple[dict, dict]:
         for suffix, field in _FIELDS:
             if rest.endswith(suffix) and len(rest) > len(suffix):
                 name = rest[: -len(suffix)].lower().replace("_", "-")
-                if field == "enabled":
+                if field in ("enabled", "verify_tls"):
                     try:
                         value = _parse_bool(value)
                     except ValueError:
@@ -97,7 +98,7 @@ def parse_env(env: Mapping[str, str]) -> tuple[dict, dict]:
 class ServerSettings(BaseModel):
     model_config = ConfigDict(hide_input_in_errors=True)
     allow_writes: bool = False
-    toolsets: list[str] = ["media", "downloads", "transcode", "library"]
+    toolsets: list[str] = ["media", "downloads", "transcode", "library", "host"]
     tool_budget_seconds: float = Field(default=30, gt=0)
     max_output_bytes: int = Field(default=200_000, gt=0)
 
@@ -111,9 +112,10 @@ class Instance(BaseModel):
     # Validation errors must not echo input: an instance dict holds API keys.
     model_config = ConfigDict(hide_input_in_errors=True)
     type: Literal["sonarr", "radarr", "sportarr", "prowlarr", "qbittorrent", "tdarr",
-                  "profilarr", "jellyfin", "cleanuparr"]
+                  "profilarr", "jellyfin", "cleanuparr", "netdata", "truenas"]
     url: str
     enabled: bool = True
+    verify_tls: bool = True
     read_only: bool = True
     api_key: str | None = None
     username: str | None = None
@@ -229,6 +231,10 @@ def load_settings(path: Path | None, env: Mapping[str, str]) -> Config:
                 raise ConfigError(f"instance '{name}' needs {env_name(name, 'TYPE')} "
                                   f"(one of: {', '.join(sorted(INSTANCE_TYPES))})")
             inst["type"] = _norm(name)
+        if inst.get("type") == "truenas" and inst.get("url") and                 not str(inst["url"]).lower().startswith("https://"):
+            raise ConfigError(f"instance '{name}' must use https:// in "
+                              f"{env_name(name, 'URL')}: TrueNAS revokes an API key that is "
+                              f"sent over plain http")
     data["instances"] = merged
     try:
         return Config.model_validate(data)

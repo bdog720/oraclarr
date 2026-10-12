@@ -45,3 +45,20 @@ async def test_cleanuparr_routes_to_cleanuparr_client():
     assert isinstance(c, CleanuparrClient)
     assert c.auth.headers() == {"X-Api-Key": "K"}
     await c.aclose()
+
+
+async def test_netdata_routes_to_netdata_client():
+    from oraclarr_mcp.clients.netdata import NetdataClient
+    cfg = _cfg({"netdata": Instance(type="netdata", url="http://h:20999")})
+    c = build_clients(cfg)["netdata"]
+    assert isinstance(c, NetdataClient)
+    await c.aclose()
+
+
+async def test_truenas_routes_to_truenas_client():
+    from oraclarr_mcp.clients.truenas import TruenasClient
+    cfg = _cfg({"truenas": Instance(type="truenas", url="https://h", api_key="K",
+                                    verify_tls=False)})
+    c = build_clients(cfg)["truenas"]
+    assert isinstance(c, TruenasClient) and c.type == "truenas"
+    await c.aclose()
