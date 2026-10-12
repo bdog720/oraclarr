@@ -53,3 +53,9 @@ async def test_stack_health_summarises_sportarr_like_an_arr():
     assert res[0]["status"] == "ok"
     assert res[0]["data"]["version"] == "4.1.6"
     assert res[0]["data"]["warnings"] == ["warn"]
+
+
+async def test_get_jobs_includes_sportarr_with_a_note():
+    from oraclarr_mcp.tools.jobs import get_jobs
+    res = await get_jobs(_clients())
+    assert res[0]["instance"] == "sportarr" and "not_supported" in res[0]["data"]
