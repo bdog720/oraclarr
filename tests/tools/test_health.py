@@ -44,3 +44,20 @@ async def test_stack_health_reports_jellyfin():
     assert row["data"] == {"version": "12.2.0", "pending_restart": True,
                            "update_available": False,
                            "failed_tasks": ["Extract Chapter Images"]}
+
+
+class FakeCl:
+    name = "cleanuparr"; type = "cleanuparr"
+    async def general(self):
+        return {"dryRun": False, "auth": {"apiKey": "SECRET-AUTH-9"}}
+    async def jobs(self):
+        return [{"name": "QueueCleaner", "status": "Scheduled"},
+                {"name": "MalwareBlocker", "status": "Not Scheduled"},
+                {"name": "Seeker", "status": "Scheduled"}]
+
+
+async def test_stack_health_reports_cleanuparr():
+    row = (await stack_health({"cleanuparr": FakeCl()}))[0]
+    assert row["status"] == "ok"
+    assert row["data"] == {"dry_run": False, "scheduled_jobs": ["QueueCleaner", "Seeker"],
+                           "unscheduled_jobs": ["MalwareBlocker"]}
