@@ -61,3 +61,19 @@ async def test_stack_health_reports_cleanuparr():
     assert row["status"] == "ok"
     assert row["data"] == {"dry_run": False, "scheduled_jobs": ["QueueCleaner", "Seeker"],
                            "unscheduled_jobs": ["MalwareBlocker"]}
+
+
+async def test_stack_health_cleanuparr_running_job_counts_as_scheduled():
+    import json
+    from pathlib import Path
+    live = json.loads((Path(__file__).parent.parent / "fixtures" / "cleanuparr_jobs.json")
+                      .read_text(encoding="utf-8"))
+    assert any(j["status"] == "Running" for j in live)  # the live state the spec missed
+
+    class LiveCl(FakeCl):
+        async def jobs(self):
+            return live
+
+    d = (await stack_health({"cleanuparr": LiveCl()}))[0]["data"]
+    assert d["unscheduled_jobs"] == [j["name"] for j in live if j["status"] == "Not Scheduled"]
+    assert d["scheduled_jobs"] == [j["name"] for j in live if j["status"] != "Not Scheduled"]

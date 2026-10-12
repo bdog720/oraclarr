@@ -124,7 +124,12 @@ async def get_cleanup(clients: dict[str, BaseClient], section: str | None = None
         newest = sorted(recent or [], key=lambda s: s.get("createdAt") or "", reverse=True)
         return {"dry_run": general.get("dryRun"),
                 "jobs": [_job(j) for j in jobs],
+                # downloads is Cleanuparr's total (removed history included); the counts
+                # below cover only the scanned rows, and complete says whether that is all.
                 "strikes": {"downloads": total,
+                            "scanned": len(items),
+                            "complete": total <= len(items),
+                            "active": sum(1 for s in items if not s.get("isRemoved")),
                             "marked_for_removal": sum(1 for s in items
                                                       if s.get("isMarkedForRemoval")),
                             "recent": [_recent(s) for s in newest[:SUMMARY_RECENT]]}}

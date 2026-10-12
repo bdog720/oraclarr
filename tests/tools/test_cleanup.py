@@ -192,3 +192,21 @@ async def test_only_cleanuparr_instances_are_queried():
         name = "sonarr"; type = "sonarr"
     out = await get_cleanup({"sonarr": Arr(), "cleanuparr": FakeCl()}, section="jobs")
     assert [r["instance"] for r in out] == ["cleanuparr"]
+
+
+async def test_summary_qualifies_strike_counts():
+    class Partial(FakeCl):
+        async def strikes(self, page_size):
+            rows = [{**STRIKES[0], "isRemoved": True}, STRIKES[1], STRIKES[2]]
+            return rows, 340
+
+    s = (await get_cleanup({"cleanuparr": Partial()}))[0]["data"]["strikes"]
+    assert s["downloads"] == 340
+    assert s["scanned"] == 3 and s["complete"] is False
+    assert s["active"] == 2
+    assert s["marked_for_removal"] == 1
+
+
+async def test_summary_complete_when_all_rows_scanned():
+    s = (await get_cleanup({"cleanuparr": FakeCl()}))[0]["data"]["strikes"]
+    assert s["scanned"] == 30 and s["complete"] is True and s["active"] == 30
