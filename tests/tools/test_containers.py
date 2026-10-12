@@ -1,8 +1,11 @@
 import json
 from pathlib import Path
 
-from oraclarr_mcp.tools.containers import (MAX_LIMIT, container_counts, container_row,
-                                           find_container, get_containers)
+import pytest
+
+from oraclarr_mcp.tools.containers import (MATCH_WINDOW, MAX_LIMIT, MAX_LINE_BYTES, MAX_LINES,
+                                           container_counts, container_row,
+                                           find_container, get_containers, parse_since)
 
 FX = Path(__file__).parent.parent / "fixtures"
 LISTING = json.loads((FX / "docker_containers.json").read_text(encoding="utf-8"))
@@ -191,3 +194,112 @@ async def test_no_canary_reaches_output():
     fake.inspects = {fake.listing[0]["Id"]: slim_inspect(raw)}
     for kwargs in ({}, {"name": "sonarr"}):
         assert canary not in json.dumps(await get_containers({"docker": fake}, **kwargs))
+
+
+def _frame(stream: int, payload: bytes) -> bytes:
+    return bytes([stream, 0, 0, 0]) + len(payload).to_bytes(4, "big") + payload
+
+
+def _log_bytes(lines):
+    return b"".join(_frame(s, f"2026-10-12T06:00:{i % 60:02d}.123456789Z {t}\n".encode())
+                    for i, (s, t) in enumerate(lines))
+
+
+class FakeLogs(FakeDocker):
+    def __init__(self, raw, tty=False):
+        super().__init__(None, _default_inspects())
+        self.raw = raw
+        self.calls = []
+        for d in self.inspects.values():
+            if d:
+                d["Config"]["Tty"] = tty
+
+    async def logs(self, cid, tail, since=None):
+        self.calls.append({"tail": tail, "since": since})
+        return self.raw
+
+
+def test_parse_since_relative_and_iso():
+    now = 1_000_000.0
+    assert parse_since("15m", now) == 1_000_000 - 900
+    assert parse_since("2h", now) == 1_000_000 - 7200
+    assert parse_since("1d", now) == 1_000_000 - 86400
+    assert parse_since("2026-10-12T06:00:00Z", now) == 1791784800
+    assert parse_since("2026-10-12T06:00:00", now) == 1791784800  # naive = UTC
+    for bad in ("yesterday", "15x", ""):
+        with pytest.raises(ValueError):
+            parse_since(bad, now)
+
+
+async def test_logs_tail_parses_time_stream_and_text():
+    fake = FakeLogs(_log_bytes([(1, "Starting Sonarr"), (2, "Warn: slow disk")]))
+    out = await get_containers({"docker": fake}, name="sonarr", section="logs", lines=10)
+    d = out[0]["data"]
+    assert d["container"] == "sonarr" and fake.calls == [{"tail": 10, "since": None}]
+    assert d["lines"] == [
+        {"t": "2026-10-12T06:00:00Z", "stream": "stdout", "text": "Starting Sonarr"},
+        {"t": "2026-10-12T06:00:01Z", "stream": "stderr", "text": "Warn: slow disk"}]
+    assert d["truncated"] is False and "matched_of" not in d
+
+
+async def test_logs_truncated_when_tail_is_full():
+    fake = FakeLogs(_log_bytes([(1, f"line {i}") for i in range(5)]))
+    out = await get_containers({"docker": fake}, name="sonarr", section="logs", lines=5)
+    assert out[0]["data"]["truncated"] is True
+
+
+async def test_logs_since_is_passed_as_unix_time():
+    fake = FakeLogs(b"")
+    await get_containers({"docker": fake}, name="sonarr", section="logs",
+                         since="2026-10-12T06:00:00Z")
+    assert fake.calls[0]["since"] == 1791784800
+
+
+async def test_logs_invalid_since():
+    out = await get_containers({"docker": FakeLogs(b"")}, name="sonarr", section="logs",
+                               since="yesterday")
+    assert out["error"] == "invalid_since"
+
+
+async def test_logs_match_filters_a_wider_window():
+    lines = [(1, f"info {i}") for i in range(10)] + [(2, "ERROR one"), (1, "x"),
+                                                     (2, "error two"), (2, "Error three")]
+    fake = FakeLogs(_log_bytes(lines))
+    out = await get_containers({"docker": fake}, name="sonarr", section="logs", lines=2,
+                               match="error")
+    d = out[0]["data"]
+    assert fake.calls[0]["tail"] == MATCH_WINDOW
+    assert [r["text"] for r in d["lines"]] == ["error two", "Error three"]
+    assert d["matched_of"] == 3 and d["truncated"] is True
+
+
+async def test_logs_match_ignores_timestamp_prefix():
+    fake = FakeLogs(_log_bytes([(1, "plain")]))
+    out = await get_containers({"docker": fake}, name="sonarr", section="logs", match="2026")
+    assert out[0]["data"]["lines"] == []
+
+
+async def test_logs_tty_container():
+    fake = FakeLogs(b"2026-10-12T06:00:00.1Z tty line\n", tty=True)
+    out = await get_containers({"docker": fake}, name="sonarr", section="logs")
+    assert out[0]["data"]["lines"][0]["text"] == "tty line"
+
+
+async def test_logs_lines_clamped():
+    fake = FakeLogs(b"")
+    await get_containers({"docker": fake}, name="sonarr", section="logs", lines=10**6)
+    assert fake.calls[0]["tail"] == MAX_LINES
+
+
+async def test_logs_strip_ansi_and_cap_escaped_size():
+    fake = FakeLogs(_log_bytes([(1, "\x1b[32mINFO\x1b[0m ready"), (1, "─" * 1000),
+                                (1, "\U0001F600" * 1000)]))
+    out = await get_containers({"docker": fake}, name="sonarr", section="logs")
+    texts = [r["text"] for r in out[0]["data"]["lines"]]
+    assert texts[0] == "INFO ready"
+    assert all(len(json.dumps(t)) <= MAX_LINE_BYTES for t in texts)
+
+
+async def test_logs_unknown_container_is_not_found():
+    out = await get_containers({"docker": FakeLogs(b"")}, name="nope", section="logs")
+    assert out[0]["data"]["error"] == "not_found"

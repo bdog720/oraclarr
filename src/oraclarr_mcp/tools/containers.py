@@ -1,7 +1,11 @@
 import difflib
+import json
 import re
+import time
+from datetime import datetime, timezone
 
 from ..clients.base import BaseClient
+from ..clients.docker import demux
 from ._util import Bounded, bounded, clamp, fan_out
 
 MAX_LIMIT = 200
@@ -12,6 +16,13 @@ SERVICE = "com.docker.compose.service"
 STATES = ("running", "exited", "created", "restarting", "paused", "dead")
 _HEALTH_RE = re.compile(r"\((healthy|unhealthy|health: starting)\)")
 _EXIT_RE = re.compile(r"^Exited \((-?\d+)\)")
+MAX_LINES = 200
+MAX_LINE_CHARS = 400
+MAX_LINE_BYTES = 600  # JSON-escaped; non-ASCII and control chars expand up to 12x
+MATCH_WINDOW = 2000
+_ANSI_RE = re.compile(r"\x1b\[[0-9;?]*[A-Za-z]")
+_SINCE_RE = re.compile(r"^(\d+)([mhd])$")
+_UNIT_S = {"m": 60, "h": 3600, "d": 86400}
 
 # Allowlist projections only. The client already dropped Env, Mounts and other
 # labels; rows never carry a container ID.
@@ -137,6 +148,55 @@ async def _detail(c, name: str) -> dict:
     return row
 
 
+def parse_since(value: str, now: float) -> int:
+    v = value.strip()
+    m = _SINCE_RE.match(v.lower())
+    if m:
+        return int(now - int(m.group(1)) * _UNIT_S[m.group(2)])
+    t = datetime.fromisoformat(v)  # raises ValueError on anything else, including ""
+    if t.tzinfo is None:
+        t = t.replace(tzinfo=timezone.utc)
+    return int(t.timestamp())
+
+
+def _cut(text: str) -> str:
+    text = _ANSI_RE.sub("", text)[:MAX_LINE_CHARS]
+    while len(json.dumps(text)) > MAX_LINE_BYTES:
+        text = text[:len(text) * 3 // 4]
+    return text
+
+
+def _parse_line(stream: str, raw: str) -> tuple[str | None, str, str]:
+    ts, sep, text = raw.partition(" ")
+    if sep and ts[:4].isdigit() and "T" in ts:
+        return iso_seconds(ts), stream, text
+    return None, stream, raw
+
+
+async def _logs(c, name: str, lines: int, since_ts: int | None, match: str | None) -> dict:
+    listing = await c.containers()
+    x, miss = find_container(listing, name)
+    if miss:
+        return miss
+    d = await c.inspect(x["Id"])
+    if d is None:
+        return {"error": "not_found", "name": name, "suggestions": []}
+    tty = bool((d.get("Config") or {}).get("Tty"))
+    raw = await c.logs(x["Id"], MATCH_WINDOW if match else lines, since_ts)
+    parsed = [_parse_line(s, line) for s, line in demux(raw, tty)]
+    result: dict = {"container": _name(x)}
+    if match:
+        needle = match.lower()
+        parsed = [p for p in parsed if needle in p[2].lower()]
+        result["matched_of"] = len(parsed)
+        result["truncated"] = len(parsed) > lines
+    else:
+        result["truncated"] = len(parsed) >= lines
+    result["lines"] = [{"t": t, "stream": s, "text": _cut(text)}
+                       for t, s, text in parsed[-lines:]]
+    return result
+
+
 async def get_containers(clients: dict[str, BaseClient], name: str | None = None,
                          section: str | None = None, lines: int = 50, since: str | None = None,
                          match: str | None = None, limit: int = 100) -> list[dict] | dict:
@@ -144,10 +204,19 @@ async def get_containers(clients: dict[str, BaseClient], name: str | None = None
         return {"error": "invalid_section", "valid": list(SECTIONS)}
     if section == "logs" and not name:
         return {"error": "name_required"}
+    since_ts = None
+    if section == "logs" and since:
+        try:
+            since_ts = parse_since(since, time.time())
+        except ValueError:
+            return {"error": "invalid_since", "expected": "<n>m, <n>h, <n>d or ISO 8601"}
     limit = clamp(limit, MAX_LIMIT)
+    lines = clamp(lines, MAX_LINES)
     sel = {n: c for n, c in clients.items() if c.type == "docker"}
 
     async def collect(c):
+        if section == "logs":
+            return await _logs(c, name, lines, since_ts, match)
         if name:
             return await _detail(c, name)
         return await _summary(c, limit)
