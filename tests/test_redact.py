@@ -82,3 +82,27 @@ def test_scrub_masks_mediabrowser_token_header():
     out = Redactor([]).scrub('Authorization: MediaBrowser Token="JFKEY999", Client="x"')
     assert "JFKEY999" not in out
     assert 'MediaBrowser Token="***"' in out
+
+
+def test_scrub_masks_password_and_secret_assignments():
+    r = Redactor([])
+    out = r.scrub('login password=Hunter2x passwd: Pw2 pwd=P3 client_secret=S4, "ok"')
+    for secret in ("Hunter2x", "Pw2", "P3", "S4"):
+        assert secret not in out
+    assert out.startswith("login password=***") and out.endswith(', "ok"')
+
+
+def test_scrub_masks_url_credentials_and_keeps_host():
+    out = Redactor([]).scrub("connect https://vpnuser:VpnPass77@vpn.example:443/x")
+    assert "VpnPass77" not in out
+    assert "https://vpnuser:***@vpn.example:443/x" in out
+
+
+def test_scrub_masks_portainer_style_tokens():
+    out = Redactor([]).scrub("token ptr_AbCdEf123456+/= seen")
+    assert "AbCdEf123456" not in out and "ptr_***" in out
+
+
+def test_new_patterns_leave_ordinary_text_alone():
+    text = "Password reset page loaded; secrets manager ok; see http://host:8989/path"
+    assert Redactor([]).scrub(text) == text

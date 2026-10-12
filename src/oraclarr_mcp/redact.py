@@ -17,6 +17,10 @@ _PATTERNS = (
     re.compile(r"(?i)((?:x-api-key|x-emby-token):\s*)\S+"),
     re.compile(r"(?i)(authorization:\s*bearer\s+)\S+"),
     re.compile(r'(?i)(mediabrowser\s+token=")[^"]+'),
+    # Container logs can print secrets oraclarr does not know.
+    re.compile(r"(?i)((?:password|passwd|pwd|secret)\s*[=:]\s*)[^&\s\"',]+"),
+    re.compile(r"(?i)(\b[a-z][a-z0-9+.-]*://[^/\s:@]+:)[^@\s/]+(?=@)"),
+    re.compile(r"(ptr_)[A-Za-z0-9+/=_-]{8,}"),
 )
 
 
