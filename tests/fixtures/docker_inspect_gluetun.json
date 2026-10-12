@@ -1,0 +1,70 @@
+{
+ "Id": "1616161616161616161616161616161616161616161616161616161616161616",
+ "Name": "/gluetun",
+ "Created": "2026-09-30T04:29:06.930972935Z",
+ "RestartCount": 0,
+ "State": {
+  "Status": "running",
+  "Running": true,
+  "Paused": false,
+  "Restarting": false,
+  "OOMKilled": false,
+  "Dead": false,
+  "Pid": 0,
+  "ExitCode": 0,
+  "Error": "",
+  "StartedAt": "2026-10-09T18:45:13.990981518Z",
+  "FinishedAt": "2026-10-09T11:46:40.038531604Z",
+  "Health": {
+   "Status": "healthy",
+   "FailingStreak": 0,
+   "Log": [
+    {
+     "Start": "2026-10-12T17:05:02.216878021+00:00",
+     "End": "2026-10-12T17:05:02.2877502+00:00",
+     "ExitCode": 0,
+     "Output": "HEALTH-OUTPUT-CANARY"
+    },
+    {
+     "Start": "2026-10-12T17:05:32.288829662+00:00",
+     "End": "2026-10-12T17:05:32.380206632+00:00",
+     "ExitCode": 0,
+     "Output": "HEALTH-OUTPUT-CANARY"
+    },
+    {
+     "Start": "2026-10-12T17:06:02.381442492+00:00",
+     "End": "2026-10-12T17:06:02.473416202+00:00",
+     "ExitCode": 0,
+     "Output": "HEALTH-OUTPUT-CANARY"
+    },
+    {
+     "Start": "2026-10-12T17:06:32.474034862+00:00",
+     "End": "2026-10-12T17:06:32.582383662+00:00",
+     "ExitCode": 0,
+     "Output": "HEALTH-OUTPUT-CANARY"
+    },
+    {
+     "Start": "2026-10-12T17:07:02.582939473+00:00",
+     "End": "2026-10-12T17:07:02.678070251+00:00",
+     "ExitCode": 0,
+     "Output": "HEALTH-OUTPUT-CANARY"
+    }
+   ]
+  }
+ },
+ "Config": {
+  "Image": "qmcgaw/gluetun:latest",
+  "Tty": false,
+  "Labels": {
+   "com.docker.compose.project": "download",
+   "com.docker.compose.service": "gluetun"
+  }
+ },
+ "HostConfig": {
+  "NetworkMode": "arr-net",
+  "RestartPolicy": {
+   "Name": "unless-stopped",
+   "MaximumRetryCount": 0
+  }
+ }
+}

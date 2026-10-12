@@ -1,0 +1,70 @@
+{
+ "Id": "0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b",
+ "Name": "/qbittorrent",
+ "Created": "2026-10-05T00:50:54.005903269Z",
+ "RestartCount": 0,
+ "State": {
+  "Status": "running",
+  "Running": true,
+  "Paused": false,
+  "Restarting": false,
+  "OOMKilled": false,
+  "Dead": false,
+  "Pid": 0,
+  "ExitCode": 0,
+  "Error": "",
+  "StartedAt": "2026-10-09T18:45:34.72106234Z",
+  "FinishedAt": "2026-10-09T11:46:48.445196995Z",
+  "Health": {
+   "Status": "healthy",
+   "FailingStreak": 0,
+   "Log": [
+    {
+     "Start": "2026-10-12T17:05:10.848518883+00:00",
+     "End": "2026-10-12T17:05:10.945342024+00:00",
+     "ExitCode": 0,
+     "Output": "HEALTH-OUTPUT-CANARY"
+    },
+    {
+     "Start": "2026-10-12T17:05:40.946676552+00:00",
+     "End": "2026-10-12T17:05:41.040790296+00:00",
+     "ExitCode": 0,
+     "Output": "HEALTH-OUTPUT-CANARY"
+    },
+    {
+     "Start": "2026-10-12T17:06:11.042044546+00:00",
+     "End": "2026-10-12T17:06:11.134241643+00:00",
+     "ExitCode": 0,
+     "Output": "HEALTH-OUTPUT-CANARY"
+    },
+    {
+     "Start": "2026-10-12T17:06:41.13624556+00:00",
+     "End": "2026-10-12T17:06:41.231529925+00:00",
+     "ExitCode": 0,
+     "Output": "HEALTH-OUTPUT-CANARY"
+    },
+    {
+     "Start": "2026-10-12T17:07:11.235721976+00:00",
+     "End": "2026-10-12T17:07:11.328270807+00:00",
+     "ExitCode": 0,
+     "Output": "HEALTH-OUTPUT-CANARY"
+    }
+   ]
+  }
+ },
+ "Config": {
+  "Image": "lscr.io/linuxserver/qbittorrent:latest",
+  "Tty": false,
+  "Labels": {
+   "com.docker.compose.project": "download",
+   "com.docker.compose.service": "qbittorrent"
+  }
+ },
+ "HostConfig": {
+  "NetworkMode": "container:1616161616161616161616161616161616161616161616161616161616161616",
+  "RestartPolicy": {
+   "Name": "unless-stopped",
+   "MaximumRetryCount": 0
+  }
+ }
+}
