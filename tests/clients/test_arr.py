@@ -177,3 +177,50 @@ async def test_titles_return_what_arrived_within_budget(monkeypatch):
 
 async def test_titles_empty_ids_makes_no_request():
     assert await _jclient().titles("series", []) == []
+
+
+@respx.mock
+async def test_titles_drop_non_object_replies():
+    respx.get("http://h/api/v3/series/1").mock(return_value=httpx.Response(200, json=None))
+    respx.get("http://h/api/v3/series/2").mock(return_value=httpx.Response(200, json=["x"]))
+    respx.get("http://h/api/v3/series/3").mock(
+        return_value=httpx.Response(200, json={"id": 3, "title": "Show 3"}))
+    assert await _jclient().titles("series", [1, 2, 3]) == ["Show 3"]
+
+
+async def test_titles_respect_the_tool_deadline():
+    from oraclarr_mcp.budget import reset_deadline, set_deadline
+    c = _jclient()
+
+    async def stuck(path, params=None):
+        await asyncio.sleep(5)
+
+    c.get_json = stuck
+    token = set_deadline(0.6)  # less than TITLE_BUDGET_S (5 s) is left
+    try:
+        loop = asyncio.get_running_loop()
+        t0 = loop.time()
+        assert await c.titles("series", [1, 2]) == []
+        assert loop.time() - t0 < 0.5
+    finally:
+        reset_deadline(token)
+
+
+async def test_cancelled_titles_call_cancels_its_lookups():
+    c = _jclient()
+    cancelled = []
+
+    async def stuck(path, params=None):
+        try:
+            await asyncio.sleep(5)
+        except asyncio.CancelledError:
+            cancelled.append(path)
+            raise
+
+    c.get_json = stuck
+    outer = asyncio.ensure_future(c.titles("series", [1, 2]))
+    await asyncio.sleep(0.05)
+    outer.cancel()
+    for _ in range(5):
+        await asyncio.sleep(0)
+    assert sorted(cancelled) == ["/api/v3/series/1", "/api/v3/series/2"]

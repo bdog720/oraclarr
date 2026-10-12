@@ -2,8 +2,7 @@ import asyncio
 import time
 from typing import Callable
 
-import httpx
-
+from ..budget import remaining
 from .base import BaseClient
 
 MAX_TITLES = 5
@@ -96,9 +95,10 @@ class ArrClient(BaseClient):
             return hit[1]
         try:
             async with self._title_sem:
-                title = (await self.get_json(f"/api/v3/{kind}/{item_id}")).get("title")
-        except (httpx.HTTPError, ValueError):  # deleted item or a bad reply: drop the title
+                reply = await self.get_json(f"/api/v3/{kind}/{item_id}")
+        except Exception:  # noqa: BLE001 - titles are decoration; one bad id never fails a row
             return None
+        title = reply.get("title") if isinstance(reply, dict) else None
         self._titles[(kind, item_id)] = (now, title)
         return title
 
@@ -108,7 +108,14 @@ class ArrClient(BaseClient):
         tasks = [asyncio.ensure_future(self._title(kind, i)) for i in ids[:MAX_TITLES]]
         if not tasks:
             return []
-        done, pending = await asyncio.wait(tasks, timeout=TITLE_BUDGET_S)
-        for t in pending:
-            t.cancel()
+        budget = TITLE_BUDGET_S
+        left = remaining()
+        if left is not None:  # leave the tool time to return the commands it already has
+            budget = max(0.0, min(budget, left - 0.5))
+        try:
+            done, _ = await asyncio.wait(tasks, timeout=budget)
+        finally:  # also when the caller is cancelled: free the semaphore slots
+            for t in tasks:
+                if not t.done():
+                    t.cancel()
         return [t.result() for t in tasks if t in done and t.result()]
