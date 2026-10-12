@@ -1,0 +1,153 @@
+[
+  {
+    "name": "disktemp",
+    "identifier": "sde | Type: HDD | Model: USB Mass Storage | Serial: SERIAL",
+    "data": [],
+    "aggregations": {
+      "min": {},
+      "mean": {},
+      "max": {}
+    },
+    "start": 1791780702,
+    "end": 1791780822,
+    "legend": [
+      "time",
+      "temperature_value"
+    ]
+  },
+  {
+    "name": "disktemp",
+    "identifier": "sda | Type: HDD | Model: EXAMPLE-HDD-4TB | Serial: SERIAL",
+    "data": [
+      [
+        1791780600,
+        38
+      ]
+    ],
+    "aggregations": {
+      "min": {
+        "temperature_value": 38
+      },
+      "mean": {
+        "temperature_value": 38.0
+      },
+      "max": {
+        "temperature_value": 38
+      }
+    },
+    "start": 1791780702,
+    "end": 1791780822,
+    "legend": [
+      "time",
+      "temperature_value"
+    ]
+  },
+  {
+    "name": "disktemp",
+    "identifier": "sdc | Type: HDD | Model: EXAMPLE-HDD-4TB | Serial: SERIAL",
+    "data": [
+      [
+        1791780600,
+        38
+      ]
+    ],
+    "aggregations": {
+      "min": {
+        "temperature_value": 38
+      },
+      "mean": {
+        "temperature_value": 38.0
+      },
+      "max": {
+        "temperature_value": 38
+      }
+    },
+    "start": 1791780702,
+    "end": 1791780822,
+    "legend": [
+      "time",
+      "temperature_value"
+    ]
+  },
+  {
+    "name": "disktemp",
+    "identifier": "sdd | Type: HDD | Model: EXAMPLE-HDD-4TB | Serial: SERIAL",
+    "data": [
+      [
+        1791780600,
+        39
+      ]
+    ],
+    "aggregations": {
+      "min": {
+        "temperature_value": 39
+      },
+      "mean": {
+        "temperature_value": 39.0
+      },
+      "max": {
+        "temperature_value": 39
+      }
+    },
+    "start": 1791780702,
+    "end": 1791780822,
+    "legend": [
+      "time",
+      "temperature_value"
+    ]
+  },
+  {
+    "name": "disktemp",
+    "identifier": "sdb | Type: SSD | Model: EXAMPLE-SSD-256 | Serial: SERIAL",
+    "data": [
+      [
+        1791780600,
+        35
+      ]
+    ],
+    "aggregations": {
+      "min": {
+        "temperature_value": 35
+      },
+      "mean": {
+        "temperature_value": 35.0
+      },
+      "max": {
+        "temperature_value": 35
+      }
+    },
+    "start": 1791780702,
+    "end": 1791780822,
+    "legend": [
+      "time",
+      "temperature_value"
+    ]
+  },
+  {
+    "name": "disktemp",
+    "identifier": "nvme0n1 | Type: SSD | Model: EXAMPLE-NVME-1TB | Serial: SERIAL",
+    "data": [
+      [
+        1791780600,
+        34
+      ]
+    ],
+    "aggregations": {
+      "min": {
+        "temperature_value": 34
+      },
+      "mean": {
+        "temperature_value": 34.0
+      },
+      "max": {
+        "temperature_value": 34
+      }
+    },
+    "start": 1791780702,
+    "end": 1791780822,
+    "legend": [
+      "time",
+      "temperature_value"
+    ]
+  }
+]

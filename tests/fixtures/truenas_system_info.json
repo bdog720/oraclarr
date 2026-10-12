@@ -1,0 +1,31 @@
+{
+  "version": "25.10.7",
+  "buildtime": {
+    "$date": 1788243194000
+  },
+  "hostname": "truenas",
+  "physmem": 33575018496,
+  "model": "Example 8-Core Processor",
+  "cores": 16,
+  "physical_cores": 8,
+  "loadavg": [
+    2.1357421875,
+    1.939453125,
+    1.89306640625
+  ],
+  "uptime": "2 days, 10:10:29.543443",
+  "uptime_seconds": 209429.543442554,
+  "system_serial": "SERIAL",
+  "system_product": "PRODUCT",
+  "system_product_version": "1.0",
+  "license": null,
+  "boottime": {
+    "$date": 1791571390000
+  },
+  "datetime": {
+    "$date": 1791780820000
+  },
+  "timezone": "Etc/UTC",
+  "system_manufacturer": "MANUFACTURER",
+  "ecc_memory": false
+}

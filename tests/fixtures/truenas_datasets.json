@@ -1,0 +1,322 @@
+[
+  {
+    "id": "tank",
+    "pool": "tank",
+    "quota": {
+      "parsed": null,
+      "rawvalue": "0",
+      "value": null,
+      "source": "DEFAULT",
+      "source_info": null
+    },
+    "refquota": {
+      "parsed": null,
+      "rawvalue": "0",
+      "value": null,
+      "source": "DEFAULT",
+      "source_info": null
+    },
+    "used": {
+      "parsed": 6760959341840,
+      "rawvalue": "6760959341840",
+      "value": "6.15 TiB",
+      "source": "NONE",
+      "source_info": null
+    },
+    "available": {
+      "parsed": 1479578087024,
+      "rawvalue": "1479578087024",
+      "value": "1.35 TiB",
+      "source": "NONE",
+      "source_info": null
+    }
+  },
+  {
+    "id": "tank/configs",
+    "pool": "tank",
+    "quota": {
+      "parsed": null,
+      "rawvalue": "0",
+      "value": null,
+      "source": "DEFAULT",
+      "source_info": null
+    },
+    "refquota": {
+      "parsed": null,
+      "rawvalue": "0",
+      "value": null,
+      "source": "DEFAULT",
+      "source_info": null
+    },
+    "used": {
+      "parsed": 8860347584,
+      "rawvalue": "8860347584",
+      "value": "8.25 GiB",
+      "source": "NONE",
+      "source_info": null
+    },
+    "available": {
+      "parsed": 1479578087024,
+      "rawvalue": "1479578087024",
+      "value": "1.35 TiB",
+      "source": "NONE",
+      "source_info": null
+    }
+  },
+  {
+    "id": "tank/configs/app3",
+    "pool": "tank",
+    "quota": {
+      "parsed": null,
+      "rawvalue": "0",
+      "value": null,
+      "source": "DEFAULT",
+      "source_info": null
+    },
+    "refquota": {
+      "parsed": null,
+      "rawvalue": "0",
+      "value": null,
+      "source": "DEFAULT",
+      "source_info": null
+    },
+    "used": {
+      "parsed": 169136,
+      "rawvalue": "169136",
+      "value": "165.17 KiB",
+      "source": "NONE",
+      "source_info": null
+    },
+    "available": {
+      "parsed": 1479578087024,
+      "rawvalue": "1479578087024",
+      "value": "1.35 TiB",
+      "source": "NONE",
+      "source_info": null
+    }
+  },
+  {
+    "id": "tank/configs/radarr",
+    "pool": "tank",
+    "quota": {
+      "parsed": null,
+      "rawvalue": "0",
+      "value": null,
+      "source": "DEFAULT",
+      "source_info": null
+    },
+    "refquota": {
+      "parsed": null,
+      "rawvalue": "0",
+      "value": null,
+      "source": "DEFAULT",
+      "source_info": null
+    },
+    "used": {
+      "parsed": 445225968,
+      "rawvalue": "445225968",
+      "value": "424.6 MiB",
+      "source": "NONE",
+      "source_info": null
+    },
+    "available": {
+      "parsed": 1479578087024,
+      "rawvalue": "1479578087024",
+      "value": "1.35 TiB",
+      "source": "NONE",
+      "source_info": null
+    }
+  },
+  {
+    "id": "tank/configs/app1",
+    "pool": "tank",
+    "quota": {
+      "parsed": null,
+      "rawvalue": "0",
+      "value": null,
+      "source": "DEFAULT",
+      "source_info": null
+    },
+    "refquota": {
+      "parsed": null,
+      "rawvalue": "0",
+      "value": null,
+      "source": "DEFAULT",
+      "source_info": null
+    },
+    "used": {
+      "parsed": 1827760,
+      "rawvalue": "1827760",
+      "value": "1.74 MiB",
+      "source": "NONE",
+      "source_info": null
+    },
+    "available": {
+      "parsed": 1479578087024,
+      "rawvalue": "1479578087024",
+      "value": "1.35 TiB",
+      "source": "NONE",
+      "source_info": null
+    }
+  },
+  {
+    "id": "tank/configs/app4",
+    "pool": "tank",
+    "quota": {
+      "parsed": null,
+      "rawvalue": "0",
+      "value": null,
+      "source": "DEFAULT",
+      "source_info": null
+    },
+    "refquota": {
+      "parsed": null,
+      "rawvalue": "0",
+      "value": null,
+      "source": "DEFAULT",
+      "source_info": null
+    },
+    "used": {
+      "parsed": 1920512,
+      "rawvalue": "1920512",
+      "value": "1.83 MiB",
+      "source": "NONE",
+      "source_info": null
+    },
+    "available": {
+      "parsed": 1479578087024,
+      "rawvalue": "1479578087024",
+      "value": "1.35 TiB",
+      "source": "NONE",
+      "source_info": null
+    }
+  },
+  {
+    "id": "tank/configs/oraclarr",
+    "pool": "tank",
+    "quota": {
+      "parsed": null,
+      "rawvalue": "0",
+      "value": null,
+      "source": "DEFAULT",
+      "source_info": null
+    },
+    "refquota": {
+      "parsed": null,
+      "rawvalue": "0",
+      "value": null,
+      "source": "DEFAULT",
+      "source_info": null
+    },
+    "used": {
+      "parsed": 147312,
+      "rawvalue": "147312",
+      "value": "143.86 KiB",
+      "source": "NONE",
+      "source_info": null
+    },
+    "available": {
+      "parsed": 1479578087024,
+      "rawvalue": "1479578087024",
+      "value": "1.35 TiB",
+      "source": "NONE",
+      "source_info": null
+    }
+  },
+  {
+    "id": "tank/configs/app2",
+    "pool": "tank",
+    "quota": {
+      "parsed": null,
+      "rawvalue": "0",
+      "value": null,
+      "source": "DEFAULT",
+      "source_info": null
+    },
+    "refquota": {
+      "parsed": null,
+      "rawvalue": "0",
+      "value": null,
+      "source": "DEFAULT",
+      "source_info": null
+    },
+    "used": {
+      "parsed": 611072,
+      "rawvalue": "611072",
+      "value": "596.75 KiB",
+      "source": "NONE",
+      "source_info": null
+    },
+    "available": {
+      "parsed": 1479578087024,
+      "rawvalue": "1479578087024",
+      "value": "1.35 TiB",
+      "source": "NONE",
+      "source_info": null
+    }
+  },
+  {
+    "id": "tank/configs/prowlarr",
+    "pool": "tank",
+    "quota": {
+      "parsed": null,
+      "rawvalue": "0",
+      "value": null,
+      "source": "DEFAULT",
+      "source_info": null
+    },
+    "refquota": {
+      "parsed": null,
+      "rawvalue": "0",
+      "value": null,
+      "source": "DEFAULT",
+      "source_info": null
+    },
+    "used": {
+      "parsed": 184663776,
+      "rawvalue": "184663776",
+      "value": "176.11 MiB",
+      "source": "NONE",
+      "source_info": null
+    },
+    "available": {
+      "parsed": 1479578087024,
+      "rawvalue": "1479578087024",
+      "value": "1.35 TiB",
+      "source": "NONE",
+      "source_info": null
+    }
+  },
+  {
+    "id": "tank/configs/sonarr",
+    "pool": "tank",
+    "quota": {
+      "parsed": null,
+      "rawvalue": "0",
+      "value": null,
+      "source": "DEFAULT",
+      "source_info": null
+    },
+    "refquota": {
+      "parsed": null,
+      "rawvalue": "0",
+      "value": null,
+      "source": "DEFAULT",
+      "source_info": null
+    },
+    "used": {
+      "parsed": 267758656,
+      "rawvalue": "267758656",
+      "value": "255.35 MiB",
+      "source": "NONE",
+      "source_info": null
+    },
+    "available": {
+      "parsed": 1479578087024,
+      "rawvalue": "1479578087024",
+      "value": "1.35 TiB",
+      "source": "NONE",
+      "source_info": null
+    }
+  }
+]

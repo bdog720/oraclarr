@@ -1,0 +1,54 @@
+[
+  {
+    "name": "fast",
+    "status": "ONLINE",
+    "scan": {
+      "function": "SCRUB",
+      "state": "FINISHED",
+      "start_time": {
+        "$date": 1791036001000
+      },
+      "end_time": {
+        "$date": 1791036033000
+      },
+      "percentage": 103.45078706741333,
+      "bytes_to_process": 25253568512,
+      "bytes_processed": 24411226112,
+      "bytes_issued": 25252536320,
+      "pause": null,
+      "errors": 0,
+      "total_secs_left": null
+    },
+    "healthy": true,
+    "size": 1013612281856,
+    "allocated": 24367767552,
+    "free": 989244514304,
+    "fragmentation": "19"
+  },
+  {
+    "name": "tank",
+    "status": "ONLINE",
+    "scan": {
+      "function": "SCRUB",
+      "state": "FINISHED",
+      "start_time": {
+        "$date": 1791036004000
+      },
+      "end_time": {
+        "$date": 1791082840000
+      },
+      "percentage": 103.49714756011963,
+      "bytes_to_process": 9860811120640,
+      "bytes_processed": 9527617937408,
+      "bytes_issued": 9860781039616,
+      "pause": null,
+      "errors": 0,
+      "total_secs_left": null
+    },
+    "healthy": true,
+    "size": 11991548690432,
+    "allocated": 9563656511488,
+    "free": 2427892178944,
+    "fragmentation": "43"
+  }
+]

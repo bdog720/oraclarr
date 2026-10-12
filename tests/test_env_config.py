@@ -263,3 +263,30 @@ def test_file_disabled_placeholder_without_url_still_loads(tmp_path):
     cfg = load_settings(p, {})
     assert cfg.instances["spare"].enabled is False
     assert cfg.instances["blank"].url == ""
+
+
+def test_verify_tls_suffix_parses_boolean():
+    _, inst = parse_env({"ORACLARR_TRUENAS_URL": "https://h", "ORACLARR_TRUENAS_VERIFY_TLS": "false"})
+    assert inst["truenas"] == {"url": "https://h", "verify_tls": False}
+
+
+def test_bad_verify_tls_names_variable_without_value():
+    with pytest.raises(ConfigError) as e:
+        parse_env({"ORACLARR_TRUENAS_VERIFY_TLS": KEY})
+    assert "ORACLARR_TRUENAS_VERIFY_TLS" in str(e.value) and KEY not in str(e.value)
+
+
+def test_netdata_and_truenas_types_inferred():
+    cfg = load_settings(None, {"ORACLARR_NETDATA_URL": "http://h:20999",
+                               "ORACLARR_TRUENAS_URL": "https://h",
+                               "ORACLARR_TRUENAS_API_KEY": KEY})
+    assert cfg.instances["netdata"].type == "netdata"
+    assert cfg.instances["truenas"].type == "truenas"
+    assert cfg.instances["truenas"].verify_tls is True
+
+
+def test_truenas_requires_https():
+    with pytest.raises(ConfigError) as e:
+        load_settings(None, {"ORACLARR_TRUENAS_URL": "http://h", "ORACLARR_TRUENAS_API_KEY": KEY})
+    msg = str(e.value)
+    assert "ORACLARR_TRUENAS_URL" in msg and "https://" in msg and KEY not in msg
