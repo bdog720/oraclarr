@@ -216,3 +216,20 @@ async def test_max_queue_with_qbit_and_strikes_fits_under_cap():
     out = await _run(tool)
     assert isinstance(out, dict) and "items" in out, out
     assert len(out["items"]) == queues.MAX_LIMIT
+
+
+from oraclarr_mcp.tools import host  # noqa: E402
+
+
+async def test_max_host_datasets_fit_under_cap():
+    d = {"id": "tank/" + "d" * 120, "used": {"parsed": 10**12}, "available": {"parsed": 10**12},
+         "quota": {"parsed": 10**12}}
+
+    class Tn:
+        name = "truenas"; type = "truenas"
+        async def datasets(self): return [d] * 1000
+
+    async def tool(limit):
+        return await host.get_host({"truenas": Tn()}, "datasets", limit)
+
+    _assert_full_and_ok(await _run(tool), host.MAX_LIMIT)
