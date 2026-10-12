@@ -1,0 +1,44 @@
+[
+  {
+    "id": "b087e39d-87d1-4d0c-9754-2300310bf21c",
+    "name": "Private",
+    "categories": [
+      "radarr",
+      "tv-sonarr",
+      "sonarr-anime"
+    ],
+    "trackerPatterns": [],
+    "tagsAny": [],
+    "tagsAll": [],
+    "priority": 1,
+    "privacyType": "Private",
+    "maxRatio": 2,
+    "minSeedTime": 72,
+    "maxSeedTime": 168,
+    "minSeeders": 0,
+    "maxInactiveDays": -1,
+    "deleteSourceFiles": true,
+    "action": "Delete"
+  },
+  {
+    "id": "7625409f-7a48-4a7a-8c06-64a08aad5770",
+    "name": "Public",
+    "categories": [
+      "radarr",
+      "tv-sonarr",
+      "sonarr-anime"
+    ],
+    "trackerPatterns": [],
+    "tagsAny": [],
+    "tagsAll": [],
+    "priority": 2,
+    "privacyType": "Public",
+    "maxRatio": 2,
+    "minSeedTime": 0,
+    "maxSeedTime": 72,
+    "minSeeders": 0,
+    "maxInactiveDays": -1,
+    "deleteSourceFiles": true,
+    "action": "Delete"
+  }
+]

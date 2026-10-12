@@ -1,0 +1,197 @@
+{
+  "items": [
+    {
+      "downloadItemId": "01a12d2d-3974-718e-ad97-a28176d24513",
+      "downloadId": "0000000000000000000000000000000000000001",
+      "title": "Example.Show.S01E01.1080p.WEB-DL-GROUP",
+      "totalStrikes": 5,
+      "strikesByType": {
+        "Stalled": 5
+      },
+      "latestStrikeAt": "2026-10-11T23:15:00.094994+00:00",
+      "firstStrikeAt": "2026-10-11T22:55:00.996615+00:00",
+      "isMarkedForRemoval": false,
+      "isRemoved": false,
+      "isReturning": false,
+      "hasDryRunStrikes": false,
+      "strikes": [
+        {
+          "id": "01a12d3f-857e-7b0a-83ea-43a0612a7b7b",
+          "type": "Stalled",
+          "createdAt": "2026-10-11T23:15:00.094994+00:00",
+          "lastDownloadedBytes": 0,
+          "jobRunId": "01a12d3f-8520-7f06-be3e-cdf7f287c17b",
+          "isDryRun": false
+        },
+        {
+          "id": "01a12d3a-f1f9-728b-8e08-7a6642efe388",
+          "type": "Stalled",
+          "createdAt": "2026-10-11T23:10:00.1852135+00:00",
+          "lastDownloadedBytes": 0,
+          "jobRunId": "01a12d3a-f140-7f3a-bc60-1b22c93e346e",
+          "isDryRun": false
+        },
+        {
+          "id": "01a12d36-5e39-7669-ab25-e4d3bd5148d1",
+          "type": "Stalled",
+          "createdAt": "2026-10-11T23:05:00.2171305+00:00",
+          "lastDownloadedBytes": 0,
+          "jobRunId": "01a12d36-5d60-75c6-b83f-a4f203d5a55a",
+          "isDryRun": false
+        },
+        {
+          "id": "01a12d31-cd33-70a5-9f68-dd14932f560b",
+          "type": "Stalled",
+          "createdAt": "2026-10-11T23:00:00.9473059+00:00",
+          "lastDownloadedBytes": 0,
+          "jobRunId": "01a12d31-c980-7adb-92eb-f4f979834ce2",
+          "isDryRun": false
+        },
+        {
+          "id": "01a12d2d-3984-7f20-96f3-6aea3b2c95d8",
+          "type": "Stalled",
+          "createdAt": "2026-10-11T22:55:00.996615+00:00",
+          "lastDownloadedBytes": 0,
+          "jobRunId": "01a12d2d-35a0-7e15-b8e9-a4660b31317d",
+          "isDryRun": false
+        }
+      ]
+    },
+    {
+      "downloadItemId": "01a12d2d-38a1-7958-aa48-d162eecc95cb",
+      "downloadId": "0000000000000000000000000000000000000002",
+      "title": "Example.Show.S01E02.1080p.WEB-DL-GROUP",
+      "totalStrikes": 5,
+      "strikesByType": {
+        "Stalled": 5
+      },
+      "latestStrikeAt": "2026-10-11T23:15:00.0382139+00:00",
+      "firstStrikeAt": "2026-10-11T22:55:00.8146438+00:00",
+      "isMarkedForRemoval": false,
+      "isRemoved": false,
+      "isReturning": false,
+      "hasDryRunStrikes": false,
+      "strikes": [
+        {
+          "id": "01a12d3f-8546-7448-84a2-2fabeefbb5ae",
+          "type": "Stalled",
+          "createdAt": "2026-10-11T23:15:00.0382139+00:00",
+          "lastDownloadedBytes": 0,
+          "jobRunId": "01a12d3f-8520-7f06-be3e-cdf7f287c17b",
+          "isDryRun": false
+        },
+        {
+          "id": "01a12d3a-f17d-736f-bb64-dc14bf4ad074",
+          "type": "Stalled",
+          "createdAt": "2026-10-11T23:10:00.0617344+00:00",
+          "lastDownloadedBytes": 0,
+          "jobRunId": "01a12d3a-f140-7f3a-bc60-1b22c93e346e",
+          "isDryRun": false
+        },
+        {
+          "id": "01a12d36-5d98-73cc-bc89-ceebdf930977",
+          "type": "Stalled",
+          "createdAt": "2026-10-11T23:05:00.0565919+00:00",
+          "lastDownloadedBytes": 0,
+          "jobRunId": "01a12d36-5d60-75c6-b83f-a4f203d5a55a",
+          "isDryRun": false
+        },
+        {
+          "id": "01a12d31-ccec-7524-b916-8f0cb68a8a2a",
+          "type": "Stalled",
+          "createdAt": "2026-10-11T23:00:00.8760825+00:00",
+          "lastDownloadedBytes": 0,
+          "jobRunId": "01a12d31-c980-7adb-92eb-f4f979834ce2",
+          "isDryRun": false
+        },
+        {
+          "id": "01a12d2d-38ce-76b2-a548-38fced3bdee7",
+          "type": "Stalled",
+          "createdAt": "2026-10-11T22:55:00.8146438+00:00",
+          "lastDownloadedBytes": 0,
+          "jobRunId": "01a12d2d-35a0-7e15-b8e9-a4660b31317d",
+          "isDryRun": false
+        }
+      ]
+    },
+    {
+      "downloadItemId": "01a12d11-becc-7a5a-b33b-6c1e25fffbdb",
+      "downloadId": "0000000000000000000000000000000000000003",
+      "title": "Example.Show.S01E03.1080p.WEB-DL-GROUP",
+      "totalStrikes": 1,
+      "strikesByType": {
+        "FailedImport": 1
+      },
+      "latestStrikeAt": "2026-10-11T22:25:00.1586941+00:00",
+      "firstStrikeAt": "2026-10-11T22:25:00.1586941+00:00",
+      "isMarkedForRemoval": false,
+      "isRemoved": false,
+      "isReturning": false,
+      "hasDryRunStrikes": false,
+      "strikes": [
+        {
+          "id": "01a12d11-befe-77e6-b681-8914470eb985",
+          "type": "FailedImport",
+          "createdAt": "2026-10-11T22:25:00.1586941+00:00",
+          "lastDownloadedBytes": null,
+          "jobRunId": "01a12d11-be60-7a0e-9159-c292953857c0",
+          "isDryRun": false
+        }
+      ]
+    },
+    {
+      "downloadItemId": "01a12ce3-f7f3-7bc1-a98c-b6831c6d07ce",
+      "downloadId": "0000000000000000000000000000000000000004",
+      "title": "Example.Show.S01E04.1080p.WEB-DL-GROUP",
+      "totalStrikes": 1,
+      "strikesByType": {
+        "FailedImport": 1
+      },
+      "latestStrikeAt": "2026-10-11T21:35:00.11013+00:00",
+      "firstStrikeAt": "2026-10-11T21:35:00.11013+00:00",
+      "isMarkedForRemoval": false,
+      "isRemoved": false,
+      "isReturning": false,
+      "hasDryRunStrikes": false,
+      "strikes": [
+        {
+          "id": "01a12ce3-f80e-7dba-905a-b97c91289247",
+          "type": "FailedImport",
+          "createdAt": "2026-10-11T21:35:00.11013+00:00",
+          "lastDownloadedBytes": null,
+          "jobRunId": "01a12ce3-f7a0-7f2b-85fb-09acc5fe65c6",
+          "isDryRun": false
+        }
+      ]
+    },
+    {
+      "downloadItemId": "01a12cd6-3d8f-7051-aead-04ab72cee1ac",
+      "downloadId": "0000000000000000000000000000000000000005",
+      "title": "Example.Show.S01E05.1080p.WEB-DL-GROUP",
+      "totalStrikes": 1,
+      "strikesByType": {
+        "FailedImport": 1
+      },
+      "latestStrikeAt": "2026-10-11T21:20:00.5389561+00:00",
+      "firstStrikeAt": "2026-10-11T21:20:00.5389561+00:00",
+      "isMarkedForRemoval": false,
+      "isRemoved": false,
+      "isReturning": false,
+      "hasDryRunStrikes": false,
+      "strikes": [
+        {
+          "id": "01a12cd6-3e1a-7e0d-a08d-46aaed889a65",
+          "type": "FailedImport",
+          "createdAt": "2026-10-11T21:20:00.5389561+00:00",
+          "lastDownloadedBytes": null,
+          "jobRunId": "01a12cd6-3c00-7d0b-a1a7-7bebc68fc027",
+          "isDryRun": false
+        }
+      ]
+    }
+  ],
+  "page": 1,
+  "pageSize": 5,
+  "totalCount": 5,
+  "totalPages": 1
+}

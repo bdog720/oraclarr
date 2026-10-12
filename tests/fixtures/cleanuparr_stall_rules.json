@@ -1,0 +1,28 @@
+[
+  {
+    "resetStrikesOnProgress": true,
+    "minimumProgress": null,
+    "id": "1ca4b076-ba8c-4e4b-8232-7587a2b54412",
+    "name": "Private - Stalled",
+    "enabled": true,
+    "maxStrikes": 10,
+    "privacyType": "Private",
+    "minCompletionPercentage": 0,
+    "maxCompletionPercentage": 95,
+    "deletePrivateTorrentsFromClient": false,
+    "changeCategory": false
+  },
+  {
+    "resetStrikesOnProgress": true,
+    "minimumProgress": null,
+    "id": "a3685064-6009-4498-b1cc-087b937e0049",
+    "name": "Public - Stalled",
+    "enabled": true,
+    "maxStrikes": 5,
+    "privacyType": "Public",
+    "minCompletionPercentage": 0,
+    "maxCompletionPercentage": 100,
+    "deletePrivateTorrentsFromClient": false,
+    "changeCategory": false
+  }
+]

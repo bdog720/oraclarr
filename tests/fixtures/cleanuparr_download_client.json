@@ -1,0 +1,18 @@
+{
+  "clients": [
+    {
+      "id": "69658450-b422-4890-a020-1b66c67e4906",
+      "enabled": true,
+      "name": "qBittorrent",
+      "typeName": "qBittorrent",
+      "type": "Torrent",
+      "host": "http://qbittorrent:8080",
+      "username": "user",
+      "password": "password",
+      "urlBase": "",
+      "externalUrl": null,
+      "downloadDirectorySource": "/downloads",
+      "downloadDirectoryTarget": "/data/downloads"
+    }
+  ]
+}

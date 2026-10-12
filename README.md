@@ -22,7 +22,7 @@ A locally-run, read-only [MCP](https://modelcontextprotocol.io) server that lets
 
 Oraclarr gives a language model one place to answer the operational "why" questions that normally mean tabbing through six web UIs. It aggregates across your services and returns a single, structured answer without changing anything (it is strictly read-only in this phase).
 
-Covered now: **Sonarr**, **Radarr**, **Sportarr**, **Prowlarr**, **qBittorrent**, **Tdarr**, **Profilarr**, and **Jellyfin** — including **multiple instances of the same type** (e.g. a separate anime or 4K Sonarr/Radarr). Every tool fans out across all the instances you define and reports each one separately.
+Covered now: **Sonarr**, **Radarr**, **Sportarr**, **Prowlarr**, **qBittorrent**, **Tdarr**, **Profilarr**, **Jellyfin**, and **Cleanuparr** — including **multiple instances of the same type** (e.g. a separate anime or 4K Sonarr/Radarr). Every tool fans out across all the instances you define and reports each one separately.
 
 ## In practice
 
@@ -36,6 +36,7 @@ Once registered, you just ask your MCP client. Oraclarr picks the right tool and
 | "Why does Profilarr keep upgrading stuff that already looks fine?" | `explain_decision` + `get_quality_config` | the profile's cutoff and upgrade thresholds next to the scores of recent grabs |
 | "What's stuck downloading right now?" | `get_queues` | a unified queue with progress and stall flags |
 | "Is the Jellyfin library scan finished, and is anyone transcoding?" | `get_library` | scan state and progress per library, failed tasks, and who is playing what (with transcode reasons) |
+| "Why is Cleanuparr about to remove this download?" | `get_queues` + `get_cleanup` | the strikes against it and their type, whether it's marked for removal, and the rules that apply |
 
 ## Tools
 
@@ -55,6 +56,7 @@ All read-only and outcome-oriented (not one-per-endpoint, which keeps the model 
 | `get_transcodes` | What's transcoding / stuck? |
 | `get_upcoming` | What's airing or releasing soon, and will it land? (up to 90 days) |
 | `get_library` | Jellyfin libraries, scan progress, tasks, playback and transcodes, recent additions, name search |
+| `get_cleanup` | Cleanuparr dry-run state, cleaner schedules, seeding and stall rules, strikes |
 
 ## Install
 
@@ -199,8 +201,8 @@ ORACLARR_QBITTORRENT_PASSWORD=your-password
 | Field | Needed for |
 |---|---|
 | `_URL` | every instance |
-| `_TYPE` | only when the name isn't a service type. Types: `sonarr`, `radarr`, `sportarr`, `prowlarr`, `qbittorrent`, `tdarr`, `profilarr`, `jellyfin` |
-| `_API_KEY` | Sonarr, Radarr, Sportarr, Prowlarr, Profilarr, Jellyfin |
+| `_TYPE` | only when the name isn't a service type. Types: `sonarr`, `radarr`, `sportarr`, `prowlarr`, `qbittorrent`, `tdarr`, `profilarr`, `jellyfin`, `cleanuparr` |
+| `_API_KEY` | Sonarr, Radarr, Sportarr, Prowlarr, Profilarr, Jellyfin, Cleanuparr |
 | `_USERNAME`, `_PASSWORD` | qBittorrent |
 | `_ENABLED` | optional; `false` switches an instance off without deleting its lines |
 
@@ -216,7 +218,7 @@ Server settings are optional:
 | `ORACLARR_TIMEOUT_SECONDS` | `10` | Timeout for each request to a service |
 | `ORACLARR_ALLOW_WRITES` | `false` | Read-only for now; writes are a future phase |
 
-Jellyfin needs an API key (Dashboard → API Keys). `get_library` only registers when `library` is in the toolsets.
+Jellyfin needs an API key (Dashboard → API Keys). `get_library` only registers when `library` is in the toolsets. Cleanuparr needs its account API key (Settings → Account → API Key).
 
 Every tool call has a time budget, set by `ORACLARR_TOOL_BUDGET_SECONDS`. If an instance doesn't answer in time, it comes back as `status: "timeout"` and the other instances still return their data. List results carry only the useful fields and stop at each tool's `limit`. When there is more, `truncated` and `total` say so. API keys and passwords show up as `***` in responses and log lines (values shorter than four characters are left alone).
 
@@ -245,8 +247,8 @@ Up to 1.2.0 the setup used `config.yaml` plus an `environment:` block in the com
 
 Oraclarr is built in phases. v1 is deliberately read-only; write capability arrives behind explicit safety gates. The architecture (typed clients + outcome tools + config-selectable toolsets) is designed to extend to other self-hosted suites beyond *arr, too.
 
-- ✅ **Phase 1: read-only diagnostics.** Sonarr, Radarr, Sportarr, Prowlarr, qBittorrent, Tdarr, Profilarr, Jellyfin.
-- 🔜 **Phase 2: more services, still read-only.** Seerr, Gluetun, TrueNAS, Cleanuparr, Unpackerr, ntfy. The architecture also opens up to non-*arr stacks.
+- ✅ **Phase 1: read-only diagnostics.** Sonarr, Radarr, Sportarr, Prowlarr, qBittorrent, Tdarr, Profilarr, Jellyfin, Cleanuparr.
+- 🔜 **Phase 2: more services, still read-only.** Seerr, Gluetun, TrueNAS, Unpackerr, ntfy. The architecture also opens up to non-*arr stacks.
 - 🔭 **Phase 3: safe write actions.** Trigger search, retry, refresh/rescan, approve requests, gated behind `allow_writes` with dry-run previews and an audit log.
 - 🔭 **Phase 4: destructive actions.** Delete media, blocklist, stack control, behind an explicit confirmation and allowlist.
 
