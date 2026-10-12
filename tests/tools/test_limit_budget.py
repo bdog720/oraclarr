@@ -153,3 +153,32 @@ async def test_max_transcodes_fits_under_cap():
     assert isinstance(out, list), out
     assert out[0]["status"] == "ok"
     assert len(out[0]["data"]["staged"]) == transcodes.MAX_LIMIT
+
+
+from oraclarr_mcp.tools import cleanup  # noqa: E402
+
+
+async def test_max_cleanup_strikes_fit_under_cap():
+    item = _padded(cleanup.strike_row, {
+        "downloadId": "a" * 40, "title": "T", "totalStrikes": 9,
+        "strikesByType": {"Stalled": 3, "SlowSpeed": 3, "FailedImport": 3},
+        "firstStrikeAt": "2026-10-11T10:00:00.0000000+00:00",
+        "latestStrikeAt": "2026-10-12T10:00:00.0000000+00:00",
+        "isMarkedForRemoval": False, "isRemoved": False, "hasDryRunStrikes": False},
+        "title", 500)
+
+    class Cl:
+        type = "cleanuparr"
+
+        def __init__(self, name):
+            self.name = name
+
+        async def strikes(self, page_size):
+            return [item] * page_size, 10**6
+
+    clients = {f"cl{i}": Cl(f"cl{i}") for i in range(2)}
+
+    async def tool(limit):
+        return await cleanup.get_cleanup(clients, "strikes", limit)
+
+    _assert_full_and_ok(await _run(tool), cleanup.MAX_LIMIT)
