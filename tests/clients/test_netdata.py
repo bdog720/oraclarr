@@ -95,3 +95,13 @@ async def test_info():
     c = _client()
     assert (await c.info())["version"]
     await c.aclose()
+
+
+@respx.mock
+async def test_null_values_are_dropped():
+    respx.get(f"{B}/api/v2/data").mock(return_value=httpx.Response(200, json={"result": {
+        "labels": ["time", "free,system.ram@n", "used,system.ram@n"],
+        "data": [[1, [None, 0, 0], [5.0, 0, 0]]]}}))
+    c = _client()
+    assert await c.latest("system.ram") == {"used": 5.0}
+    await c.aclose()

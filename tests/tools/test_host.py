@@ -86,6 +86,9 @@ class FakeTn:
     async def disk_temps(self):
         return DISKS
 
+    async def summary(self):
+        return await self.system_info(), await self.pools(), await self.alerts()
+
 
 async def test_netdata_summary_blocks():
     d = (await get_host({"netdata": FakeNd()}))[0]["data"]
@@ -166,3 +169,34 @@ async def test_limit_is_clamped():
 
 def test_gpu_contexts_constant():
     assert "nvidia_smi.gpu_temperature" in GPU_CONTEXTS
+
+
+class SparseNd(FakeNd):
+    async def latest(self, ctx):
+        if ctx == "system.load":
+            return {"load1": 1.0}
+        if ctx == "system.cpu":
+            return {"system": 2.0, "iowait": 0.5}
+        return await super().latest(ctx)
+
+
+async def test_partial_netdata_values_do_not_fail_the_summary():
+    row = (await get_host({"netdata": SparseNd()}))[0]
+    assert row["status"] == "ok"
+    assert row["data"]["cpu"]["load"] == [1.0, None, None]
+    assert row["data"]["cpu"]["busy_pct"] == 2.0
+
+
+class BatchTn(FakeTn):
+    async def summary(self):
+        self.calls.append("summary")
+        return ({"version": "25.10.7", "uptime_seconds": 3600.0}, POOLS, ALERTS)
+
+    async def system_info(self):
+        raise AssertionError("summary must use one batch")
+
+
+async def test_truenas_summary_uses_one_batch():
+    tn = BatchTn()
+    row = (await get_host({"truenas": tn}))[0]
+    assert row["status"] == "ok" and tn.calls == ["summary"]

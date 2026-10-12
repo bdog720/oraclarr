@@ -160,3 +160,42 @@ async def test_truenas_cache_ttl():
     clock.t += CACHE_TTL_S + 1
     await c.system_info()
     assert len(seen) == 2
+
+
+def test_default_connect_uses_a_logger_that_never_logs_frames(monkeypatch):
+    import logging
+    import websockets.asyncio.client as wsc
+    from oraclarr_mcp.clients import truenas
+    captured = {}
+
+    def fake_connect(uri, **kwargs):
+        captured.update(kwargs)
+        return "conn"
+
+    monkeypatch.setattr(wsc, "connect", fake_connect)
+    root = logging.getLogger()
+    before = root.level
+    root.setLevel(logging.DEBUG)  # what FASTMCP_LOG_LEVEL=DEBUG does
+    try:
+        assert truenas._default_connect("wss://nas/api/current", ssl.create_default_context(),
+                                        5) == "conn"
+        logger = captured["logger"]
+        assert not logger.isEnabledFor(logging.DEBUG)  # frames (with the key) log at DEBUG
+    finally:
+        root.setLevel(before)
+
+
+async def test_summary_uses_one_login_and_fills_the_cache():
+    seen = []
+    ws = FakeWS({**BASE, "system.info": _fx("system_info"), "pool.query": _fx("pools"),
+                 "alert.list": _fx("alerts")})
+    c = _client(ws, seen)
+    info, pools, alerts = await c.summary()
+    assert len(seen) == 1
+    assert [m["method"] for m in ws.sent] == ["auth.login_with_api_key", "system.info",
+                                              "pool.query", "alert.list"]
+    assert info["version"] and isinstance(pools, list) and isinstance(alerts, list)
+    await c.system_info()
+    await c.pools()
+    await c.alerts()
+    assert len(seen) == 1

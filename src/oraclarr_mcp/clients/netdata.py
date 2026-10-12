@@ -31,6 +31,8 @@ class NetdataClient(BaseClient):
             for label, cell in zip(labels[1:], rows[0][1:]):
                 dimension, _, instance = label.partition(",")
                 value = cell[0] if isinstance(cell, list) else cell
+                if value is None:  # a gap in collection: leave the dimension out
+                    continue
                 by_instance.setdefault(instance, {})[dimension] = value
         out = [by_instance[k] for k in sorted(by_instance)]
         self._cache[context] = (now, out)

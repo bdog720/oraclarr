@@ -1,5 +1,6 @@
 import asyncio
 import json
+import logging
 import ssl
 import time
 from typing import Any, Awaitable, Callable
@@ -9,6 +10,11 @@ _MAX_FRAME = 16 * 2**20
 _REASON_MAX = 300
 POOL_FIELDS = ["name", "status", "healthy", "size", "allocated", "free", "fragmentation", "scan"]
 DATASET_FIELDS = ["id", "used", "available", "quota", "refquota", "pool"]
+
+# websockets logs every frame at DEBUG, the login frame included, and its frame repr
+# keeps the end of the API key. Give it a logger that never emits DEBUG.
+_WS_LOG = logging.getLogger("oraclarr_mcp.truenas.ws")
+_WS_LOG.setLevel(logging.INFO)
 
 
 class TruenasAuthError(Exception):
@@ -40,7 +46,7 @@ def _ssl_context(verify: bool) -> ssl.SSLContext:
 
 def _default_connect(uri: str, ssl_ctx: ssl.SSLContext, timeout: float):
     from websockets.asyncio.client import connect
-    return connect(uri, ssl=ssl_ctx, open_timeout=timeout, max_size=_MAX_FRAME)
+    return connect(uri, ssl=ssl_ctx, open_timeout=timeout, max_size=_MAX_FRAME, logger=_WS_LOG)
 
 
 class TruenasClient:
@@ -109,6 +115,20 @@ class TruenasClient:
 
     async def _one(self, method: str, params: list) -> Any:
         return (await self.call_many([(method, params)]))[0]
+
+    async def summary(self) -> tuple[dict, list[dict], list[dict]]:
+        """system.info, pool.query and alert.list in one login; fills their cache keys."""
+        now = self._clock()
+        keys = ("system_info", "pools", "alerts")
+        hits = [self._cache.get(k) for k in keys]
+        if all(h and now - h[0] < CACHE_TTL_S for h in hits):
+            return hits[0][1], hits[1][1], hits[2][1]
+        info, pools, alerts = await self.call_many([
+            ("system.info", []), ("pool.query", [[], {"select": POOL_FIELDS}]),
+            ("alert.list", [])])
+        for key, value in zip(keys, (info, pools, alerts)):
+            self._cache[key] = (now, value)
+        return info, pools, alerts
 
     async def system_info(self) -> dict:
         return await self._cached("system_info", lambda: self._one("system.info", []))
