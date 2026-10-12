@@ -77,3 +77,29 @@ async def test_stack_health_cleanuparr_running_job_counts_as_scheduled():
     d = (await stack_health({"cleanuparr": LiveCl()}))[0]["data"]
     assert d["unscheduled_jobs"] == [j["name"] for j in live if j["status"] == "Not Scheduled"]
     assert d["scheduled_jobs"] == [j["name"] for j in live if j["status"] != "Not Scheduled"]
+
+
+class FakeNd:
+    name = "netdata"; type = "netdata"
+    async def info(self):
+        return {"version": "v2.12.1", "machine_guid": "GUID-PRIVATE"}
+    async def latest(self, ctx):
+        return {"user": 1.0} if ctx == "system.cpu" else {}
+
+
+class FakeTn:
+    name = "truenas"; type = "truenas"
+    async def system_info(self):
+        return {"version": "25.10.7", "system_serial": "SERIAL-PRIVATE"}
+    async def pools(self):
+        return [{"healthy": True}, {"healthy": True}]
+    async def alerts(self):
+        return [{"level": "WARNING", "dismissed": False}, {"level": "INFO", "dismissed": True}]
+
+
+async def test_stack_health_reports_netdata_and_truenas():
+    rows = {r["instance"]: r for r in await stack_health({"netdata": FakeNd(),
+                                                          "truenas": FakeTn()})}
+    assert rows["netdata"]["data"] == {"version": "v2.12.1", "collecting": True}
+    assert rows["truenas"]["data"] == {"version": "25.10.7", "pools_healthy": True,
+                                       "alerts": {"WARNING": 1}}
