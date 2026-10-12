@@ -1,11 +1,14 @@
 import httpx
 from websockets.exceptions import ConnectionClosed, InvalidHandshake, InvalidURI
 
+from .clients.docker import DockerProxyRefused
 from .clients.truenas import TruenasAuthError, TruenasConnectError
 from .models import InstanceStatus
 
 
 def status_for_exception(exc: Exception) -> InstanceStatus:
+    if isinstance(exc, DockerProxyRefused):
+        return "auth_failed"
     if isinstance(exc, TruenasAuthError):
         return "auth_failed"
     if isinstance(exc, (httpx.ConnectError, httpx.ConnectTimeout, TruenasConnectError,

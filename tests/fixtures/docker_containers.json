@@ -1,0 +1,730 @@
+[
+ {
+  "Id": "0101010101010101010101010101010101010101010101010101010101010101",
+  "Names": [
+   "/docker-proxy"
+  ],
+  "Image": "wollomatic/socket-proxy:1.13.1",
+  "Created": 1791784897,
+  "State": "running",
+  "Status": "Up 5 minutes (healthy)",
+  "Ports": [
+   {
+    "IP": "0.0.0.0",
+    "PrivatePort": 2375,
+    "PublicPort": 2375,
+    "Type": "tcp"
+   },
+   {
+    "IP": "::",
+    "PrivatePort": 2375,
+    "PublicPort": 2375,
+    "Type": "tcp"
+   }
+  ],
+  "Labels": {
+   "com.docker.compose.project": "oraclarr",
+   "com.docker.compose.service": "docker-proxy"
+  },
+  "HostConfig": {
+   "NetworkMode": "oraclarr_default"
+  }
+ },
+ {
+  "Id": "0202020202020202020202020202020202020202020202020202020202020202",
+  "Names": [
+   "/oraclarr"
+  ],
+  "Image": "ghcr.io/bdog720/oraclarr-mcp:latest",
+  "Created": 1791782307,
+  "State": "running",
+  "Status": "Up 48 minutes (healthy)",
+  "Ports": [
+   {
+    "IP": "0.0.0.0",
+    "PrivatePort": 7979,
+    "PublicPort": 7979,
+    "Type": "tcp"
+   },
+   {
+    "IP": "::",
+    "PrivatePort": 7979,
+    "PublicPort": 7979,
+    "Type": "tcp"
+   }
+  ],
+  "Labels": {
+   "com.docker.compose.project": "oraclarr",
+   "com.docker.compose.service": "oraclarr"
+  },
+  "HostConfig": {
+   "NetworkMode": "oraclarr_default"
+  }
+ },
+ {
+  "Id": "0303030303030303030303030303030303030303030303030303030303030303",
+  "Names": [
+   "/netdata"
+  ],
+  "Image": "netdata/netdata:stable",
+  "Created": 1791779797,
+  "State": "running",
+  "Status": "Up 2 hours (healthy)",
+  "Ports": [
+   {
+    "IP": "0.0.0.0",
+    "PrivatePort": 19999,
+    "PublicPort": 20999,
+    "Type": "tcp"
+   },
+   {
+    "IP": "::",
+    "PrivatePort": 19999,
+    "PublicPort": 20999,
+    "Type": "tcp"
+   }
+  ],
+  "Labels": {
+   "com.docker.compose.project": "netdata",
+   "com.docker.compose.service": "netdata"
+  },
+  "HostConfig": {
+   "NetworkMode": "netdata_default"
+  }
+ },
+ {
+  "Id": "0404040404040404040404040404040404040404040404040404040404040404",
+  "Names": [
+   "/dozzle"
+  ],
+  "Image": "amir20/dozzle:latest",
+  "Created": 1791738039,
+  "State": "running",
+  "Status": "Up 13 hours",
+  "Ports": [
+   {
+    "IP": "0.0.0.0",
+    "PrivatePort": 8080,
+    "PublicPort": 8888,
+    "Type": "tcp"
+   },
+   {
+    "IP": "::",
+    "PrivatePort": 8080,
+    "PublicPort": 8888,
+    "Type": "tcp"
+   }
+  ],
+  "Labels": {
+   "com.docker.compose.project": "infra",
+   "com.docker.compose.service": "dozzle"
+  },
+  "HostConfig": {
+   "NetworkMode": "arr-net"
+  }
+ },
+ {
+  "Id": "0505050505050505050505050505050505050505050505050505050505050505",
+  "Names": [
+   "/portainer"
+  ],
+  "Image": "portainer/portainer-ce:latest",
+  "Created": 1791478832,
+  "State": "running",
+  "Status": "Up 2 days",
+  "Ports": [
+   {
+    "IP": "0.0.0.0",
+    "PrivatePort": 9443,
+    "PublicPort": 9443,
+    "Type": "tcp"
+   },
+   {
+    "IP": "::",
+    "PrivatePort": 9443,
+    "PublicPort": 9443,
+    "Type": "tcp"
+   },
+   {
+    "PrivatePort": 8000,
+    "Type": "tcp"
+   },
+   {
+    "PrivatePort": 9000,
+    "Type": "tcp"
+   }
+  ],
+  "Labels": {
+   "com.docker.compose.project": "infra",
+   "com.docker.compose.service": "portainer"
+  },
+  "HostConfig": {
+   "NetworkMode": "arr-net"
+  }
+ },
+ {
+  "Id": "0606060606060606060606060606060606060606060606060606060606060606",
+  "Names": [
+   "/watchtower"
+  ],
+  "Image": "nickfedor/watchtower:latest",
+  "Created": 1791392434,
+  "State": "running",
+  "Status": "Up 2 days (healthy)",
+  "Ports": [
+   {
+    "PrivatePort": 8080,
+    "Type": "tcp"
+   }
+  ],
+  "Labels": {
+   "com.docker.compose.project": "infra",
+   "com.docker.compose.service": "watchtower"
+  },
+  "HostConfig": {
+   "NetworkMode": "arr-net"
+  }
+ },
+ {
+  "Id": "0707070707070707070707070707070707070707070707070707070707070707",
+  "Names": [
+   "/jellyfin"
+  ],
+  "Image": "jellyfin/jellyfin:latest",
+  "Created": 1791306070,
+  "State": "running",
+  "Status": "Up 2 days (healthy)",
+  "Ports": [
+   {
+    "IP": "0.0.0.0",
+    "PrivatePort": 8096,
+    "PublicPort": 8096,
+    "Type": "tcp"
+   },
+   {
+    "IP": "::",
+    "PrivatePort": 8096,
+    "PublicPort": 8096,
+    "Type": "tcp"
+   }
+  ],
+  "Labels": {
+   "com.docker.compose.project": "media",
+   "com.docker.compose.service": "jellyfin"
+  },
+  "HostConfig": {
+   "NetworkMode": "arr-net"
+  }
+ },
+ {
+  "Id": "0808080808080808080808080808080808080808080808080808080808080808",
+  "Names": [
+   "/tdarr-node"
+  ],
+  "Image": "ghcr.io/haveagitgat/tdarr_node:latest",
+  "Created": 1791161619,
+  "State": "running",
+  "Status": "Up 2 days",
+  "Ports": [
+   {
+    "PrivatePort": 8265,
+    "Type": "tcp"
+   },
+   {
+    "PrivatePort": 8266,
+    "Type": "tcp"
+   }
+  ],
+  "Labels": {
+   "com.docker.compose.project": "media",
+   "com.docker.compose.service": "tdarr-node"
+  },
+  "HostConfig": {
+   "NetworkMode": "arr-net"
+  }
+ },
+ {
+  "Id": "0909090909090909090909090909090909090909090909090909090909090909",
+  "Names": [
+   "/tdarr"
+  ],
+  "Image": "ghcr.io/haveagitgat/tdarr:latest",
+  "Created": 1791161601,
+  "State": "running",
+  "Status": "Up 2 days (healthy)",
+  "Ports": [
+   {
+    "IP": "0.0.0.0",
+    "PrivatePort": 8265,
+    "PublicPort": 8265,
+    "Type": "tcp"
+   },
+   {
+    "IP": "::",
+    "PrivatePort": 8265,
+    "PublicPort": 8265,
+    "Type": "tcp"
+   },
+   {
+    "IP": "0.0.0.0",
+    "PrivatePort": 8266,
+    "PublicPort": 8266,
+    "Type": "tcp"
+   },
+   {
+    "IP": "::",
+    "PrivatePort": 8266,
+    "PublicPort": 8266,
+    "Type": "tcp"
+   }
+  ],
+  "Labels": {
+   "com.docker.compose.project": "media",
+   "com.docker.compose.service": "tdarr"
+  },
+  "HostConfig": {
+   "NetworkMode": "arr-net"
+  }
+ },
+ {
+  "Id": "0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a",
+  "Names": [
+   "/seerr"
+  ],
+  "Image": "ghcr.io/seerr-team/seerr:latest",
+  "Created": 1791161591,
+  "State": "running",
+  "Status": "Up 2 days (healthy)",
+  "Ports": [
+   {
+    "IP": "0.0.0.0",
+    "PrivatePort": 5055,
+    "PublicPort": 5055,
+    "Type": "tcp"
+   },
+   {
+    "IP": "::",
+    "PrivatePort": 5055,
+    "PublicPort": 5055,
+    "Type": "tcp"
+   }
+  ],
+  "Labels": {
+   "com.docker.compose.project": "media",
+   "com.docker.compose.service": "seerr"
+  },
+  "HostConfig": {
+   "NetworkMode": "arr-net"
+  }
+ },
+ {
+  "Id": "0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b",
+  "Names": [
+   "/qbittorrent"
+  ],
+  "Image": "lscr.io/linuxserver/qbittorrent:latest",
+  "Created": 1791161454,
+  "State": "running",
+  "Status": "Up 2 days (healthy)",
+  "Ports": [],
+  "Labels": {
+   "com.docker.compose.project": "download",
+   "com.docker.compose.service": "qbittorrent"
+  },
+  "HostConfig": {
+   "NetworkMode": "container:1616161616161616161616161616161616161616161616161616161616161616"
+  }
+ },
+ {
+  "Id": "0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c",
+  "Names": [
+   "/sonarr"
+  ],
+  "Image": "lscr.io/linuxserver/sonarr:latest",
+  "Created": 1791161386,
+  "State": "running",
+  "Status": "Up 2 days",
+  "Ports": [
+   {
+    "IP": "0.0.0.0",
+    "PrivatePort": 8989,
+    "PublicPort": 8989,
+    "Type": "tcp"
+   },
+   {
+    "IP": "::",
+    "PrivatePort": 8989,
+    "PublicPort": 8989,
+    "Type": "tcp"
+   }
+  ],
+  "Labels": {
+   "com.docker.compose.project": "arr",
+   "com.docker.compose.service": "sonarr"
+  },
+  "HostConfig": {
+   "NetworkMode": "arr-net"
+  }
+ },
+ {
+  "Id": "0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d",
+  "Names": [
+   "/sonarr-anime"
+  ],
+  "Image": "lscr.io/linuxserver/sonarr:latest",
+  "Created": 1791161386,
+  "State": "running",
+  "Status": "Up 2 days",
+  "Ports": [
+   {
+    "IP": "0.0.0.0",
+    "PrivatePort": 8989,
+    "PublicPort": 8990,
+    "Type": "tcp"
+   },
+   {
+    "IP": "::",
+    "PrivatePort": 8989,
+    "PublicPort": 8990,
+    "Type": "tcp"
+   }
+  ],
+  "Labels": {
+   "com.docker.compose.project": "arr",
+   "com.docker.compose.service": "sonarr-anime"
+  },
+  "HostConfig": {
+   "NetworkMode": "arr-net"
+  }
+ },
+ {
+  "Id": "0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e",
+  "Names": [
+   "/radarr"
+  ],
+  "Image": "lscr.io/linuxserver/radarr:latest",
+  "Created": 1791161386,
+  "State": "running",
+  "Status": "Up 2 days",
+  "Ports": [
+   {
+    "IP": "0.0.0.0",
+    "PrivatePort": 7878,
+    "PublicPort": 7878,
+    "Type": "tcp"
+   },
+   {
+    "IP": "::",
+    "PrivatePort": 7878,
+    "PublicPort": 7878,
+    "Type": "tcp"
+   }
+  ],
+  "Labels": {
+   "com.docker.compose.project": "arr",
+   "com.docker.compose.service": "radarr"
+  },
+  "HostConfig": {
+   "NetworkMode": "arr-net"
+  }
+ },
+ {
+  "Id": "0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f",
+  "Names": [
+   "/prowlarr"
+  ],
+  "Image": "lscr.io/linuxserver/prowlarr:latest",
+  "Created": 1791161380,
+  "State": "running",
+  "Status": "Up 2 days (healthy)",
+  "Ports": [
+   {
+    "IP": "0.0.0.0",
+    "PrivatePort": 9696,
+    "PublicPort": 9696,
+    "Type": "tcp"
+   },
+   {
+    "IP": "::",
+    "PrivatePort": 9696,
+    "PublicPort": 9696,
+    "Type": "tcp"
+   }
+  ],
+  "Labels": {
+   "com.docker.compose.project": "arr",
+   "com.docker.compose.service": "prowlarr"
+  },
+  "HostConfig": {
+   "NetworkMode": "arr-net"
+  }
+ },
+ {
+  "Id": "1010101010101010101010101010101010101010101010101010101010101010",
+  "Names": [
+   "/flaresolverr"
+  ],
+  "Image": "ghcr.io/flaresolverr/flaresolverr:latest",
+  "Created": 1791161375,
+  "State": "running",
+  "Status": "Up 2 days",
+  "Ports": [
+   {
+    "IP": "0.0.0.0",
+    "PrivatePort": 8191,
+    "PublicPort": 8191,
+    "Type": "tcp"
+   },
+   {
+    "IP": "::",
+    "PrivatePort": 8191,
+    "PublicPort": 8191,
+    "Type": "tcp"
+   },
+   {
+    "PrivatePort": 8192,
+    "Type": "tcp"
+   }
+  ],
+  "Labels": {
+   "com.docker.compose.project": "arr",
+   "com.docker.compose.service": "flaresolverr"
+  },
+  "HostConfig": {
+   "NetworkMode": "arr-net"
+  }
+ },
+ {
+  "Id": "1111111111111111111111111111111111111111111111111111111111111111",
+  "Names": [
+   "/sportarr"
+  ],
+  "Image": "sportarr/sportarr:latest",
+  "Created": 1791161375,
+  "State": "running",
+  "Status": "Up 2 days (healthy)",
+  "Ports": [
+   {
+    "IP": "0.0.0.0",
+    "PrivatePort": 1867,
+    "PublicPort": 1867,
+    "Type": "tcp"
+   },
+   {
+    "IP": "::",
+    "PrivatePort": 1867,
+    "PublicPort": 1867,
+    "Type": "tcp"
+   }
+  ],
+  "Labels": {
+   "com.docker.compose.project": "arr",
+   "com.docker.compose.service": "sportarr"
+  },
+  "HostConfig": {
+   "NetworkMode": "arr-net"
+  }
+ },
+ {
+  "Id": "1212121212121212121212121212121212121212121212121212121212121212",
+  "Names": [
+   "/profilarr"
+  ],
+  "Image": "ghcr.io/dictionarry-hub/profilarr:latest",
+  "Created": 1791161375,
+  "State": "running",
+  "Status": "Up 2 days (healthy)",
+  "Ports": [
+   {
+    "IP": "0.0.0.0",
+    "PrivatePort": 6868,
+    "PublicPort": 6868,
+    "Type": "tcp"
+   },
+   {
+    "IP": "::",
+    "PrivatePort": 6868,
+    "PublicPort": 6868,
+    "Type": "tcp"
+   }
+  ],
+  "Labels": {
+   "com.docker.compose.project": "arr",
+   "com.docker.compose.service": "profilarr"
+  },
+  "HostConfig": {
+   "NetworkMode": "arr-net"
+  }
+ },
+ {
+  "Id": "1313131313131313131313131313131313131313131313131313131313131313",
+  "Names": [
+   "/cleanuparr"
+  ],
+  "Image": "ghcr.io/cleanuparr/cleanuparr:latest",
+  "Created": 1791161375,
+  "State": "running",
+  "Status": "Up 2 days (healthy)",
+  "Ports": [
+   {
+    "IP": "0.0.0.0",
+    "PrivatePort": 11011,
+    "PublicPort": 11011,
+    "Type": "tcp"
+   },
+   {
+    "IP": "::",
+    "PrivatePort": 11011,
+    "PublicPort": 11011,
+    "Type": "tcp"
+   }
+  ],
+  "Labels": {
+   "com.docker.compose.project": "arr",
+   "com.docker.compose.service": "cleanuparr"
+  },
+  "HostConfig": {
+   "NetworkMode": "arr-net"
+  }
+ },
+ {
+  "Id": "1414141414141414141414141414141414141414141414141414141414141414",
+  "Names": [
+   "/unpackerr"
+  ],
+  "Image": "golift/unpackerr:latest",
+  "Created": 1791161375,
+  "State": "running",
+  "Status": "Up 2 days",
+  "Ports": [],
+  "Labels": {
+   "com.docker.compose.project": "arr",
+   "com.docker.compose.service": "unpackerr"
+  },
+  "HostConfig": {
+   "NetworkMode": "arr-net"
+  }
+ },
+ {
+  "Id": "1515151515151515151515151515151515151515151515151515151515151515",
+  "Names": [
+   "/tailscale"
+  ],
+  "Image": "tailscale/tailscale:latest",
+  "Created": 1790742704,
+  "State": "running",
+  "Status": "Up 2 days",
+  "Ports": [],
+  "Labels": {
+   "com.docker.compose.project": "infra",
+   "com.docker.compose.service": "tailscale"
+  },
+  "HostConfig": {
+   "NetworkMode": "arr-net"
+  }
+ },
+ {
+  "Id": "1616161616161616161616161616161616161616161616161616161616161616",
+  "Names": [
+   "/gluetun"
+  ],
+  "Image": "qmcgaw/gluetun:latest",
+  "Created": 1790742546,
+  "State": "running",
+  "Status": "Up 2 days (healthy)",
+  "Ports": [
+   {
+    "PrivatePort": 1080,
+    "Type": "tcp"
+   },
+   {
+    "PrivatePort": 1080,
+    "Type": "udp"
+   },
+   {
+    "PrivatePort": 8000,
+    "Type": "tcp"
+   },
+   {
+    "IP": "0.0.0.0",
+    "PrivatePort": 8080,
+    "PublicPort": 8080,
+    "Type": "tcp"
+   },
+   {
+    "IP": "::",
+    "PrivatePort": 8080,
+    "PublicPort": 8080,
+    "Type": "tcp"
+   },
+   {
+    "PrivatePort": 8388,
+    "Type": "tcp"
+   },
+   {
+    "PrivatePort": 8388,
+    "Type": "udp"
+   },
+   {
+    "PrivatePort": 8888,
+    "Type": "tcp"
+   }
+  ],
+  "Labels": {
+   "com.docker.compose.project": "download",
+   "com.docker.compose.service": "gluetun"
+  },
+  "HostConfig": {
+   "NetworkMode": "arr-net"
+  }
+ },
+ {
+  "Id": "1717171717171717171717171717171717171717171717171717171717171717",
+  "Names": [
+   "/qdirstat"
+  ],
+  "Image": "jlesage/qdirstat:latest",
+  "Created": 1790701261,
+  "State": "created",
+  "Status": "Created",
+  "Ports": [],
+  "Labels": {
+   "com.docker.compose.project": "storage-visualisation",
+   "com.docker.compose.service": "qdirstat"
+  },
+  "HostConfig": {
+   "NetworkMode": "storage-visualisation_default"
+  }
+ },
+ {
+  "Id": "1818181818181818181818181818181818181818181818181818181818181818",
+  "Names": [
+   "/ix-dockge-dockge-1"
+  ],
+  "Image": "louislam/dockge:1.5.0",
+  "Created": 1780553483,
+  "State": "running",
+  "Status": "Up 2 days (healthy)",
+  "Ports": [
+   {
+    "IP": "0.0.0.0",
+    "PrivatePort": 5001,
+    "PublicPort": 5001,
+    "Type": "tcp"
+   },
+   {
+    "IP": "::",
+    "PrivatePort": 5001,
+    "PublicPort": 5001,
+    "Type": "tcp"
+   }
+  ],
+  "Labels": {
+   "com.docker.compose.project": "ix-dockge",
+   "com.docker.compose.service": "dockge"
+  },
+  "HostConfig": {
+   "NetworkMode": "ix-dockge_default"
+  }
+ }
+]

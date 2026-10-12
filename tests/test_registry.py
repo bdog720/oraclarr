@@ -62,3 +62,11 @@ async def test_truenas_routes_to_truenas_client():
     c = build_clients(cfg)["truenas"]
     assert isinstance(c, TruenasClient) and c.type == "truenas"
     await c.aclose()
+
+
+async def test_docker_routes_to_docker_client():
+    from oraclarr_mcp.clients.docker import DockerClient
+    cfg = _cfg({"docker": Instance(type="docker", url="http://docker-proxy:2375")})
+    c = build_clients(cfg)["docker"]
+    assert isinstance(c, DockerClient) and c.type == "docker"
+    await c.aclose()

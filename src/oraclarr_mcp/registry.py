@@ -10,6 +10,7 @@ from .clients.jellyfin import JellyfinClient
 from .clients.cleanuparr import CleanuparrClient
 from .clients.netdata import NetdataClient
 from .clients.truenas import TruenasClient
+from .clients.docker import DockerClient
 
 def _make(name: str, inst: Instance, timeout: int) -> BaseClient:
     t = inst.type
@@ -33,6 +34,8 @@ def _make(name: str, inst: Instance, timeout: int) -> BaseClient:
     if t == "truenas":
         return TruenasClient(name, t, inst.url, inst.api_key or "", timeout,
                              verify_tls=inst.verify_tls)
+    if t == "docker":
+        return DockerClient(name, t, inst.url, NoAuth(), timeout)
     raise ValueError(f"unknown instance type {t}")
 
 def build_clients(cfg: Config) -> dict[str, BaseClient]:
