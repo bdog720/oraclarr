@@ -27,9 +27,11 @@ async def _summary(c: BaseClient) -> dict:
     if c.type == "cleanuparr":
         general, jobs = await asyncio.gather(c.general(), c.jobs())
         return {"dry_run": general.get("dryRun"),
-                "scheduled_jobs": [j.get("name") for j in jobs if j.get("status") == "Scheduled"],
+                # Live states: Scheduled, Running, Not Scheduled.
+                "scheduled_jobs": [j.get("name") for j in jobs
+                                   if j.get("status") != "Not Scheduled"],
                 "unscheduled_jobs": [j.get("name") for j in jobs
-                                     if j.get("status") != "Scheduled"]}
+                                     if j.get("status") == "Not Scheduled"]}
     return {}
 
 async def stack_health(clients: dict[str, BaseClient]) -> list[dict]:

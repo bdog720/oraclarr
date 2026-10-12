@@ -171,3 +171,10 @@ async def test_queue_malformed_cleanuparr_reply_fails_only_that_instance():
 async def test_queue_without_cleanuparr_has_no_key():
     res = await get_queues({"sonarr": FakeArr()})
     assert "cleanuparr" not in res["items"][0]
+
+
+async def test_queue_no_match_with_one_cleanuparr_down_is_unknown():
+    up = FakeCl(name="cl-up", strikes=[{**H1_STRIKE, "downloadId": "OTHER"}])
+    down = FakeCl(name="cl-down", fail=True)
+    res = await get_queues({"sonarr": FakeArr(), "cl-up": up, "cl-down": down})
+    assert res["items"][0]["cleanuparr"] is None

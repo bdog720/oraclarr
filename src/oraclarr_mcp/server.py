@@ -66,7 +66,8 @@ def build_server(
     async def _get_queues(service: str | None = None, limit: int = 100) -> dict:
         """Unified active download queue: arr queues joined to qBittorrent torrents
         (progress, stalled). Use this instead of curling Sonarr/Radarr/qBittorrent over
-        SSH. Returns at most `limit` items; `truncated` and `total` show when more exist."""
+        SSH. Returns at most `limit` items (max 400); `truncated` and `total` show when more
+        exist."""
         return await get_queues(clients, service, limit)
 
     async def _diagnose(title: str) -> dict:

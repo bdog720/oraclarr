@@ -182,3 +182,37 @@ async def test_max_cleanup_strikes_fit_under_cap():
         return await cleanup.get_cleanup(clients, "strikes", limit)
 
     _assert_full_and_ok(await _run(tool), cleanup.MAX_LIMIT)
+
+
+from oraclarr_mcp.tools import queues  # noqa: E402
+
+
+async def test_max_queue_with_qbit_and_strikes_fits_under_cap():
+    title = "T" * 150  # long release names reach ~150 characters
+    rec = {"title": title, "downloadId": "A" * 40, "status": "downloading",
+           "trackedDownloadState": "downloading", "size": 10**10, "sizeleft": 3 * 10**9}
+
+    class Arr:
+        name = "sonarr"; type = "sonarr"
+        async def queue_page(self, limit): return [rec] * limit, 10**6
+
+    class Qbit:
+        name = "qbit"; type = "qbittorrent"
+        async def torrents(self):
+            return [{"hash": "a" * 40, "state": "stalledDL", "progress": 0.7123}]
+
+    class Cl:
+        name = "cleanuparr"; type = "cleanuparr"
+        async def strikes(self, page_size):
+            return [{"downloadId": "a" * 40, "totalStrikes": 12,
+                     "strikesByType": {"Stalled": 4, "SlowSpeed": 4, "FailedImport": 4},
+                     "isMarkedForRemoval": True, "hasDryRunStrikes": False}], 1
+
+    clients = {"sonarr": Arr(), "qbit": Qbit(), "cleanuparr": Cl()}
+
+    async def tool(limit):
+        return await queues.get_queues(clients, None, limit)
+
+    out = await _run(tool)
+    assert isinstance(out, dict) and "items" in out, out
+    assert len(out["items"]) == queues.MAX_LIMIT

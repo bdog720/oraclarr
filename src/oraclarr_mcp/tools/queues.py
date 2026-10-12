@@ -3,7 +3,9 @@ from ..clients.base import BaseClient
 from ..models import ARR_TYPES
 from ._util import clamp, probe
 
-MAX_LIMIT = 500
+# 400 x the 448-byte worst-case row (150-char title, qbit + strike join) stays under
+# the 200 KB output cap; see test_limit_budget.
+MAX_LIMIT = 400
 CLEANUPARR_STRIKE_PAGE = 500
 
 
@@ -74,7 +76,8 @@ async def get_queues(clients: dict[str, BaseClient], service: str | None = None,
             if cleans:
                 if dl in strike_index:
                     item["cleanuparr"] = strike_index[dl]
-                elif clean_ok and not strikes_cut:
+                elif clean_ok and len(clean_ok) == len(clean_results) and not strikes_cut:
+                    # Only a complete answer from every Cleanuparr proves "no strikes".
                     item["cleanuparr"] = {"strikes": 0}
                 else:
                     item["cleanuparr"] = None
