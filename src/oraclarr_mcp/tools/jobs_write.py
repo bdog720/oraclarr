@@ -260,9 +260,12 @@ async def _execute(clients, store, writable, plan_id):
         audit("failed", tool=TOOL, instance=name, plan_id=plan_id, detail=f"http {code}")
         return _err("upstream_error", instance=name, status=code,
                     message=_upstream_message(e.response))
-    except (httpx.TimeoutException, httpx.TransportError, TimeoutError):
+    except (httpx.RequestError, TimeoutError):
         audit("unknown", tool=TOOL, instance=name, plan_id=plan_id)
         return {"outcome": "unknown", "instance": name, "next": nxt}
+    except asyncio.CancelledError:
+        audit("unknown", tool=TOOL, instance=name, plan_id=plan_id, detail="cancelled")
+        raise
     except ValueError:
         # 2xx with a non-JSON body: the write already happened, only the reply is unreadable.
         reply = None

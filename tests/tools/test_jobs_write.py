@@ -2,6 +2,7 @@ import asyncio
 import logging
 
 import httpx
+import pytest
 
 from oraclarr_mcp.plans import PLAN_TTL_S, PlanStore
 from oraclarr_mcp.tools.jobs_write import MAX_PREVIEW_ROWS, REFRESH_PARAMS, start_job
@@ -30,6 +31,7 @@ class FakeArr:
         return list(self._items.values())
 
     async def item(self, kind, item_id):
+        await asyncio.sleep(0)  # yield, so concurrent callers interleave like real I/O
         return self._items.get(item_id)
 
     async def rename_preview(self, kind, item_id):
@@ -339,6 +341,30 @@ async def test_send_timeout_is_unknown_and_not_retried(caplog):
     assert out == {"outcome": "unknown", "instance": "sonarr",
                    "next": 'get_jobs(service="sonarr")'}
     assert len(sonarr.posts) == 1 and "event=unknown" in caplog.text
+
+
+async def test_undecodable_reply_is_unknown_not_an_escape(caplog):
+    sonarr = FakeArr()
+    sonarr.post_error = httpx.DecodingError("bad gzip")
+    clients, store, w = _env(sonarr=sonarr)
+    pid = await _planned(clients, store, w, action="refresh", service="sonarr", target="id:1")
+    with caplog.at_level(logging.INFO, logger="oraclarr_mcp.audit"):
+        out = await start_job(clients, store, w, action="refresh", plan_id=pid)
+    assert out == {"outcome": "unknown", "instance": "sonarr",
+                   "next": 'get_jobs(service="sonarr")'}
+    assert len(sonarr.posts) == 1 and "event=unknown" in caplog.text
+
+
+async def test_cancelled_send_is_audited_and_reraised(caplog):
+    sonarr = FakeArr()
+    sonarr.post_error = asyncio.CancelledError()
+    clients, store, w = _env(sonarr=sonarr)
+    pid = await _planned(clients, store, w, action="refresh", service="sonarr", target="id:1")
+    with caplog.at_level(logging.INFO, logger="oraclarr_mcp.audit"):
+        with pytest.raises(asyncio.CancelledError):
+            await start_job(clients, store, w, action="refresh", plan_id=pid)
+    assert len(sonarr.posts) == 1
+    assert "event=unknown" in caplog.text and "cancelled" in caplog.text
 
 
 async def test_non_json_success_reply_counts_as_executed(caplog):
