@@ -1,6 +1,5 @@
 from oraclarr_mcp.config import Config, Instance, ServerSettings
-from oraclarr_mcp.guards import (ToolSpec, enabled_for_toolsets, tool_spec, writable_instances,
-                                 writes_enabled)
+from oraclarr_mcp.guards import ToolSpec, enabled_for_toolsets, tool_spec, writable_instances
 
 def test_tool_spec_records_tags():
     spec = tool_spec(name="get_wanted", risk="read", domain="media")
@@ -24,10 +23,15 @@ def _cfg(server_writes, inst_writes, enabled=True):
 
 
 def test_writes_need_both_switches_and_an_enabled_instance():
-    assert writes_enabled(_cfg(True, True)) is True
-    assert writes_enabled(_cfg(True, False)) is False
-    assert writes_enabled(_cfg(False, True)) is False
-    assert writes_enabled(_cfg(True, True, enabled=False)) is False
+    assert writable_instances(_cfg(True, True)) == {"sonarr"}
+    assert writable_instances(_cfg(True, False)) == set()
+    assert writable_instances(_cfg(False, True)) == set()
+    assert writable_instances(_cfg(True, True, enabled=False)) == set()
+
+
+def test_guards_has_no_unused_writes_enabled_helper():
+    import oraclarr_mcp.guards as guards
+    assert not hasattr(guards, "writes_enabled")
 
 
 def test_writable_instances():
