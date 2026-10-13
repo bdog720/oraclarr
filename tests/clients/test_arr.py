@@ -224,3 +224,21 @@ async def test_cancelled_titles_call_cancels_its_lookups():
     for _ in range(5):
         await asyncio.sleep(0)
     assert sorted(cancelled) == ["/api/v3/series/1", "/api/v3/series/2"]
+
+
+@respx.mock
+async def test_items_item_and_rename_preview():
+    respx.get("http://h/api/v3/series").mock(
+        return_value=httpx.Response(200, json=[{"id": 1, "title": "A"}]))
+    respx.get("http://h/api/v3/series/1").mock(
+        return_value=httpx.Response(200, json={"id": 1, "title": "A"}))
+    respx.get("http://h/api/v3/series/2").mock(return_value=httpx.Response(404, json={}))
+    route = respx.get("http://h/api/v3/rename").mock(return_value=httpx.Response(200, json=[]))
+    c = _client()
+    assert (await c.items("series"))[0]["title"] == "A"
+    assert (await c.item("series", 1))["id"] == 1
+    assert await c.item("series", 2) is None
+    assert await c.rename_preview("series", 1) == []
+    assert route.calls.last.request.url.params["seriesId"] == "1"
+    await c.rename_preview("movie", 7)
+    assert route.calls.last.request.url.params["movieId"] == "7"

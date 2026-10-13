@@ -2,6 +2,8 @@ import asyncio
 import time
 from typing import Callable
 
+import httpx
+
 from ..budget import remaining
 from .base import BaseClient
 
@@ -66,6 +68,21 @@ class ArrClient(BaseClient):
         data = await self.get_json(f"/api/v3/wanted/{kind}", params={
             "pageSize": limit, "includeSeries": "true"})
         return data.get("records", []), data.get("totalRecords", 0)
+
+    async def items(self, kind: str) -> list[dict]:
+        return await self.get_json(f"/api/v3/{kind}")
+
+    async def item(self, kind: str, item_id: int) -> dict | None:
+        try:
+            return await self.get_json(f"/api/v3/{kind}/{item_id}")
+        except httpx.HTTPStatusError as e:
+            if e.response.status_code == 404:
+                return None
+            raise
+
+    async def rename_preview(self, kind: str, item_id: int) -> list[dict]:
+        key = "seriesId" if kind == "series" else "movieId"
+        return await self.get_json("/api/v3/rename", params={key: item_id})
 
     async def custom_formats(self) -> list[dict]:
         return await self.get_json("/api/v3/customformat")
