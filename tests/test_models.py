@@ -35,7 +35,8 @@ def test_instance_result_accepts_timeout_status_and_fields():
     assert d["truncated"] is True
 
 
-def test_domain_includes_containers():
+def test_domain_lists_exactly_the_toolsets_tools_declare():
     from typing import get_args
     from oraclarr_mcp.models import Domain
-    assert "containers" in get_args(Domain)
+    from oraclarr_mcp.server import TOOL_SPECS
+    assert set(get_args(Domain)) == {s.domain for s in TOOL_SPECS} - {"always"}
