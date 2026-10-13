@@ -2,7 +2,7 @@ from .base import BaseClient
 
 
 class JellyfinClient(BaseClient):
-    """Jellyfin 12.x REST. Read-only: never call POST /Library/Refresh here."""
+    """Jellyfin 12.x REST. Writes (library scans) go only through start_job's plan flow."""
 
     async def system_info(self) -> dict:
         return await self.get_json("/System/Info")
