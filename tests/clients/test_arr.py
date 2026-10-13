@@ -1,7 +1,9 @@
+import asyncio
 import json
 import httpx
 import respx
 from pathlib import Path
+from oraclarr_mcp.clients import arr as arr_mod
 from oraclarr_mcp.clients.arr import ArrClient
 from oraclarr_mcp.clients.base import ApiKeyHeaderAuth
 
@@ -100,3 +102,125 @@ async def test_queue_page_returns_records_and_total():
     assert route.calls.last.request.url.params["pageSize"] == "100"
     assert records == [{"title": "A"}] and total == 300
     await c.aclose()
+
+
+class Clock:
+    def __init__(self):
+        self.t = 1000.0
+
+    def __call__(self):
+        return self.t
+
+
+def _jclient(clock=None):
+    return ArrClient("sonarr", "sonarr", "http://h", ApiKeyHeaderAuth("K"), timeout=5,
+                     clock=clock or Clock())
+
+
+def _jfx(name):
+    return json.loads((FX / f"{name}.json").read_text(encoding="utf-8"))
+
+
+@respx.mock
+async def test_commands_and_system_tasks_read_their_endpoints():
+    respx.get("http://h/api/v3/command").mock(
+        return_value=httpx.Response(200, json=_jfx("arr_commands_sonarr")))
+    respx.get("http://h/api/v3/system/task").mock(
+        return_value=httpx.Response(200, json=_jfx("arr_system_task_sonarr")))
+    c = _jclient()
+    assert len(await c.commands()) == len(_jfx("arr_commands_sonarr"))
+    assert (await c.system_tasks())[0]["taskName"]
+    assert {call.request.method for call in respx.calls} == {"GET"}
+
+
+@respx.mock
+async def test_titles_first_five_in_order_and_cached():
+    clock = Clock()
+    routes = {i: respx.get(f"http://h/api/v3/series/{i}").mock(
+        return_value=httpx.Response(200, json={"id": i, "title": f"Show {i}"}))
+        for i in range(1, 8)}
+    c = _jclient(clock)
+    assert await c.titles("series", [3, 1, 2, 4, 5, 6, 7]) == [
+        "Show 3", "Show 1", "Show 2", "Show 4", "Show 5"]
+    assert routes[6].call_count == 0 and routes[7].call_count == 0
+    await c.titles("series", [3, 1])
+    assert routes[3].call_count == 1
+    clock.t += arr_mod.TITLE_TTL_S
+    await c.titles("series", [3])
+    assert routes[3].call_count == 2
+
+
+@respx.mock
+async def test_titles_skip_missing_and_failed_ids():
+    respx.get("http://h/api/v3/movie/1").mock(return_value=httpx.Response(404, json={}))
+    respx.get("http://h/api/v3/movie/2").mock(side_effect=httpx.ConnectError("down"))
+    respx.get("http://h/api/v3/movie/3").mock(
+        return_value=httpx.Response(200, json={"id": 3, "title": "Film 3"}))
+    assert await _jclient().titles("movie", [1, 2, 3]) == ["Film 3"]
+
+
+async def test_titles_return_what_arrived_within_budget(monkeypatch):
+    monkeypatch.setattr(arr_mod, "TITLE_BUDGET_S", 0.05)
+    c = _jclient()
+
+    async def fake_get_json(path, params=None):
+        if path.endswith("/1"):
+            await asyncio.sleep(5)  # a stuck lookup
+        return {"title": "Show 2"}
+
+    c.get_json = fake_get_json
+    loop = asyncio.get_running_loop()
+    t0 = loop.time()
+    assert await c.titles("series", [1, 2]) == ["Show 2"]
+    assert loop.time() - t0 < 1.0
+
+
+async def test_titles_empty_ids_makes_no_request():
+    assert await _jclient().titles("series", []) == []
+
+
+@respx.mock
+async def test_titles_drop_non_object_replies():
+    respx.get("http://h/api/v3/series/1").mock(return_value=httpx.Response(200, json=None))
+    respx.get("http://h/api/v3/series/2").mock(return_value=httpx.Response(200, json=["x"]))
+    respx.get("http://h/api/v3/series/3").mock(
+        return_value=httpx.Response(200, json={"id": 3, "title": "Show 3"}))
+    assert await _jclient().titles("series", [1, 2, 3]) == ["Show 3"]
+
+
+async def test_titles_respect_the_tool_deadline():
+    from oraclarr_mcp.budget import reset_deadline, set_deadline
+    c = _jclient()
+
+    async def stuck(path, params=None):
+        await asyncio.sleep(5)
+
+    c.get_json = stuck
+    token = set_deadline(0.6)  # less than TITLE_BUDGET_S (5 s) is left
+    try:
+        loop = asyncio.get_running_loop()
+        t0 = loop.time()
+        assert await c.titles("series", [1, 2]) == []
+        assert loop.time() - t0 < 0.5
+    finally:
+        reset_deadline(token)
+
+
+async def test_cancelled_titles_call_cancels_its_lookups():
+    c = _jclient()
+    cancelled = []
+
+    async def stuck(path, params=None):
+        try:
+            await asyncio.sleep(5)
+        except asyncio.CancelledError:
+            cancelled.append(path)
+            raise
+
+    c.get_json = stuck
+    outer = asyncio.ensure_future(c.titles("series", [1, 2]))
+    await asyncio.sleep(0.05)
+    outer.cancel()
+    for _ in range(5):
+        await asyncio.sleep(0)
+    assert sorted(cancelled) == ["/api/v3/series/1", "/api/v3/series/2"]

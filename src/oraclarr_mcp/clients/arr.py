@@ -1,7 +1,24 @@
+import asyncio
+import time
+from typing import Callable
+
+from ..budget import remaining
 from .base import BaseClient
+
+MAX_TITLES = 5
+TITLE_TTL_S = 300
+TITLE_BUDGET_S = 5.0
+TITLE_CONCURRENCY = 8
+
 
 class ArrClient(BaseClient):
     """Sonarr + Radarr share /api/v3."""
+
+    def __init__(self, *args, clock: Callable[[], float] = time.monotonic, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._clock = clock
+        self._titles: dict[tuple[str, int], tuple[float, str | None]] = {}
+        self._title_sem = asyncio.Semaphore(TITLE_CONCURRENCY)
 
     async def system_status(self) -> dict:
         return await self.get_json("/api/v3/system/status")
@@ -63,3 +80,42 @@ class ArrClient(BaseClient):
         items = await self.get_json(f"/api/v3/{media}")
         t = term.lower()
         return [i for i in items if t in i.get("title", "").lower()]
+
+    async def commands(self) -> list[dict]:
+        """Queued, running and recently finished commands (kept for minutes only)."""
+        return await self.get_json("/api/v3/command")
+
+    async def system_tasks(self) -> list[dict]:
+        return await self.get_json("/api/v3/system/task")
+
+    async def _title(self, kind: str, item_id: int) -> str | None:
+        now = self._clock()
+        hit = self._titles.get((kind, item_id))
+        if hit and now - hit[0] < TITLE_TTL_S:
+            return hit[1]
+        try:
+            async with self._title_sem:
+                reply = await self.get_json(f"/api/v3/{kind}/{item_id}")
+        except Exception:  # noqa: BLE001 - titles are decoration; one bad id never fails a row
+            return None
+        title = reply.get("title") if isinstance(reply, dict) else None
+        self._titles[(kind, item_id)] = (now, title)
+        return title
+
+    async def titles(self, kind: str, ids: list[int]) -> list[str]:
+        """Titles for the first MAX_TITLES ids, in id order. Slow lookups are dropped after
+        TITLE_BUDGET_S so a job poll never waits on every title."""
+        tasks = [asyncio.ensure_future(self._title(kind, i)) for i in ids[:MAX_TITLES]]
+        if not tasks:
+            return []
+        budget = TITLE_BUDGET_S
+        left = remaining()
+        if left is not None:  # leave the tool time to return the commands it already has
+            budget = max(0.0, min(budget, left - 0.5))
+        try:
+            done, _ = await asyncio.wait(tasks, timeout=budget)
+        finally:  # also when the caller is cancelled: free the semaphore slots
+            for t in tasks:
+                if not t.done():
+                    t.cancel()
+        return [t.result() for t in tasks if t in done and t.result()]
