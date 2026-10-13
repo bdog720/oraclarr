@@ -228,3 +228,15 @@ def test_start_job_registers_with_writes_enabled():
     assert set(p) == {"action", "service", "target", "season", "library", "plan_id"}
     desc = mcp._tool_manager._tools["start_job"].description
     assert "plan_id" in desc and "instead of" in desc and "SSH" in desc
+
+
+def test_start_job_action_is_optional_in_the_schema():
+    mcp = build_server(_writes_cfg(True, True), clients={})
+    schema = mcp._tool_manager._tools["start_job"].parameters
+    assert "action" not in schema.get("required", [])
+
+
+async def test_start_job_accepts_plan_id_alone():
+    mcp = build_server(_writes_cfg(True, True), clients={})
+    payloads = _payloads(await mcp.call_tool("start_job", {"plan_id": "x"}))
+    assert payloads == [{"error": "plan_not_found"}]

@@ -278,7 +278,8 @@ async def _execute(clients, store, writable, plan_id):
             "next": nxt}
 
 
-async def start_job(clients: dict, store: PlanStore, writable: set[str], action: str,
+async def start_job(clients: dict, store: PlanStore, writable: set[str],
+                    action: str | None = None,
                     service: str | None = None, target: str | None = None,
                     season: int | None = None, library: str | None = None,
                     plan_id: str | None = None) -> dict:
