@@ -1,7 +1,7 @@
 from mcp.server.fastmcp import FastMCP
 from .config import Config
 from .clients.base import BaseClient
-from .guards import tool_spec, enabled_for_toolsets, ensure_allowed, ToolSpec
+from .guards import tool_spec, enabled_for_toolsets, writable_instances, ToolSpec
 from .call_guard import guarded
 from .redact import Redactor
 from .tools.health import stack_health
@@ -20,6 +20,8 @@ from .tools.cleanup import get_cleanup
 from .tools.host import get_host
 from .tools.containers import get_containers
 from .tools.jobs import get_jobs
+from .plans import PlanStore
+from .tools.jobs_write import start_job
 
 TOOL_SPECS: list[ToolSpec] = [
     tool_spec("stack_health", "read", "always"),
@@ -38,6 +40,7 @@ TOOL_SPECS: list[ToolSpec] = [
     tool_spec("get_host", "read", "host"),
     tool_spec("get_containers", "read", "containers"),
     tool_spec("get_jobs", "read", "media"),
+    tool_spec("start_job", "safe_write", "media"),
 ]
 
 
@@ -51,11 +54,14 @@ def build_server(
     enabled = set(enabled_for_toolsets(TOOL_SPECS, cfg.server.toolsets))
     spec_by_name = {s.name: s for s in TOOL_SPECS}
     redactor = Redactor.from_config(cfg)
+    writable = writable_instances(cfg)
+    plans = PlanStore()
 
     def register(name: str, fn):
         if name not in enabled:
             return
-        ensure_allowed(spec_by_name[name], cfg.server.allow_writes)
+        if spec_by_name[name].risk != "read" and not writable:
+            return  # writes off: the tool does not exist for clients
         mcp.tool(name=name)(guarded(
             name, fn,
             budget_s=cfg.server.tool_budget_seconds,
@@ -193,6 +199,19 @@ def build_server(
         `truncated` and `total` show when more exist."""
         return await get_jobs(clients, service, section, include_routine, limit)
 
+    async def _start_job(action: str | None = None, service: str | None = None,
+                         target: str | None = None, season: int | None = None, library: str | None = None,
+                         plan_id: str | None = None) -> dict:
+        """Start an arr job or a Jellyfin scan, in two steps. First call without plan_id:
+        returns a preview of exactly what would happen and a plan_id (valid 10 minutes).
+        Then call again with only that plan_id to run it once. action is refresh, rescan,
+        search (season= for one Sonarr season), rename (shows the arr's rename preview)
+        on one series or movie (service= the arr instance, target= a title or "id:<n>"),
+        or scan (service= Jellyfin, library= optional). Follow progress with get_jobs.
+        Use this instead of the arr or Jellyfin UI, or curl/rm over SSH."""
+        return await start_job(clients, plans, writable, action, service, target, season,
+                               library, plan_id)
+
     register("stack_health", _stack_health)
     register("get_queues", _get_queues)
     register("diagnose", _diagnose)
@@ -209,4 +228,5 @@ def build_server(
     register("get_host", _get_host)
     register("get_containers", _get_containers)
     register("get_jobs", _get_jobs)
+    register("start_job", _start_job)
     return mcp

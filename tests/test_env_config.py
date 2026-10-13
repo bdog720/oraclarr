@@ -1,6 +1,6 @@
 import pytest
 
-from oraclarr_mcp.config import ConfigError, env_name, parse_env
+from oraclarr_mcp.config import ConfigError, Instance, env_name, parse_env
 
 KEY = "SECRETKEY12345"
 EMPTY = {"server": {}, "defaults": {}}
@@ -297,3 +297,35 @@ def test_docker_type_inferred_without_key():
     inst = cfg.instances["docker"]
     assert inst.type == "docker" and inst.url == "http://docker-proxy:2375"
     assert inst.api_key is None
+
+
+TOKEN = "t" * 24
+
+
+def test_http_token_and_instance_allow_writes_from_env():
+    cfg = load_settings(None, {"ORACLARR_HTTP_TOKEN": TOKEN, "ORACLARR_ALLOW_WRITES": "true",
+                               "ORACLARR_SONARR_URL": "http://h:8989",
+                               "ORACLARR_SONARR_API_KEY": KEY,
+                               "ORACLARR_SONARR_ALLOW_WRITES": "true",
+                               "ORACLARR_RADARR_URL": "http://h:7878",
+                               "ORACLARR_RADARR_API_KEY": KEY})
+    assert cfg.server.http_token == TOKEN and cfg.server.allow_writes is True
+    assert cfg.instances["sonarr"].allow_writes is True
+    assert cfg.instances["radarr"].allow_writes is False
+
+
+def test_short_http_token_is_rejected_without_echo():
+    with pytest.raises(ConfigError) as e:
+        load_settings(None, {"ORACLARR_HTTP_TOKEN": "short-secret"})
+    assert "short-secret" not in str(e.value) and "24" in str(e.value)
+
+
+def test_instance_allow_writes_must_be_boolean():
+    with pytest.raises(ConfigError) as e:
+        load_settings(None, {"ORACLARR_SONARR_URL": "http://h", "ORACLARR_SONARR_API_KEY": KEY,
+                             "ORACLARR_SONARR_ALLOW_WRITES": "maybe"})
+    assert "ORACLARR_SONARR_ALLOW_WRITES" in str(e.value)
+
+
+def test_read_only_field_is_gone():
+    assert "read_only" not in Instance.model_fields

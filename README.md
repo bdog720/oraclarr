@@ -6,12 +6,12 @@
 
 **Ask your media stack what's going on, in plain language.**
 
-A locally-run, read-only [MCP](https://modelcontextprotocol.io) server that lets an LLM client (Claude Code, Claude Desktop) diagnose a self-hosted *arr media stack.
+A locally-run [MCP](https://modelcontextprotocol.io) server that lets an LLM client (Claude Code, Claude Desktop) diagnose a self-hosted *arr media stack. It only reads by default. Writes are opt-in and need a token.
 
 ![License](https://img.shields.io/badge/license-Apache--2.0-blue)
 ![Python](https://img.shields.io/badge/python-3.12%2B-blue)
 ![MCP](https://img.shields.io/badge/MCP-server-7b3fe4)
-![Mode](https://img.shields.io/badge/mode-read--only-orange)
+![Mode](https://img.shields.io/badge/mode-read--only%20by%20default-orange)
 ![Status](https://img.shields.io/badge/phase%201-complete-brightgreen)
 
 </div>
@@ -20,7 +20,7 @@ A locally-run, read-only [MCP](https://modelcontextprotocol.io) server that lets
 
 ## What it does
 
-Oraclarr gives a language model one place to answer the operational "why" questions that normally mean tabbing through six web UIs. It aggregates across your services and returns a single, structured answer without changing anything (it is strictly read-only in this phase).
+Oraclarr gives a language model one place to answer the operational "why" questions that normally mean tabbing through six web UIs. It aggregates across your services and returns a single, structured answer without changing anything. It is read-only by default. One opt-in tool, `start_job`, can start a refresh, rescan, search or rename. See [Writes (opt-in)](#writes-opt-in).
 
 Covered now: **Sonarr**, **Radarr**, **Sportarr**, **Prowlarr**, **qBittorrent**, **Tdarr**, **Profilarr**, **Jellyfin**, **Cleanuparr**, **Netdata**, and **TrueNAS** — including **multiple instances of the same type** (e.g. a separate anime or 4K Sonarr/Radarr). Every tool fans out across all the instances you define and reports each one separately.
 
@@ -45,7 +45,7 @@ Once registered, you just ask your MCP client. Oraclarr picks the right tool and
 
 ## Tools
 
-All read-only and outcome-oriented (not one-per-endpoint, which keeps the model accurate):
+Read-only by default, and outcome-oriented (not one-per-endpoint, which keeps the model accurate). Only `start_job` writes, and only when you switch writes on:
 
 | Tool | Answers |
 |------|---------|
@@ -65,6 +65,7 @@ All read-only and outcome-oriented (not one-per-endpoint, which keeps the model 
 | `get_host` | Host CPU/iowait, memory, swap, ARC, GPU, pools, datasets, disk temperatures, TrueNAS alerts |
 | `get_containers` | Docker containers: state, health, restart counts, exit codes, and a filtered log tail |
 | `get_jobs` | What the arrs and Jellyfin are running, queued, failed or scheduled |
+| `start_job` | Start a refresh, rescan, search or rename on one series or movie, or a Jellyfin scan (opt-in, two-step) |
 
 ## Install
 
@@ -167,14 +168,17 @@ Replace `<host>` with the IP or hostname of the machine running the container.
 > **Why not the native "Add custom connector"?** Custom connectors connect to your
 > server **from Anthropic's cloud**, not from your machine — so the URL must be a
 > publicly reachable **HTTPS** endpoint (a `http://` LAN/localhost URL is rejected).
-> Pointing it at a homelab box means exposing this **unauthenticated read-only**
-> service to the internet, which we don't recommend until authentication lands (a
-> later phase). If you want it anyway, put a reverse proxy (Caddy/nginx) or tunnel
-> (Cloudflare Tunnel, Tailscale Funnel) with TLS in front and add your own auth.
+> Pointing it at a homelab box means exposing this service to the internet. By
+> default it has no login, and even with `ORACLARR_HTTP_TOKEN` set the token travels
+> in clear text over http. We don't recommend it. If you want it anyway, put a reverse
+> proxy (Caddy/nginx) or tunnel (Cloudflare Tunnel, Tailscale Funnel) with TLS in front.
 
-> **Security:** the service is unauthenticated read-only MCP. Deploy on a trusted
-> LAN only and do not expose port 7979 to the internet. Authentication is a later
-> phase.
+> **Security:** with no `ORACLARR_HTTP_TOKEN`, anyone who can reach port 7979 can read
+> your stack's status. Deploy on a trusted LAN only and do not expose the port to the
+> internet. Writes are off by default. When you turn them on, a token is required (see
+> [Writes (opt-in)](#writes-opt-in)). The token is a shared secret sent over plain http,
+> so it protects against other devices on your LAN, not against someone who can watch
+> the traffic.
 
 ### Transport settings (Docker only)
 
@@ -225,7 +229,8 @@ Server settings are optional:
 | `ORACLARR_TOOL_BUDGET_SECONDS` | `30` | Time limit per tool call; slow instances report `status: "timeout"` |
 | `ORACLARR_MAX_OUTPUT_BYTES` | `200000` | Safety net for oversized responses |
 | `ORACLARR_TIMEOUT_SECONDS` | `10` | Timeout for each request to a service |
-| `ORACLARR_ALLOW_WRITES` | `false` | Read-only for now; writes are a future phase |
+| `ORACLARR_ALLOW_WRITES` | `false` | Turns on `start_job`. Each instance also needs its own `ORACLARR_<NAME>_ALLOW_WRITES=true`. See [Writes (opt-in)](#writes-opt-in) |
+| `ORACLARR_HTTP_TOKEN` | unset | At least 24 characters. When set, every HTTP request needs `Authorization: Bearer <token>`. Required to turn writes on over http |
 
 Jellyfin needs an API key (Dashboard → API Keys). `get_library` only registers when `library` is in the toolsets. Cleanuparr needs its account API key (Settings → Account → API Key).
 
@@ -327,6 +332,49 @@ A container's details include its environment variables, which usually hold API 
 
 `stack_health` uses the same data. When a service is unreachable, its row shows the container behind its URL, plus any container sharing that container's network (qBittorrent behind Gluetun, for example). Oraclarr matches the URL's hostname against container names first, then an explicit port against published ports. A URL with neither, such as a reverse-proxy name on the default port, gets no container rather than a guess.
 
+### Writes (opt-in)
+
+Oraclarr only reads unless you turn writes on. With writes on, one tool, `start_job`, can start a refresh, rescan, search or rename on a single series or movie in Sonarr or Radarr, or start a library scan in Jellyfin. It cannot delete anything, and it does nothing to Sportarr, which has no command API. If you leave the settings below alone, Oraclarr behaves as it did before.
+
+Two switches must both be on: `ORACLARR_ALLOW_WRITES=true` for the server, and `ORACLARR_<NAME>_ALLOW_WRITES=true` for each instance you want it to act on. Instances without their own switch stay read-only. Each plan covers one target. To act on ten shows, you make ten plans.
+
+Over http, writes also need a token, and the container refuses to start with writes on and no token. Make one:
+
+```bash
+python -c "import secrets; print(secrets.token_urlsafe(32))"
+```
+
+Add the token and both switches to your `.env`. The compose file's `env_file: .env` line passes them to the container:
+
+```
+ORACLARR_HTTP_TOKEN=<the token>
+ORACLARR_ALLOW_WRITES=true
+ORACLARR_SONARR_ALLOW_WRITES=true
+```
+
+If your compose file lists variables in an `environment:` block and uses `.env` only for substitution, write `ORACLARR_HTTP_TOKEN: ${ORACLARR_HTTP_TOKEN}` there instead, and do the same for the two switches.
+
+Once a token is set, every request needs it, reads included. Claude Desktop sends it through `mcp-remote`. This is the config from [Connect Claude Desktop](#connect-claude-desktop) with a `--header` argument and an `env` block added:
+
+```json
+{
+  "mcpServers": {
+    "oraclarr": {
+      "command": "npx",
+      "args": ["-y", "mcp-remote", "http://<host>:7979/mcp", "--allow-http",
+               "--header", "Authorization:${AUTH_HEADER}"],
+      "env": {"AUTH_HEADER": "Bearer <the token>"}
+    }
+  }
+}
+```
+
+There is no space after the colon on purpose, because Claude Desktop on Windows breaks arguments that contain spaces. The space lives in the `env` value instead.
+
+A write takes two calls. The first call has no `plan_id`. It changes nothing and returns a preview of what would happen, with a `plan_id` that is good for 10 minutes. The second call passes only that `plan_id`, and the job runs once. Plans live in memory, so a restart drops them, and nothing is retried: if a request times out after it was sent, the result says `outcome: unknown` and you check with `get_jobs`.
+
+Every write event is logged as a single line in the form `<timestamp> audit event=<event> key=value ...`, where the event is `planned`, `executed`, `refused`, `failed` or `unknown`. The lines go to stderr and are never wrapped, so `docker logs oraclarr 2>&1 | grep "audit event="` finds each event with its `plan_id`, `target` and `command_id`. Values have whitespace replaced by `_`, so a value cannot start a new line.
+
 ### Migrating from `config.yaml`
 
 Up to 1.2.0 the setup used `config.yaml` plus an `environment:` block in the compose file. That setup still works on 1.3.0 without changes. To move to `.env` only:
@@ -346,12 +394,12 @@ Up to 1.2.0 the setup used `config.yaml` plus an `environment:` block in the com
 
 ## Roadmap
 
-Oraclarr is built in phases. v1 is deliberately read-only; write capability arrives behind explicit safety gates. The architecture (typed clients + outcome tools + config-selectable toolsets) is designed to extend to other self-hosted suites beyond *arr, too.
+Oraclarr is built in phases. It is read-only by default, and write capability arrives behind explicit safety gates. The architecture (typed clients + outcome tools + config-selectable toolsets) is designed to extend to other self-hosted suites beyond *arr, too.
 
 - ✅ **Phase 1: read-only diagnostics.** Sonarr, Radarr, Sportarr, Prowlarr, qBittorrent, Tdarr, Profilarr, Jellyfin, Cleanuparr, TrueNAS.
 - 🔜 **Phase 2: more services, still read-only.** Seerr, Gluetun, Unpackerr, ntfy. The architecture also opens up to non-*arr stacks.
-- 🔭 **Phase 3: safe write actions.** Trigger search, retry, refresh/rescan, approve requests, gated behind `allow_writes` with dry-run previews and an audit log.
-- 🔭 **Phase 4: destructive actions.** Delete media, blocklist, stack control, behind an explicit confirmation and allowlist.
+- 🚧 **Phase 3: safe write actions.** Started in 2.0.0 with `start_job` (refresh, rescan, search, rename and Jellyfin scans), gated behind two switches, a token, dry-run previews and an audit log. Retry and request approval come later.
+- 🔭 **Phase 4: destructive actions.** Delete media, blocklist, stack control and Cleanuparr changes, behind an explicit confirmation and allowlist.
 
 Have a service you'd like covered? Open an issue.
 

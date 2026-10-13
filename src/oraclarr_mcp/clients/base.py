@@ -55,6 +55,13 @@ class BaseClient:
         resp.raise_for_status()
         return resp.json()
 
+    async def post(self, path: str, json: Any = None, params: dict | None = None) -> Any:
+        """A write. Only start_job calls this, after the write gate and a plan."""
+        await self.auth.before_request(self)
+        resp = await self._request("POST", path, json=json, params=params)
+        resp.raise_for_status()
+        return resp.json() if resp.content else None
+
     async def _request(self, method: str, path: str, **kw) -> httpx.Response:
         log.debug("call %s %s %s", self.name, method, path)
         return await self._http.request(method, path, headers=self.auth.headers(), **kw)

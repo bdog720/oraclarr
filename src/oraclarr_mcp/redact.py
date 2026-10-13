@@ -40,6 +40,8 @@ class Redactor:
                 v = getattr(inst, field, None)
                 if isinstance(v, str):
                     values.append(v)
+        if cfg.server.http_token:
+            values.append(cfg.server.http_token)
         return cls(values)
 
     def scrub(self, text: str) -> str:
