@@ -20,32 +20,27 @@ A locally-run [MCP](https://modelcontextprotocol.io) server that lets an LLM cli
 
 ## What it does
 
-Oraclarr gives a language model one place to answer the operational "why" questions that normally mean tabbing through six web UIs. It aggregates across your services and returns a single, structured answer without changing anything. It is read-only by default. One opt-in tool, `start_job`, can start a refresh, rescan, search or rename. See [Writes (opt-in)](#writes-opt-in).
+Oraclarr gives a language model one place to answer the operational "why" questions that normally mean tabbing through six web UIs. It aggregates across your services and returns a single, structured answer without changing anything. One opt-in tool, `start_job`, can start a refresh, rescan, search or rename. See [Writes](https://github.com/bdog720/oraclarr/blob/main/docs/writes.md).
 
-Covered now: **Sonarr**, **Radarr**, **Sportarr**, **Prowlarr**, **qBittorrent**, **Tdarr**, **Profilarr**, **Jellyfin**, **Cleanuparr**, **Netdata**, and **TrueNAS** — including **multiple instances of the same type** (e.g. a separate anime or 4K Sonarr/Radarr). Every tool fans out across all the instances you define and reports each one separately.
+Covered now: **Sonarr**, **Radarr**, **Sportarr**, **Prowlarr**, **qBittorrent**, **Tdarr**, **Profilarr**, **Jellyfin**, **Cleanuparr**, **Netdata**, **TrueNAS** and **Docker**, including multiple instances of the same type (a separate anime or 4K Sonarr/Radarr, say). Every tool fans out across all the instances you define and reports each one separately.
 
 ## In practice
 
-Once registered, you just ask your MCP client. Oraclarr picks the right tool and answers:
+Once connected, you just ask. Oraclarr picks the right tool and answers:
 
 | You ask… | Oraclarr runs | …and tells you |
 |----------|---------------|----------------|
 | "Is anything in my stack down?" | `stack_health` | which services are unreachable, unhealthy, or low on disk, and for one that's down, its container's state and exit code |
 | "Why hasn't the new episode of *X* downloaded yet?" | `diagnose` | whether *X* is in your library, sitting in the download queue, or still on the wanted list |
 | "Why did a sub-only release get grabbed when I only allow English dubs?" | `explain_decision` | the release that was grabbed, its custom-format score, and the language formats that matched |
-| "Why does Profilarr keep upgrading stuff that already looks fine?" | `explain_decision` + `get_quality_config` | the profile's cutoff and upgrade thresholds next to the scores of recent grabs |
-| "What's stuck downloading right now?" | `get_queues` | a unified queue with progress and stall flags |
-| "Is the Jellyfin library scan finished, and is anyone transcoding?" | `get_library` | scan state and progress per library, failed tasks, and who is playing what (with transcode reasons) |
 | "Why is Cleanuparr about to remove this download?" | `get_queues` + `get_cleanup` | the strikes against it and their type, whether it's marked for removal, and the rules that apply |
 | "Is the box under I/O pressure, and how much RAM is actually free?" | `get_host` | CPU busy and iowait, I/O pressure, free and available memory, swap, ARC against its max, GPU heat and VRAM |
-| "How full are the pools, and what's using the space?" | `get_host` | pool capacity, fragmentation and scrub state, then `section="datasets"` for the biggest datasets |
-| "Which containers are down, and what did they exit with?" | `get_containers` | problem containers first (unhealthy, restarting, OOM-killed, or stopped with a non-zero exit code) and their restart counts |
-| "What errors has Sonarr logged today?" | `get_containers` | with `name="sonarr", section="logs", match="error", since="1d"`, the matching log lines with timestamps |
-| "Is the Sonarr rename still running?" | `get_jobs` | running and queued commands with their progress message and the shows they cover, plus any that failed; `section="schedule"` shows when each task runs next |
+| "What errors has Sonarr logged today?" | `get_containers` | the matching log lines with timestamps, from the container's logs |
+| "Is the Sonarr rename still running?" | `get_jobs` | running and queued commands with their progress and the shows they cover, plus any that failed |
 
 ## Tools
 
-Read-only by default, and outcome-oriented (not one-per-endpoint, which keeps the model accurate). Only `start_job` writes, and only when you switch writes on:
+Read-only by default, and outcome-oriented rather than one-per-endpoint, which keeps the model accurate. Only `start_job` writes, and only when you switch writes on:
 
 | Tool | Answers |
 |------|---------|
@@ -69,16 +64,14 @@ Read-only by default, and outcome-oriented (not one-per-endpoint, which keeps th
 
 ## Install
 
-There are two ways to run Oraclarr. Pick one:
+Two ways to run it. Pick one:
 
 - **🐳 Docker (recommended).** A small always-on container next to your arr stack. Works with Dockge, Portainer, Unraid and plain `docker compose`.
 - **🐍 Python (uv).** Runs directly on your machine with no container. Handy for local development, or if you don't use Docker.
 
-Either way, every setting is an environment variable that starts with `ORACLARR_`. With Docker that means one `.env` file next to the compose file, and Dockge and Portainer show both in their editors. Start from [`.env.example`](.env.example). [Configuration](#configuration) lists every variable. Your `.env` is never committed.
+Either way, every setting is an environment variable that starts with `ORACLARR_`. With Docker that means one `.env` file next to the compose file, and Dockge and Portainer show both in their editors. Start from [`.env.example`](https://github.com/bdog720/oraclarr/blob/main/.env.example). [Configuration](#configuration) lists every variable. Your `.env` is never committed.
 
----
-
-### Option A — Docker (recommended)
+### Option A: Docker (recommended)
 
 Oraclarr runs as a long-running container that serves MCP over HTTP at `http://<host>:7979/mcp`. You need two files in one folder: `docker-compose.yml` and `.env`.
 
@@ -92,7 +85,7 @@ cp .env.example .env    # then fill in your URLs and keys
 docker compose up -d
 ```
 
-This is the compose file. You don't edit it when you add or remove a service:
+This is the whole compose file. You don't edit it when you add or remove a service; that happens in `.env`:
 
 ```yaml
 services:
@@ -105,11 +98,11 @@ services:
     env_file: .env
 ```
 
-Then [connect Claude Desktop](#connect-claude-desktop).
+Want container state and logs too (`get_containers`)? Use [`docker-compose.full.example.yml`](https://github.com/bdog720/oraclarr/blob/main/docker-compose.full.example.yml) instead. It adds the read-only Docker socket proxy, the one sidecar that has to live in the same stack. [Containers](https://github.com/bdog720/oraclarr/blob/main/docs/containers.md) explains it.
 
----
+Then [connect your client](https://github.com/bdog720/oraclarr/blob/main/docs/connect.md): one command for Claude Code, a small JSON block for Claude Desktop.
 
-### Option B — Python (uv)
+### Option B: Python (uv)
 
 Run Oraclarr directly, no Docker. Requires Python 3.12+ and [`uv`](https://docs.astral.sh/uv/).
 
@@ -137,62 +130,6 @@ uv run python -m oraclarr_mcp
 
 In a client config, use `"command": "uv"`, `"args": ["run", "python", "-m", "oraclarr_mcp"]` and a `"cwd"` pointing at the repo.
 
----
-
-### Connect Claude Desktop
-
-*(For Option A / Docker. Option B registers itself with the JSON snippet above.)*
-
-Use the **`mcp-remote` bridge** in `claude_desktop_config.json`. It runs locally as
-a Claude Desktop "local MCP server", so it can reach the container on your LAN
-(requires Node.js / `npx`):
-
-```json
-{
-  "mcpServers": {
-    "oraclarr": {
-      "command": "npx",
-      "args": ["-y", "mcp-remote", "http://<host>:7979/mcp", "--allow-http"]
-    }
-  }
-}
-```
-
-Replace `<host>` with the IP or hostname of the machine running the container.
-
-> **Why `--allow-http`?** Recent versions of `mcp-remote` reject plain `http://` URLs
-> unless the host is `localhost`. Without this flag the bridge exits immediately and
-> Claude Desktop shows the server as "disconnected" — even though the server itself is
-> reachable. The flag is safe here: the traffic stays on your trusted LAN.
-
-> **Why not the native "Add custom connector"?** Custom connectors connect to your
-> server **from Anthropic's cloud**, not from your machine — so the URL must be a
-> publicly reachable **HTTPS** endpoint (a `http://` LAN/localhost URL is rejected).
-> Pointing it at a homelab box means exposing this service to the internet. By
-> default it has no login, and even with `ORACLARR_HTTP_TOKEN` set the token travels
-> in clear text over http. We don't recommend it. If you want it anyway, put a reverse
-> proxy (Caddy/nginx) or tunnel (Cloudflare Tunnel, Tailscale Funnel) with TLS in front.
-
-> **Security:** with no `ORACLARR_HTTP_TOKEN`, anyone who can reach port 7979 can read
-> your stack's status. Deploy on a trusted LAN only and do not expose the port to the
-> internet. Writes are off by default. When you turn them on, a token is required (see
-> [Writes (opt-in)](#writes-opt-in)). The token is a shared secret sent over plain http,
-> so it protects against other devices on your LAN, not against someone who can watch
-> the traffic.
-
-### Transport settings (Docker only)
-
-These apply to the **Docker** container only. The image already sets sensible
-defaults, so **you normally don't touch them** — the table is here for reference.
-The Python path (Option B) always uses stdio and ignores these entirely.
-
-| Variable | Default | What it does |
-|---|---|---|
-| `ORACLARR_TRANSPORT` | `http` | How clients reach the server. `http` = long-running service (Docker). `stdio` = the client launches the process (the Python path). You don't normally set this by hand — your install method picks it. |
-| `ORACLARR_HTTP_HOST` | `0.0.0.0` | Which network interface to listen on. `0.0.0.0` means "reachable on your LAN" — leave as-is for Docker. |
-| `ORACLARR_HTTP_PORT` | `7979` | Port *inside* the container. To change the port you reach it on, edit the `ports:` line in the compose instead. |
-| `ORACLARR_CONFIG` | `/config/config.yaml` | Where the container looks for an optional config.yaml. Leave as-is. |
-
 ## Configuration
 
 Each service is an *instance* with a name you choose. Its settings are variables named `ORACLARR_<NAME>_<FIELD>`, and an instance exists as soon as its `_URL` is set:
@@ -218,8 +155,11 @@ ORACLARR_QBITTORRENT_PASSWORD=your-password
 | `_USERNAME`, `_PASSWORD` | qBittorrent |
 | `_ENABLED` | optional; `false` switches an instance off without deleting its lines |
 | `_VERIFY_TLS` | optional; `false` accepts a self-signed certificate (TrueNAS) |
+| `_ALLOW_WRITES` | optional; `true` lets `start_job` act on this instance. See [Writes](https://github.com/bdog720/oraclarr/blob/main/docs/writes.md) |
 
 Underscores in the name become dashes in the instance name, so `SONARR_ANIME` shows up as `sonarr-anime`. Blank values count as unset, so you can keep lines for services you don't run. A misspelled `ORACLARR_` variable stops the container with a message that names it, instead of failing quietly later.
+
+Jellyfin needs an API key (Dashboard → API Keys). Cleanuparr needs its account API key (Settings → Account → API Key). TrueNAS, Netdata and Docker each have a short setup guide, linked below.
 
 Server settings are optional:
 
@@ -229,174 +169,25 @@ Server settings are optional:
 | `ORACLARR_TOOL_BUDGET_SECONDS` | `30` | Time limit per tool call; slow instances report `status: "timeout"` |
 | `ORACLARR_MAX_OUTPUT_BYTES` | `200000` | Safety net for oversized responses |
 | `ORACLARR_TIMEOUT_SECONDS` | `10` | Timeout for each request to a service |
-| `ORACLARR_ALLOW_WRITES` | `false` | Turns on `start_job`. Each instance also needs its own `ORACLARR_<NAME>_ALLOW_WRITES=true`. See [Writes (opt-in)](#writes-opt-in) |
+| `ORACLARR_ALLOW_WRITES` | `false` | Turns on `start_job`. Each instance also needs its own `_ALLOW_WRITES=true` |
 | `ORACLARR_HTTP_TOKEN` | unset | At least 24 characters. When set, every HTTP request needs `Authorization: Bearer <token>`. Required to turn writes on over http |
 
-Jellyfin needs an API key (Dashboard → API Keys). `get_library` only registers when `library` is in the toolsets. Cleanuparr needs its account API key (Settings → Account → API Key).
+Every tool call has a time budget. If an instance doesn't answer in time, it comes back as `status: "timeout"` and the other instances still return their data. List results carry only the useful fields and stop at each tool's `limit`; when there is more, `truncated` and `total` say so. API keys and passwords show up as `***` in responses and log lines.
 
-Every tool call has a time budget, set by `ORACLARR_TOOL_BUDGET_SECONDS`. If an instance doesn't answer in time, it comes back as `status: "timeout"` and the other instances still return their data. List results carry only the useful fields and stop at each tool's `limit`. When there is more, `truncated` and `total` say so. API keys and passwords show up as `***` in responses and log lines (values shorter than four characters are left alone).
+## Guides
 
-### Alternative: a config file
-
-Oraclarr still reads a `config.yaml` if one exists at `ORACLARR_CONFIG` (`/config/config.yaml` in the container); [`config.example.yaml`](config.example.yaml) shows the format. If you use both, instances from both are loaded, and an `ORACLARR_` variable wins over the same setting in the file. With Docker, mount the file with `- ./config.yaml:/config/config.yaml:ro`.
-
-### Host metrics (Netdata and TrueNAS)
-
-`get_host` reads two sources. **TrueNAS** supplies pools, datasets, disk temperatures and alerts through its API. Create a dedicated user in the read-only administrators group, give it an API key, and point `ORACLARR_TRUENAS_URL` at `https://` (TrueNAS revokes a key that is ever sent over plain http). Its default certificate is self-signed, so set `ORACLARR_TRUENAS_VERIFY_TLS=false` unless you've installed a trusted one; with verification off, a device on your LAN could intercept the key.
-
-**Netdata** supplies CPU and iowait, free and available memory, swap, the ARC maximum and GPU stats, none of which the TrueNAS API exposes. TrueNAS's own Netdata only listens on localhost, so run a Netdata container next to your stack:
-
-```yaml
-services:
-  netdata:
-    image: netdata/netdata:stable
-    container_name: netdata
-    hostname: truenas
-    restart: unless-stopped
-    pid: host
-    cap_add: [SYS_PTRACE, SYS_ADMIN]
-    security_opt: [apparmor:unconfined]
-    ports:
-      - 20999:19999
-    environment:
-      DO_NOT_TRACK: "1"
-      NVIDIA_VISIBLE_DEVICES: all
-      NVIDIA_DRIVER_CAPABILITIES: all
-    volumes:
-      - netdataconfig:/etc/netdata
-      - netdatalib:/var/lib/netdata
-      - netdatacache:/var/cache/netdata
-      - /etc/passwd:/host/etc/passwd:ro
-      - /etc/group:/host/etc/group:ro
-      - /etc/localtime:/etc/localtime:ro
-      - /etc/os-release:/host/etc/os-release:ro
-      - /proc:/host/proc:ro
-      - /sys:/host/sys:ro
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: all
-              capabilities: [gpu, utility]
-volumes:
-  netdataconfig:
-  netdatalib:
-  netdatacache:
-```
-
-Leave out the `NVIDIA_*` lines and the `deploy:` block if you don't have an NVIDIA GPU; `get_host` then reports the GPU as not available. Point `ORACLARR_NETDATA_URL` at `http://<host>:20999`. Netdata's API has no login, so keep that port on your LAN.
-
-### Containers (Docker)
-
-`get_containers` reads Docker through [socket-proxy](https://github.com/wollomatic/socket-proxy), a small container that sits in front of the Docker socket and passes on only the requests you allow. Oraclarr never gets the socket itself. The rules below allow GET requests for the container list, one container's details, its logs, the Docker version and a ping. The proxy refuses everything else, including start, stop, `exec`, and the `archive` and `export` endpoints that can copy files out of a container.
-
-Add it to the same compose stack as Oraclarr:
-
-```yaml
-  docker-proxy:
-    image: wollomatic/socket-proxy:1.13.1
-    container_name: docker-proxy
-    restart: unless-stopped
-    user: "65534:<docker group id>"
-    read_only: true
-    cap_drop: [ALL]
-    security_opt: [no-new-privileges:true]
-    mem_limit: 64M
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-    command:
-      - '-loglevel=info'
-      - '-listenip=0.0.0.0'
-      - '-allowfrom=oraclarr'
-      - '-allowGET=(/v1\.[0-9]+)?/(version|_ping|containers/json|containers/[a-zA-Z0-9][a-zA-Z0-9_.-]*/(json|logs))'
-      - '-allowhealthcheck'
-      - '-watchdoginterval=3600'
-      - '-stoponwatchdog'
-    healthcheck:
-      test: ["CMD", "./healthcheck"]
-      interval: 30s
-      timeout: 5s
-      retries: 2
-```
-
-Get the Docker group ID with `stat -c '%g' /var/run/docker.sock` and put it in `user:`. Keep the single quotes around the `command` items so the backslash in the regex survives. `-allowfrom=oraclarr` has to match your Oraclarr service name, and the proxy publishes no port, so nothing else on the network can reach it. Then point Oraclarr at it:
-
-```
-ORACLARR_DOCKER_URL=http://docker-proxy:2375
-```
-
-Add that line in the same step as updating to 1.6.0. An older image doesn't know the `docker` type and won't start.
-
-A container's details include its environment variables, which usually hold API keys. Oraclarr drops them, along with mounts and most labels, as soon as the response arrives, so they never reach a tool result. Log lines get the same redaction as every other response, plus patterns for passwords and credentials inside URLs. A service that prints a secret in plain prose can still get through, so treat log output with some care.
-
-`stack_health` uses the same data. When a service is unreachable, its row shows the container behind its URL, plus any container sharing that container's network (qBittorrent behind Gluetun, for example). Oraclarr matches the URL's hostname against container names first, then an explicit port against published ports. A URL with neither, such as a reverse-proxy name on the default port, gets no container rather than a guess.
-
-### Writes (opt-in)
-
-Oraclarr only reads unless you turn writes on. With writes on, one tool, `start_job`, can start a refresh, rescan, search or rename on a single series or movie in Sonarr or Radarr, or start a library scan in Jellyfin. It cannot delete anything, and it does nothing to Sportarr, which has no command API. If you leave the settings below alone, Oraclarr behaves as it did before.
-
-Two switches must both be on: `ORACLARR_ALLOW_WRITES=true` for the server, and `ORACLARR_<NAME>_ALLOW_WRITES=true` for each instance you want it to act on. Instances without their own switch stay read-only. Each plan covers one target. To act on ten shows, you make ten plans.
-
-Over http, writes also need a token, and the container refuses to start with writes on and no token. Make one:
-
-```bash
-python -c "import secrets; print(secrets.token_urlsafe(32))"
-```
-
-Add the token and both switches to your `.env`. The compose file's `env_file: .env` line passes them to the container:
-
-```
-ORACLARR_HTTP_TOKEN=<the token>
-ORACLARR_ALLOW_WRITES=true
-ORACLARR_SONARR_ALLOW_WRITES=true
-```
-
-If your compose file lists variables in an `environment:` block and uses `.env` only for substitution, write `ORACLARR_HTTP_TOKEN: ${ORACLARR_HTTP_TOKEN}` there instead, and do the same for the two switches.
-
-Once a token is set, every request needs it, reads included. Claude Desktop sends it through `mcp-remote`. This is the config from [Connect Claude Desktop](#connect-claude-desktop) with a `--header` argument and an `env` block added:
-
-```json
-{
-  "mcpServers": {
-    "oraclarr": {
-      "command": "npx",
-      "args": ["-y", "mcp-remote", "http://<host>:7979/mcp", "--allow-http",
-               "--header", "Authorization:${AUTH_HEADER}"],
-      "env": {"AUTH_HEADER": "Bearer <the token>"}
-    }
-  }
-}
-```
-
-There is no space after the colon on purpose, because Claude Desktop on Windows breaks arguments that contain spaces. The space lives in the `env` value instead.
-
-A write takes two calls. The first call has no `plan_id`. It changes nothing and returns a preview of what would happen, with a `plan_id` that is good for 10 minutes. The second call passes only that `plan_id`, and the job runs once. Plans live in memory, so a restart drops them, and nothing is retried: if a request times out after it was sent, the result says `outcome: unknown` and you check with `get_jobs`.
-
-Every write event is logged as a single line in the form `<timestamp> audit event=<event> key=value ...`, where the event is `planned`, `executed`, `refused`, `failed` or `unknown`. The lines go to stderr and are never wrapped, so `docker logs oraclarr 2>&1 | grep "audit event="` finds each event with its `plan_id`, `target` and `command_id`. Values have whitespace replaced by `_`, so a value cannot start a new line.
-
-### Migrating from `config.yaml`
-
-Up to 1.2.0 the setup used `config.yaml` plus an `environment:` block in the compose file. That setup still works on 1.3.0 without changes. To move to `.env` only:
-
-1. Add a block per instance to `.env`:
-
-   | `config.yaml` | `.env` |
-   |---|---|
-   | `sonarr: { type: sonarr, url: …, api_key: … }` | `ORACLARR_SONARR_URL=…` and `ORACLARR_SONARR_API_KEY=…` |
-   | `sonarr-anime: { type: sonarr, … }` | `ORACLARR_SONARR_ANIME_TYPE=sonarr`, plus `_URL` and `_API_KEY` |
-   | `qbit: { type: qbittorrent, username: …, password: … }` | `ORACLARR_QBIT_TYPE=qbittorrent`, plus `_URL`, `_USERNAME` and `_PASSWORD` |
-   | `server: { toolsets: [a, b] }` | `ORACLARR_TOOLSETS=a,b` |
-
-2. In the compose file, replace the `environment:` block and the `config.yaml` volume line with `env_file: .env`.
-3. Redeploy (in Dockge: **Update**).
-4. Once everything answers, delete `config.yaml`. Keeping it does no harm, because `.env` wins.
+- [Connecting a client](https://github.com/bdog720/oraclarr/blob/main/docs/connect.md): Claude Code, Claude Desktop, the token header, and why not to use a cloud connector.
+- [Host metrics](https://github.com/bdog720/oraclarr/blob/main/docs/host-metrics.md): the TrueNAS read-only user and the Netdata container for `get_host`.
+- [Containers](https://github.com/bdog720/oraclarr/blob/main/docs/containers.md): the Docker socket proxy for `get_containers`, and what it lets through.
+- [Writes](https://github.com/bdog720/oraclarr/blob/main/docs/writes.md): the two switches, the token, the two-step plan flow, and the audit log.
+- [The config file](https://github.com/bdog720/oraclarr/blob/main/docs/config-file.md): using `config.yaml` instead of (or as well as) `.env`, and migrating off it.
+- [Upgrading](https://github.com/bdog720/oraclarr/blob/main/docs/upgrading.md): what to change when you cross a particular version.
 
 ## Roadmap
 
 Oraclarr is built in phases. It is read-only by default, and write capability arrives behind explicit safety gates. The architecture (typed clients + outcome tools + config-selectable toolsets) is designed to extend to other self-hosted suites beyond *arr, too.
 
-- ✅ **Phase 1: read-only diagnostics.** Sonarr, Radarr, Sportarr, Prowlarr, qBittorrent, Tdarr, Profilarr, Jellyfin, Cleanuparr, TrueNAS.
+- ✅ **Phase 1: read-only diagnostics.** Sonarr, Radarr, Sportarr, Prowlarr, qBittorrent, Tdarr, Profilarr, Jellyfin, Cleanuparr, TrueNAS, Netdata, Docker.
 - 🔜 **Phase 2: more services, still read-only.** Seerr, Gluetun, Unpackerr, ntfy. The architecture also opens up to non-*arr stacks.
 - 🚧 **Phase 3: safe write actions.** Started in 2.0.0 with `start_job` (refresh, rescan, search, rename and Jellyfin scans), gated behind two switches, a token, dry-run previews and an audit log. Retry and request approval come later.
 - 🔭 **Phase 4: destructive actions.** Delete media, blocklist, stack control and Cleanuparr changes, behind an explicit confirmation and allowlist.
@@ -405,11 +196,11 @@ Have a service you'd like covered? Open an issue.
 
 ## 💬 Feedback & Issues
 
-Found a bug or have a feature request? We'd love to hear about it. Please [open an issue](https://github.com/bdog720/oraclarr/issues) here on GitHub.
+Found a bug or have a feature request? Please [open an issue](https://github.com/bdog720/oraclarr/issues) on GitHub.
 
 ## 🤝 Contributing
 
-We welcome contributions! Issues and PRs welcome — the codebase is TDD throughout:
+Issues and PRs welcome. The codebase is TDD throughout:
 
 ```bash
 uv run pytest        # tests (respx-mocked, no live services needed)
@@ -420,10 +211,10 @@ Adding a service follows a small recipe (new client → register by `type` → e
 
 ## 📄 License
 
-This project is licensed under the Apache License 2.0. See the [LICENSE](LICENSE) file for details.
+Apache License 2.0. See [LICENSE](https://github.com/bdog720/oraclarr/blob/main/LICENSE).
 
 ## 💖 Support the Project
 
-If you find Oraclarr useful and it saves you from tabbing through six web UIs to work out why something didn't download, consider buying me a coffee to support future development!
+If Oraclarr saves you from tabbing through six web UIs to work out why something didn't download, consider buying me a coffee.
 
 <a href="https://buymeacoffee.com/bdog720" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 50px !important;width: 217px !important;" ></a>
