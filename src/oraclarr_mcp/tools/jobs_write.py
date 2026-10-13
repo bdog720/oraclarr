@@ -1,8 +1,12 @@
 """start_job: gated, two-step writes that start arr commands or a Jellyfin scan."""
+import asyncio
 import hashlib
 import json
 
+import httpx
+
 from ..audit import audit
+from ..budget import remaining
 from ..plans import PLAN_TTL_S, Plan, PlanStore
 from ._arr import media_kind
 from ._util import probe
@@ -203,9 +207,79 @@ async def _dry_run(clients, store, writable, action, service, target, season, li
     return {"plan_id": pid, "expires_in_s": PLAN_TTL_S, "plan": plan_view(plan)}
 
 
+def _upstream_message(resp: httpx.Response) -> str | None:
+    try:
+        body = resp.json()
+    except ValueError:
+        return resp.text[:300] or None
+    if isinstance(body, list) and body and isinstance(body[0], dict):
+        return body[0].get("errorMessage") or body[0].get("message")
+    if isinstance(body, dict):
+        return body.get("message") or body.get("errorMessage")
+    return None
+
+
+async def _execute(clients, store, writable, plan_id):
+    plan = store.take(plan_id)  # removed before any await: single use
+    if plan is None:
+        audit("refused", tool=TOOL, plan_id=plan_id, detail="plan_not_found")
+        return _err("plan_not_found")
+    name = plan.instance
+    c = clients.get(name)
+    if c is None or name not in writable:
+        audit("refused", tool=TOOL, instance=name, plan_id=plan_id,
+              detail="writes_not_allowed")
+        return _err("writes_not_allowed", instance=name)
+    a = plan.args
+    res = await probe(c, lambda c: build_plan(c, name, a["action"], a["target"],
+                                              a["season"], a["library"]))
+    if res.status != "ok":
+        audit("failed", tool=TOOL, instance=name, plan_id=plan_id, detail=res.status)
+        return _err(res.status, instance=name, detail=res.error)
+    fresh, out = res.data
+    if fresh is None or fresh.fingerprint != plan.fingerprint:
+        audit("refused", tool=TOOL, instance=name, plan_id=plan_id, detail="plan_changed")
+        if fresh is None:
+            return _err("plan_changed", detail=out)
+        pid = store.add(fresh)
+        audit("planned", tool=TOOL, instance=name, action=fresh.action,
+              target=(fresh.target or {}).get("id"), plan_id=pid)
+        return {"error": "plan_changed", "plan_id": pid, "expires_in_s": PLAN_TTL_S,
+                "plan": plan_view(fresh)}
+    nxt = f'get_jobs(service="{name}")'
+    req = plan.request
+    send = c.post(req["path"], json=req.get("json"), params=req.get("params"))
+    left = remaining()
+    try:
+        reply = await (asyncio.wait_for(send, max(left, 0.1)) if left is not None else send)
+    except (httpx.ConnectError, httpx.ConnectTimeout):
+        audit("failed", tool=TOOL, instance=name, plan_id=plan_id, detail="unreachable")
+        return _err("unreachable", instance=name, sent=False)
+    except httpx.HTTPStatusError as e:
+        code = e.response.status_code
+        audit("failed", tool=TOOL, instance=name, plan_id=plan_id, detail=f"http {code}")
+        return _err("upstream_error", instance=name, status=code,
+                    message=_upstream_message(e.response))
+    except (httpx.TimeoutException, httpx.TransportError, TimeoutError):
+        audit("unknown", tool=TOOL, instance=name, plan_id=plan_id)
+        return {"outcome": "unknown", "instance": name, "next": nxt}
+    except ValueError:
+        # 2xx with a non-JSON body: the write already happened, only the reply is unreadable.
+        reply = None
+    command_id = reply.get("id") if isinstance(reply, dict) else None
+    audit("executed", tool=TOOL, instance=name, action=plan.action,
+          target=(plan.target or {}).get("id"), plan_id=plan_id, command_id=command_id)
+    if command_id is None:
+        return {"executed": True, "next": nxt}
+    return {"executed": True, "command_id": command_id, "status": reply.get("status"),
+            "next": nxt}
+
+
 async def start_job(clients: dict, store: PlanStore, writable: set[str], action: str,
                     service: str | None = None, target: str | None = None,
                     season: int | None = None, library: str | None = None,
                     plan_id: str | None = None) -> dict:
+    if plan_id is not None:
+        return await _execute(clients, store, writable, plan_id)
     return await _dry_run(clients, store, writable, action, service, target, season,
                           library)

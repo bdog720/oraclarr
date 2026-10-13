@@ -1,8 +1,9 @@
+import asyncio
 import logging
 
 import httpx
 
-from oraclarr_mcp.plans import PlanStore
+from oraclarr_mcp.plans import PLAN_TTL_S, PlanStore
 from oraclarr_mcp.tools.jobs_write import MAX_PREVIEW_ROWS, REFRESH_PARAMS, start_job
 
 SERIES = [{"id": 1, "title": "Invented Show", "year": 2020, "path": "/tv/Invented Show",
@@ -250,3 +251,134 @@ async def test_upstream_failure_while_planning_is_a_status():
     clients, store, w = _env(sonarr=Down())
     out = await _plan(clients, store, w, action="refresh", service="sonarr", target="id:1")
     assert out["error"] == "unreachable" and out["instance"] == "sonarr"
+
+
+async def _planned(clients, store, w, **kw):
+    out = await start_job(clients, store, w, **kw)
+    return out["plan_id"]
+
+
+async def test_execute_sends_the_stored_request_once(caplog):
+    clients, store, w = _env()
+    pid = await _planned(clients, store, w, action="refresh", service="sonarr", target="id:1")
+    with caplog.at_level(logging.INFO, logger="oraclarr_mcp.audit"):
+        out = await start_job(clients, store, w, action="ignored", plan_id=pid,
+                              service="radarr", target="whatever")
+    assert out == {"executed": True, "command_id": 777, "status": "queued",
+                   "next": 'get_jobs(service="sonarr")'}
+    assert clients["sonarr"].posts == [
+        ("/api/v3/command", {"name": "RefreshSeries", "seriesId": 1}, None)]
+    assert clients["radarr"].posts == []
+    assert "event=executed" in caplog.text and "command_id=777" in caplog.text
+    again = await start_job(clients, store, w, action="refresh", plan_id=pid)
+    assert again == {"error": "plan_not_found"}
+    assert len(clients["sonarr"].posts) == 1
+
+
+async def test_jellyfin_execute_has_no_command_id():
+    clients, store, w = _env()
+    pid = await _planned(clients, store, w, action="scan", service="jellyfin",
+                         library="Shows")
+    out = await start_job(clients, store, w, action="scan", plan_id=pid)
+    assert out == {"executed": True, "next": 'get_jobs(service="jellyfin")'}
+    assert clients["jellyfin"].posts == [("/Items/L1/Refresh", None, REFRESH_PARAMS)]
+
+
+async def test_changed_rename_preview_is_plan_changed_with_a_fresh_plan():
+    rows = [{"episodeFileId": 11, "existingPath": "o", "newPath": "n"}]
+    sonarr = FakeArr(renames=rows)
+    clients, store, w = _env(sonarr=sonarr)
+    pid = await _planned(clients, store, w, action="rename", service="sonarr", target="id:1")
+    sonarr.renames = rows + [{"episodeFileId": 12, "existingPath": "o2", "newPath": "n2"}]
+    out = await start_job(clients, store, w, action="rename", plan_id=pid)
+    assert out["error"] == "plan_changed" and out["plan_id"] != pid
+    assert out["plan"]["request"]["json"]["files"] == [11, 12]
+    assert sonarr.posts == []
+
+
+async def test_target_gone_is_plan_changed_without_a_plan():
+    sonarr = FakeArr()
+    clients, store, w = _env(sonarr=sonarr)
+    pid = await _planned(clients, store, w, action="refresh", service="sonarr", target="id:1")
+    del sonarr._items[1]
+    out = await start_job(clients, store, w, action="refresh", plan_id=pid)
+    assert out["error"] == "plan_changed" and out["detail"]["error"] == "not_found"
+    assert sonarr.posts == []
+
+
+async def test_execute_rechecks_instance_opt_in():
+    clients, store, w = _env()
+    pid = await _planned(clients, store, w, action="refresh", service="sonarr", target="id:1")
+    out = await start_job(clients, store, {"radarr"}, action="refresh", plan_id=pid)
+    assert out == {"error": "writes_not_allowed", "instance": "sonarr"}
+    assert clients["sonarr"].posts == []
+
+
+async def test_upstream_error_consumes_the_plan():
+    sonarr = FakeArr()
+    req = httpx.Request("POST", "http://h/api/v3/command")
+    sonarr.post_error = httpx.HTTPStatusError(
+        "bad", request=req,
+        response=httpx.Response(400, json=[{"errorMessage": "Series is not monitored"}],
+                                request=req))
+    clients, store, w = _env(sonarr=sonarr)
+    pid = await _planned(clients, store, w, action="search", service="sonarr", target="id:1")
+    out = await start_job(clients, store, w, action="search", plan_id=pid)
+    assert out == {"error": "upstream_error", "instance": "sonarr", "status": 400,
+                   "message": "Series is not monitored"}
+    assert (await start_job(clients, store, w, action="search", plan_id=pid))["error"]         == "plan_not_found"
+
+
+async def test_send_timeout_is_unknown_and_not_retried(caplog):
+    sonarr = FakeArr()
+    sonarr.post_error = httpx.ReadTimeout("slow")
+    clients, store, w = _env(sonarr=sonarr)
+    pid = await _planned(clients, store, w, action="refresh", service="sonarr", target="id:1")
+    with caplog.at_level(logging.INFO, logger="oraclarr_mcp.audit"):
+        out = await start_job(clients, store, w, action="refresh", plan_id=pid)
+    assert out == {"outcome": "unknown", "instance": "sonarr",
+                   "next": 'get_jobs(service="sonarr")'}
+    assert len(sonarr.posts) == 1 and "event=unknown" in caplog.text
+
+
+async def test_non_json_success_reply_counts_as_executed(caplog):
+    sonarr = FakeArr()
+    sonarr.post_error = ValueError("not json")
+    clients, store, w = _env(sonarr=sonarr)
+    pid = await _planned(clients, store, w, action="refresh", service="sonarr", target="id:1")
+    with caplog.at_level(logging.INFO, logger="oraclarr_mcp.audit"):
+        out = await start_job(clients, store, w, action="refresh", plan_id=pid)
+    assert out == {"executed": True, "next": 'get_jobs(service="sonarr")'}
+    assert len(sonarr.posts) == 1 and "event=executed" in caplog.text
+
+
+async def test_connect_error_means_not_sent():
+    sonarr = FakeArr()
+    sonarr.post_error = httpx.ConnectError("refused")
+    clients, store, w = _env(sonarr=sonarr)
+    pid = await _planned(clients, store, w, action="refresh", service="sonarr", target="id:1")
+    out = await start_job(clients, store, w, action="refresh", plan_id=pid)
+    assert out["error"] == "unreachable" and out["sent"] is False
+
+
+async def test_expired_plan_is_not_found():
+    class Clock:
+        t = 0.0
+
+        def __call__(self):
+            return self.t
+    clock = Clock()
+    clients, _, w = _env()
+    store = PlanStore(clock=clock)
+    pid = await _planned(clients, store, w, action="refresh", service="sonarr", target="id:1")
+    clock.t += PLAN_TTL_S
+    assert (await start_job(clients, store, w, action="refresh", plan_id=pid)) ==         {"error": "plan_not_found"}
+
+
+async def test_concurrent_execution_sends_once():
+    clients, store, w = _env()
+    pid = await _planned(clients, store, w, action="refresh", service="sonarr", target="id:1")
+    outs = await asyncio.gather(*(start_job(clients, store, w, action="refresh", plan_id=pid)
+                                  for _ in range(5)))
+    assert sum(o.get("executed") is True for o in outs) == 1
+    assert len(clients["sonarr"].posts) == 1
