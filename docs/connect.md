@@ -34,7 +34,7 @@ The same thing as a `.mcp.json` entry, with the token kept in an environment var
 }
 ```
 
-The Claude Code docs only show `https://` examples for remote servers. If your build rejects a plain `http://` LAN URL, the `mcp-remote` bridge below works for Claude Code too: put the same JSON under `mcpServers` in `.mcp.json`.
+A plain `http://` LAN URL works here; Claude Code does not need the `mcp-remote` bridge that Claude Desktop does. `claude mcp list` shows the server as connected once the container is up.
 
 ## Claude Desktop
 

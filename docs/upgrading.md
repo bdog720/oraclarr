@@ -23,3 +23,7 @@ The `netdata` and `truenas` types and the `host` toolset arrive, and `host` join
 ## 1.3.0
 
 Settings move to `ORACLARR_*` variables. `config.yaml` keeps working; the migration steps are in [The config file](config-file.md).
+
+## 1.2.0
+
+The `jellyfin` type and the `library` toolset arrive, and `library` joins the default `ORACLARR_TOOLSETS`. If you set `ORACLARR_TOOLSETS` explicitly, add `library` to get `get_library`.
