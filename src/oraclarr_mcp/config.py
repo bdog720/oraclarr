@@ -4,7 +4,7 @@ from collections.abc import Mapping
 from pathlib import Path
 from typing import Literal
 import yaml
-from pydantic import BaseModel, ConfigDict, Field, ValidationError
+from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator
 
 INSTANCE_TYPES = {"sonarr", "radarr", "sportarr", "prowlarr", "qbittorrent", "tdarr", "profilarr",
                   "jellyfin", "cleanuparr", "netdata", "truenas", "docker"}
@@ -26,9 +26,12 @@ _FALSE = {"false", "no", "0", "off"}
 # Longest suffix first, so SONARR_ANIME_API_KEY splits as SONARR_ANIME + API_KEY.
 _FIELDS = sorted({"_URL": "url", "_TYPE": "type", "_API_KEY": "api_key",
                   "_USERNAME": "username", "_PASSWORD": "password",
-                  "_ENABLED": "enabled", "_VERIFY_TLS": "verify_tls"}.items(),
+                  "_ENABLED": "enabled", "_VERIFY_TLS": "verify_tls",
+                  "_ALLOW_WRITES": "allow_writes"}.items(),
                  key=lambda kv: -len(kv[0]))
-_FIELD_HELP = "_TYPE, _URL, _API_KEY, _USERNAME, _PASSWORD, _ENABLED, _VERIFY_TLS"
+_FIELD_HELP = ("_TYPE, _URL, _API_KEY, _USERNAME, _PASSWORD, _ENABLED, _VERIFY_TLS, "
+               "_ALLOW_WRITES")
+_BOOL_FIELDS = ("enabled", "verify_tls", "allow_writes")
 
 
 def _parse_bool(value: str) -> bool:
@@ -44,9 +47,20 @@ def _parse_list(value: str) -> list[str]:
     return [x.strip() for x in value.split(",") if x.strip()]
 
 
+_MIN_TOKEN_LEN = 24
+
+
+def _parse_token(value: str) -> str:
+    # Checked here too: without an instance, the no-instances error would win.
+    if len(value) < _MIN_TOKEN_LEN:
+        raise ValueError
+    return value
+
+
 _SERVER_ENV = {
     "TOOLSETS": ("server", "toolsets", _parse_list, "a comma-separated list"),
     "ALLOW_WRITES": ("server", "allow_writes", _parse_bool, "true or false"),
+    "HTTP_TOKEN": ("server", "http_token", _parse_token, "at least 24 characters"),
     "TOOL_BUDGET_SECONDS": ("server", "tool_budget_seconds", float, "a number"),
     "MAX_OUTPUT_BYTES": ("server", "max_output_bytes", int, "a whole number"),
     "TIMEOUT_SECONDS": ("defaults", "timeout_seconds", int, "a whole number"),
@@ -81,7 +95,7 @@ def parse_env(env: Mapping[str, str]) -> tuple[dict, dict]:
         for suffix, field in _FIELDS:
             if rest.endswith(suffix) and len(rest) > len(suffix):
                 name = rest[: -len(suffix)].lower().replace("_", "-")
-                if field in ("enabled", "verify_tls"):
+                if field in _BOOL_FIELDS:
                     try:
                         value = _parse_bool(value)
                     except ValueError:
@@ -98,9 +112,17 @@ def parse_env(env: Mapping[str, str]) -> tuple[dict, dict]:
 class ServerSettings(BaseModel):
     model_config = ConfigDict(hide_input_in_errors=True)
     allow_writes: bool = False
+    http_token: str | None = None
     toolsets: list[str] = ["media", "downloads", "transcode", "library", "host", "containers"]
     tool_budget_seconds: float = Field(default=30, gt=0)
     max_output_bytes: int = Field(default=200_000, gt=0)
+
+    @field_validator("http_token")
+    @classmethod
+    def _token_length(cls, v: str | None) -> str | None:
+        if v is not None and len(v) < _MIN_TOKEN_LEN:
+            raise ValueError("ORACLARR_HTTP_TOKEN must be at least 24 characters")
+        return v
 
 
 class Defaults(BaseModel):
@@ -116,7 +138,7 @@ class Instance(BaseModel):
     url: str
     enabled: bool = True
     verify_tls: bool = True
-    read_only: bool = True
+    allow_writes: bool = False
     api_key: str | None = None
     username: str | None = None
     password: str | None = None

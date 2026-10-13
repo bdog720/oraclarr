@@ -1,6 +1,6 @@
 import logging
 
-from oraclarr_mcp.config import Config, Instance
+from oraclarr_mcp.config import Config, Instance, ServerSettings
 from oraclarr_mcp.redact import MASK, Redactor, install_log_redaction
 
 
@@ -118,3 +118,9 @@ def test_url_credential_pattern_is_linear_on_dotted_text():
     t0 = time.monotonic()
     Redactor([]).scrub("a." * 25000)
     assert time.monotonic() - t0 < 1.0
+
+
+def test_from_config_redacts_the_http_token():
+    token = "TOKEN-" + "x" * 24
+    cfg = Config(server=ServerSettings(http_token=token), instances={})
+    assert token not in Redactor.from_config(cfg).scrub(f"Bearer {token}")
