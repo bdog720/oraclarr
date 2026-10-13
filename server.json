@@ -3,7 +3,7 @@
   "name": "io.github.bdog720/oraclarr",
   "title": "Oraclarr",
   "description": "Read-only-by-default MCP server for diagnosing a self-hosted arr stack (Sonarr, Radarr & more).",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "websiteUrl": "https://github.com/bdog720/oraclarr",
   "repository": {
     "url": "https://github.com/bdog720/oraclarr",
@@ -14,16 +14,40 @@
       "registryType": "pypi",
       "registryBaseUrl": "https://pypi.org",
       "identifier": "oraclarr-mcp",
-      "version": "2.0.1",
+      "version": "2.0.2",
       "runtimeHint": "uvx",
       "transport": {
         "type": "stdio"
       },
       "environmentVariables": [
         {
+          "name": "ORACLARR_SONARR_URL",
+          "description": "Sonarr base URL, e.g. http://192.168.1.10:8989. Every service is ORACLARR_<NAME>_URL plus ORACLARR_<NAME>_API_KEY; the README lists the types.",
+          "isRequired": false,
+          "isSecret": false
+        },
+        {
+          "name": "ORACLARR_SONARR_API_KEY",
+          "description": "Sonarr API key (Settings > General).",
+          "isRequired": false,
+          "isSecret": true
+        },
+        {
+          "name": "ORACLARR_RADARR_URL",
+          "description": "Radarr base URL, e.g. http://192.168.1.10:7878.",
+          "isRequired": false,
+          "isSecret": false
+        },
+        {
+          "name": "ORACLARR_RADARR_API_KEY",
+          "description": "Radarr API key (Settings > General).",
+          "isRequired": false,
+          "isSecret": true
+        },
+        {
           "name": "ORACLARR_CONFIG",
-          "description": "Absolute path to your config.yaml (arr service URLs + ${ENV} secret refs). See the repository README for the format.",
-          "isRequired": true,
+          "description": "Optional path to a config.yaml as an alternative to ORACLARR_* variables. See docs/config-file.md in the repository.",
+          "isRequired": false,
           "isSecret": false
         }
       ]
