@@ -41,6 +41,7 @@ Once registered, you just ask your MCP client. Oraclarr picks the right tool and
 | "How full are the pools, and what's using the space?" | `get_host` | pool capacity, fragmentation and scrub state, then `section="datasets"` for the biggest datasets |
 | "Which containers are down, and what did they exit with?" | `get_containers` | problem containers first (unhealthy, restarting, OOM-killed, or stopped with a non-zero exit code) and their restart counts |
 | "What errors has Sonarr logged today?" | `get_containers` | with `name="sonarr", section="logs", match="error", since="1d"`, the matching log lines with timestamps |
+| "Is the Sonarr rename still running?" | `get_jobs` | running and queued commands with their progress message and the shows they cover, plus any that failed; `section="schedule"` shows when each task runs next |
 
 ## Tools
 
@@ -63,6 +64,7 @@ All read-only and outcome-oriented (not one-per-endpoint, which keeps the model 
 | `get_cleanup` | Cleanuparr dry-run state, cleaner schedules, seeding and stall rules, strikes |
 | `get_host` | Host CPU/iowait, memory, swap, ARC, GPU, pools, datasets, disk temperatures, TrueNAS alerts |
 | `get_containers` | Docker containers: state, health, restart counts, exit codes, and a filtered log tail |
+| `get_jobs` | What the arrs and Jellyfin are running, queued, failed or scheduled |
 
 ## Install
 

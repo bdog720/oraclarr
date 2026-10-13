@@ -12,13 +12,13 @@ def _registered_tool_names(mcp) -> list[str]:
     return list(mcp._tool_manager._tools.keys())
 
 
-def test_tool_specs_cover_all_fifteen_tools():
+def test_tool_specs_cover_all_sixteen_tools():
     names = {s.name for s in TOOL_SPECS}
     assert names == {
         "stack_health", "get_queues", "diagnose", "explain_decision",
         "get_quality_config", "get_history", "get_wanted", "search_media",
         "get_indexers", "get_transcodes", "get_upcoming", "get_library", "get_cleanup",
-        "get_host", "get_containers",
+        "get_host", "get_containers", "get_jobs",
     }
 
 
@@ -141,7 +141,7 @@ def test_transcode_and_upcoming_expose_limits():
 
 BOUNDED_TOOLS = {"get_queues", "diagnose", "explain_decision", "get_history", "get_wanted",
                  "search_media", "get_upcoming", "get_transcodes", "get_library",
-                 "get_cleanup", "get_host", "get_containers"}
+                 "get_cleanup", "get_host", "get_containers", "get_jobs"}
 
 
 def test_every_tool_description_says_when_to_use_it_instead_of_ssh():
@@ -194,3 +194,13 @@ def test_get_containers_registers_with_containers_toolset():
     p = _params(mcp, "get_containers")
     assert p["limit"]["default"] == 100 and p["lines"]["default"] == 50
     assert set(p) == {"name", "section", "lines", "since", "match", "limit"}
+
+
+def test_get_jobs_registers_with_media_toolset():
+    cfg = Config(server=ServerSettings(toolsets=["media"]), defaults=Defaults(),
+                 instances={"sonarr": Instance(type="sonarr", url="http://h:8989", api_key="K")})
+    mcp = build_server(cfg, clients={})
+    assert "get_jobs" in _registered_tool_names(mcp)
+    p = _params(mcp, "get_jobs")
+    assert p["limit"]["default"] == 50 and p["include_routine"]["default"] is False
+    assert set(p) == {"service", "section", "include_routine", "limit"}
