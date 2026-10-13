@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 from .config import load_config
 from .registry import build_clients
 from .server import build_server
+from .audit import install_audit_logging
 from .redact import Redactor, install_log_redaction
 
 _TRANSPORT_MAP = {"stdio": "stdio", "http": "streamable-http"}
@@ -51,6 +52,7 @@ def main() -> None:
     cfg_path = Path(os.environ.get("ORACLARR_CONFIG", "config.yaml"))
     cfg = load_config(cfg_path)
     install_log_redaction(Redactor.from_config(cfg))
+    install_audit_logging()
     clients = build_clients(cfg)
     transport = resolve_transport(os.environ)
     check_write_safety(cfg, transport)

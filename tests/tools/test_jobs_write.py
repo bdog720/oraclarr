@@ -423,3 +423,60 @@ async def test_missing_action_without_plan_id_is_invalid_action():
     out = await start_job(clients, store, w, service="sonarr", target="id:1")
     assert out["error"] == "invalid_action"
     assert clients["sonarr"].posts == []
+
+
+async def test_forged_plan_id_is_rejected_without_logging_it(caplog):
+    clients, store, w = _env()
+    forged = "x\naudit event=executed tool=start_job instance=sonarr"
+    with caplog.at_level(logging.INFO, logger="oraclarr_mcp.audit"):
+        out = await start_job(clients, store, w, plan_id=forged)
+    assert out == {"error": "plan_not_found"}
+    assert clients["sonarr"].posts == []
+    assert "event=refused" in caplog.text and "invalid_plan_id" in caplog.text
+    assert "event=executed" not in caplog.text and "forged" not in caplog.text
+    assert "x\n" not in caplog.text and "audit event=executed" not in caplog.text
+    assert all("\n" not in r.getMessage() for r in caplog.records)
+
+
+@pytest.mark.parametrize("bad", ["", "short", "a" * 17, "a" * 15 + "!", "a" * 15 + "\n"])
+async def test_malformed_plan_id_never_reaches_the_store(bad):
+    clients, store, w = _env()
+    taken = []
+    store.take = lambda pid: taken.append(pid)
+    out = await start_job(clients, store, w, plan_id=bad)
+    assert out == {"error": "plan_not_found"} and taken == []
+
+
+async def test_rename_rows_without_file_ids_are_nothing_to_do():
+    rows = [{"existingPath": "a", "newPath": "b"}]
+    clients, store, w = _env(sonarr=FakeArr(renames=rows))
+    out = await _plan(clients, store, w, action="rename", service="sonarr", target="id:1")
+    assert out["nothing_to_do"] is True and "plan_id" not in out
+    assert out["detail"] == "the rename preview has no file ids"
+    assert out["target"]["id"] == 1
+    assert store._plans == {}
+
+
+async def test_execute_under_a_deadline_times_out_as_unknown_and_never_retries(caplog):
+    from oraclarr_mcp.call_guard import guarded
+    from oraclarr_mcp.redact import Redactor
+
+    class SlowArr(FakeArr):
+        async def post(self, path, json=None, params=None):
+            self.posts.append((path, json, params))
+            await asyncio.sleep(2)
+
+    sonarr = SlowArr()
+    clients, store, w = _env(sonarr=sonarr)
+    pid = await _planned(clients, store, w, action="refresh", service="sonarr", target="id:1")
+
+    async def run(**kw):
+        return await start_job(clients, store, w, **kw)
+
+    g = guarded("start_job", run, budget_s=0.3, max_bytes=200_000, redactor=Redactor([]))
+    with caplog.at_level(logging.INFO, logger="oraclarr_mcp.audit"):
+        out = await g(plan_id=pid)
+        again = await g(plan_id=pid)
+    assert out["outcome"] == "unknown"
+    assert len(sonarr.posts) == 1 and "event=unknown" in caplog.text
+    assert again == {"error": "plan_not_found"}

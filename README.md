@@ -373,7 +373,7 @@ There is no space after the colon on purpose, because Claude Desktop on Windows 
 
 A write takes two calls. The first call has no `plan_id`. It changes nothing and returns a preview of what would happen, with a `plan_id` that is good for 10 minutes. The second call passes only that `plan_id`, and the job runs once. Plans live in memory, so a restart drops them, and nothing is retried: if a request times out after it was sent, the result says `outcome: unknown` and you check with `get_jobs`.
 
-Every write event goes to the container log as a line that starts with `audit event=`, where the event is `planned`, `executed`, `refused`, `failed` or `unknown`. Read it with `docker logs oraclarr`.
+Every write event is logged as a single line in the form `<timestamp> audit event=<event> key=value ...`, where the event is `planned`, `executed`, `refused`, `failed` or `unknown`. The lines go to stderr and are never wrapped, so `docker logs oraclarr 2>&1 | grep "audit event="` finds each event with its `plan_id`, `target` and `command_id`. Values have whitespace replaced by `_`, so a value cannot start a new line.
 
 ### Migrating from `config.yaml`
 
