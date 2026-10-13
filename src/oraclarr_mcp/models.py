@@ -3,7 +3,7 @@ from pydantic import BaseModel
 
 InstanceStatus = Literal["ok", "unreachable", "auth_failed", "timeout", "error"]
 Risk = Literal["read", "safe_write", "destructive"]
-Domain = Literal["media", "downloads", "transcode", "library", "infra", "host", "containers"]
+Domain = Literal["media", "downloads", "transcode", "library", "host", "containers"]
 
 # Arr-family instance types. Sportarr serves a Sonarr-compatible /api/v3, so it
 # routes to ArrClient like its peers. Every arr selector reads this constant.
