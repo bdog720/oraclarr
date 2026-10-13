@@ -199,8 +199,8 @@ def build_server(
         `truncated` and `total` show when more exist."""
         return await get_jobs(clients, service, section, include_routine, limit)
 
-    async def _start_job(action: str, service: str | None = None, target: str | None = None,
-                         season: int | None = None, library: str | None = None,
+    async def _start_job(action: str | None = None, service: str | None = None,
+                         target: str | None = None, season: int | None = None, library: str | None = None,
                          plan_id: str | None = None) -> dict:
         """Start an arr job or a Jellyfin scan, in two steps. First call without plan_id:
         returns a preview of exactly what would happen and a plan_id (valid 10 minutes).

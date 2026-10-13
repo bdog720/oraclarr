@@ -408,3 +408,18 @@ async def test_concurrent_execution_sends_once():
                                   for _ in range(5)))
     assert sum(o.get("executed") is True for o in outs) == 1
     assert len(clients["sonarr"].posts) == 1
+
+
+async def test_plan_id_alone_executes_the_plan():
+    clients, store, w = _env()
+    pid = await _planned(clients, store, w, action="refresh", service="sonarr", target="id:1")
+    out = await start_job(clients, store, w, plan_id=pid)
+    assert out["executed"] is True
+    assert len(clients["sonarr"].posts) == 1
+
+
+async def test_missing_action_without_plan_id_is_invalid_action():
+    clients, store, w = _env()
+    out = await start_job(clients, store, w, service="sonarr", target="id:1")
+    assert out["error"] == "invalid_action"
+    assert clients["sonarr"].posts == []
