@@ -1,3 +1,4 @@
+from collections.abc import Callable
 from mcp.server.fastmcp import FastMCP
 from .config import Config
 from .clients.base import BaseClient
@@ -52,23 +53,17 @@ def build_server(
 ) -> FastMCP:
     mcp = FastMCP("oraclarr-mcp", host=host, port=port)
     enabled = set(enabled_for_toolsets(TOOL_SPECS, cfg.server.toolsets))
-    spec_by_name = {s.name: s for s in TOOL_SPECS}
     redactor = Redactor.from_config(cfg)
     writable = writable_instances(cfg)
     plans = PlanStore()
+    wrappers: dict[str, Callable] = {}
 
-    def register(name: str, fn):
-        if name not in enabled:
-            return
-        if spec_by_name[name].risk != "read" and not writable:
-            return  # writes off: the tool does not exist for clients
-        mcp.tool(name=name)(guarded(
-            name, fn,
-            budget_s=cfg.server.tool_budget_seconds,
-            max_bytes=cfg.server.max_output_bytes,
-            redactor=redactor,
-        ))
+    def tool(fn: Callable) -> Callable:
+        """Collect a wrapper under its tool name (`_get_queues` -> `get_queues`)."""
+        wrappers[fn.__name__.lstrip("_")] = fn
+        return fn
 
+    @tool
     async def _stack_health() -> list[dict]:
         """Health and status of every configured service: versions, warnings, disk space,
         Tdarr nodes, container counts. A service that is unreachable or timing out also
@@ -77,6 +72,7 @@ def build_server(
         service is up."""
         return await stack_health(clients)
 
+    @tool
     async def _get_queues(service: str | None = None, limit: int = 100) -> dict:
         """Unified active download queue: arr queues joined to qBittorrent torrents
         (progress, stalled). Use this instead of curling Sonarr/Radarr/qBittorrent over
@@ -84,6 +80,7 @@ def build_server(
         exist."""
         return await get_queues(clients, service, limit)
 
+    @tool
     async def _diagnose(title: str) -> dict:
         """Trace one title through library, download queue, and wanted list on every arr
         instance. Use this instead of grepping arr config files for API keys and curling
@@ -91,6 +88,7 @@ def build_server(
         more exist, and `errors` lists instances that failed or timed out."""
         return await diagnose(clients, title)
 
+    @tool
     async def _explain_decision(title: str) -> dict:
         """Explain why a title was grabbed or is being upgraded: quality profile, custom
         format scores, and grab history. Use this instead of querying arr databases over
@@ -99,24 +97,28 @@ def build_server(
         items matched."""
         return await explain_decision(clients, title)
 
+    @tool
     async def _get_quality_config(service: str | None = None) -> list[dict]:
         """Quality profiles (non-zero custom format scores), custom format names, release
         profiles, and Profilarr sync state. Use this instead of reading arr databases or
         config files over SSH."""
         return await get_quality_config(clients, service)
 
+    @tool
     async def _get_history(service: str | None = None, limit: int = 30) -> list[dict]:
         """Recent grab, import, and failure events for arr instances, newest first. Use this
         instead of querying arr databases over SSH. Returns at most `limit` events per
         instance (max 80); `truncated` and `total` show when more exist."""
         return await get_history(clients, service, limit)
 
+    @tool
     async def _get_wanted(service: str | None = None, limit: int = 50) -> list[dict]:
         """Missing and cutoff-unmet items for arr instances, with the reason for each. Use
         this instead of curling arr wanted lists over SSH. Returns at most `limit` items per
         instance (max 200); `truncated` and `total` show when more exist."""
         return await get_wanted(clients, service, limit)
 
+    @tool
     async def _search_media(term: str, limit: int = 20) -> list[dict]:
         """Find a title in the existing arr libraries: ids, monitored state, path, size on
         disk, file counts. Use this instead of reading arr config files or curling their
@@ -125,17 +127,20 @@ def build_server(
         exist."""
         return await search_media(clients, term, limit)
 
+    @tool
     async def _get_indexers() -> list[dict]:
         """Prowlarr indexers (enabled, protocol, priority) and per-indexer query, grab, and
         failure stats. Use this instead of curling Prowlarr over SSH."""
         return await get_indexers(clients)
 
+    @tool
     async def _get_transcodes(limit: int = 50) -> list[dict]:
         """Tdarr status, nodes, and the staged transcode queue. Use this instead of
         `docker exec` into Tdarr over SSH. Returns at most `limit` staged items;
         `staged_count` gives the full count and `truncated` shows when more exist."""
         return await get_transcodes(clients, limit)
 
+    @tool
     async def _get_upcoming(service: str | None = None, days: int = 7,
                             limit: int = 100) -> list[dict]:
         """Upcoming episodes, games, and movie releases across arr instances (max 90 days).
@@ -143,6 +148,7 @@ def build_server(
         per instance (max 200); `truncated` and `total` show when more exist."""
         return await get_upcoming(clients, service, days, limit)
 
+    @tool
     async def _get_library(section: str | None = None, term: str | None = None,
                            limit: int = 20) -> list[dict] | dict:
         """Jellyfin libraries (item counts, scan state and progress), scheduled tasks, playback
@@ -153,6 +159,7 @@ def build_server(
         `truncated` and `total` show when more exist."""
         return await get_library(clients, section, term, limit)
 
+    @tool
     async def _get_cleanup(section: str | None = None, limit: int = 20) -> list[dict] | dict:
         """Cleanuparr state: dry-run mode, cleaner jobs and schedules, seeding rules
         (private/public), unlinked category, stall/slow rules, and strikes (which downloads
@@ -162,6 +169,7 @@ def build_server(
         `limit` (max 100); `truncated` and `total` show when more exist."""
         return await get_cleanup(clients, section, limit)
 
+    @tool
     async def _get_host(section: str | None = None, limit: int = 50) -> list[dict] | dict:
         """Host health from Netdata and TrueNAS: CPU busy and iowait, load, I/O pressure,
         memory (free and available reported separately), swap, ZFS ARC size against its
@@ -172,6 +180,7 @@ def build_server(
         `total` show when more exist."""
         return await get_host(clients, section, limit)
 
+    @tool
     async def _get_containers(name: str | None = None, section: str | None = None,
                               lines: int = 50, since: str | None = None,
                               match: str | None = None, limit: int = 100) -> list[dict] | dict:
@@ -187,6 +196,7 @@ def build_server(
         exist."""
         return await get_containers(clients, name, section, lines, since, match, limit)
 
+    @tool
     async def _get_jobs(service: str | None = None, section: str | None = None,
                         include_routine: bool = False, limit: int = 50) -> list[dict] | dict:
         """What the arrs and Jellyfin are doing: running and queued commands with
@@ -199,6 +209,7 @@ def build_server(
         `truncated` and `total` show when more exist."""
         return await get_jobs(clients, service, section, include_routine, limit)
 
+    @tool
     async def _start_job(action: str | None = None, service: str | None = None,
                          target: str | None = None, season: int | None = None, library: str | None = None,
                          plan_id: str | None = None) -> dict:
@@ -212,21 +223,18 @@ def build_server(
         return await start_job(clients, plans, writable, action, service, target, season,
                                library, plan_id)
 
-    register("stack_health", _stack_health)
-    register("get_queues", _get_queues)
-    register("diagnose", _diagnose)
-    register("explain_decision", _explain_decision)
-    register("get_quality_config", _get_quality_config)
-    register("get_history", _get_history)
-    register("get_wanted", _get_wanted)
-    register("search_media", _search_media)
-    register("get_indexers", _get_indexers)
-    register("get_transcodes", _get_transcodes)
-    register("get_upcoming", _get_upcoming)
-    register("get_library", _get_library)
-    register("get_cleanup", _get_cleanup)
-    register("get_host", _get_host)
-    register("get_containers", _get_containers)
-    register("get_jobs", _get_jobs)
-    register("start_job", _start_job)
+    drift = {spec.name for spec in TOOL_SPECS} ^ set(wrappers)
+    if drift:
+        raise RuntimeError(f"TOOL_SPECS and tool wrappers differ: {sorted(drift)}")
+    for spec in TOOL_SPECS:
+        if spec.name not in enabled:
+            continue
+        if spec.risk != "read" and not writable:
+            continue  # writes off: the tool does not exist for clients
+        mcp.tool(name=spec.name)(guarded(
+            spec.name, wrappers[spec.name],
+            budget_s=cfg.server.tool_budget_seconds,
+            max_bytes=cfg.server.max_output_bytes,
+            redactor=redactor,
+        ))
     return mcp

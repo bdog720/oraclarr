@@ -1,3 +1,4 @@
+import pytest
 from oraclarr_mcp.config import Config, Instance, ServerSettings, Defaults
 from oraclarr_mcp.server import build_server, TOOL_SPECS
 from oraclarr_mcp.guards import enabled_for_toolsets
@@ -20,6 +21,17 @@ def test_tool_specs_cover_all_seventeen_tools():
         "get_indexers", "get_transcodes", "get_upcoming", "get_library", "get_cleanup",
         "get_host", "get_containers", "get_jobs", "start_job",
     }
+
+
+def test_a_spec_without_a_wrapper_fails_at_build_time(monkeypatch):
+    """TOOL_SPECS and the wrappers are one table: drift is a startup error, not a missing tool."""
+    import oraclarr_mcp.server as server
+    from oraclarr_mcp.guards import tool_spec
+    monkeypatch.setattr(server, "TOOL_SPECS", [*TOOL_SPECS, tool_spec("ghost", "read", "always")])
+    cfg = Config(server=ServerSettings(toolsets=["media"]), defaults=Defaults(),
+                 instances={"sonarr": Instance(type="sonarr", url="http://h:8989", api_key="K")})
+    with pytest.raises(RuntimeError, match="ghost"):
+        build_server(cfg, clients={})
 
 
 def test_get_upcoming_is_gated_by_the_media_toolset():

@@ -22,7 +22,3 @@ def writable_instances(cfg) -> set[str]:
     if not cfg.server.allow_writes:
         return set()
     return {n for n, i in cfg.instances.items() if i.enabled and i.allow_writes}
-
-
-def writes_enabled(cfg) -> bool:
-    return bool(writable_instances(cfg))
