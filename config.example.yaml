@@ -2,7 +2,7 @@
 # If you use this file too, any ORACLARR_ variable overrides the same setting here.
 server:
   allow_writes: false
-  toolsets: [media, downloads, transcode, library]
+  toolsets: [media, downloads, transcode, library, host, containers]
   tool_budget_seconds: 30     # per tool call, shared across all instances it queries
   max_output_bytes: 200000    # safety net; a hit means a tool returned too much
 defaults:
@@ -17,3 +17,9 @@ instances:
   profilarr:    { type: profilarr,    url: http://192.168.1.10:6868, api_key: ${PROFILARR_KEY} }
   sportarr:     { type: sportarr,     url: http://192.168.1.10:1867, api_key: ${SPORTARR_KEY} }
   jellyfin:     { type: jellyfin,     url: http://192.168.1.10:8096, api_key: ${JELLYFIN_KEY} }
+  cleanuparr:   { type: cleanuparr,   url: http://192.168.1.10:11011, api_key: ${CLEANUPARR_KEY} }
+  netdata:      { type: netdata,      url: http://192.168.1.10:20999 }
+  # TrueNAS: https only (it revokes a key sent over http); verify_tls: false for the default self-signed cert.
+  truenas:      { type: truenas,      url: https://192.168.1.10, api_key: ${TRUENAS_KEY}, verify_tls: false }
+  # Docker: the read-only socket proxy in the same compose stack (docs/containers.md).
+  docker:       { type: docker,       url: http://docker-proxy:2375 }
