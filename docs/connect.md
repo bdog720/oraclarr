@@ -1,6 +1,6 @@
 # Connecting a client
 
-Oraclarr in Docker serves MCP over HTTP at `http://<host>:7979/mcp`. This page covers Claude Code and Claude Desktop. If you run the Python package instead (Option B in the README), skip this: your client starts the process itself and the JSON snippet in the README is all you need.
+Oraclarr in Docker serves MCP over HTTP at `http://<host>:7979/mcp`. Any client that speaks MCP over streamable HTTP can use it. This page covers Claude Code and Claude Desktop in detail, then Cursor, Codex CLI, VS Code, Gemini CLI and Windsurf. If you run the Python package instead (Option B in the README), skip this: your client starts the process itself and the JSON snippet in the README is all you need.
 
 Replace `<host>` below with the IP or hostname of the machine running the container.
 
@@ -71,6 +71,102 @@ There is no space after the colon on purpose. Claude Desktop on Windows breaks a
 **Why `--allow-http`?** Recent versions of `mcp-remote` reject plain `http://` URLs unless the host is `localhost`. Without the flag the bridge exits immediately and Claude Desktop shows the server as "disconnected", even though the server itself is fine. The traffic stays on your LAN, so the flag is safe here.
 
 **Why not the native "Add custom connector"?** Custom connectors reach your server from Anthropic's cloud, not from your machine. The URL has to be a publicly reachable HTTPS endpoint, and a `http://` LAN or localhost URL is rejected. Pointing one at a homelab box means exposing Oraclarr to the internet. We don't recommend it. If you want it anyway, put a reverse proxy (Caddy, nginx) or a tunnel (Cloudflare Tunnel, Tailscale Funnel) with TLS in front, and set a token.
+
+## Other clients
+
+The same URL works in any MCP client with HTTP support. Point it at `http://<host>:7979/mcp`, and add the `Authorization` header only if you have set `ORACLARR_HTTP_TOKEN`. Each block below keeps the token in an environment variable where the client supports that, so it never lands in a config file. None of these clients document a rule against plain `http://` on a LAN, and Oraclarr has been tested with the Claude clients only, so if one refuses the URL, open an issue.
+
+### Cursor
+
+`.cursor/mcp.json` in a project, or `~/.cursor/mcp.json` for everywhere:
+
+```json
+{
+  "mcpServers": {
+    "oraclarr": {
+      "url": "http://<host>:7979/mcp",
+      "headers": { "Authorization": "Bearer ${env:ORACLARR_HTTP_TOKEN}" }
+    }
+  }
+}
+```
+
+Cursor reads `${env:NAME}` from your shell or system environment; `envFile` does not apply to remote servers.
+
+### Codex CLI
+
+One command, written to the global `~/.codex/config.toml`:
+
+```bash
+codex mcp add oraclarr --url http://<host>:7979/mcp --bearer-token-env-var ORACLARR_HTTP_TOKEN
+```
+
+Or the same thing by hand, in `~/.codex/config.toml` or a trusted project's `.codex/config.toml`:
+
+```toml
+[mcp_servers.oraclarr]
+url = "http://<host>:7979/mcp"
+bearer_token_env_var = "ORACLARR_HTTP_TOKEN"
+```
+
+Leave `bearer_token_env_var` out if you have no token.
+
+### VS Code (GitHub Copilot)
+
+`.vscode/mcp.json` in a workspace, or the user file from the **MCP: Open User Configuration** command. VS Code prompts for the token once and stores it, so the file holds a reference only:
+
+```json
+{
+  "inputs": [
+    { "type": "promptString", "id": "oraclarr-token", "description": "Oraclarr bearer token", "password": true }
+  ],
+  "servers": {
+    "oraclarr": {
+      "type": "http",
+      "url": "http://<host>:7979/mcp",
+      "headers": { "Authorization": "Bearer ${input:oraclarr-token}" }
+    }
+  }
+}
+```
+
+Without a token, drop `inputs` and `headers`.
+
+### Gemini CLI
+
+```bash
+gemini mcp add --transport http --scope user oraclarr http://<host>:7979/mcp
+```
+
+With a token, edit the entry in `~/.gemini/settings.json` afterwards rather than passing `--header` on the command line, or the shell expands the variable and the literal token is written to the file:
+
+```json
+{
+  "mcpServers": {
+    "oraclarr": {
+      "httpUrl": "http://<host>:7979/mcp",
+      "headers": { "Authorization": "Bearer $ORACLARR_HTTP_TOKEN" }
+    }
+  }
+}
+```
+
+The key is `httpUrl`, not `url`; `url` means SSE in Gemini CLI.
+
+### Windsurf
+
+Windsurf's Cascade agent is now part of Devin Desktop and its config file has moved, so open it from the app: the Cascade panel's menu has a **Configure** action that opens the right `mcp_config.json`. Add:
+
+```json
+{
+  "mcpServers": {
+    "oraclarr": {
+      "serverUrl": "http://<host>:7979/mcp",
+      "headers": { "Authorization": "Bearer ${env:ORACLARR_HTTP_TOKEN}" }
+    }
+  }
+}
+```
 
 ## Security
 
