@@ -60,3 +60,42 @@ def test_main_installs_log_redaction(monkeypatch):
         assert "SONARRKEY123" not in rec.getMessage()
     finally:
         logging.setLogRecordFactory(before)
+
+
+from oraclarr_mcp.config import ServerSettings  # noqa: E402
+
+
+def _cfg(allow_writes=False, token=None):
+    return Config(server=ServerSettings(allow_writes=allow_writes, http_token=token),
+                  instances={})
+
+
+def test_writes_on_http_without_token_exit():
+    with pytest.raises(SystemExit) as e:
+        entry.check_write_safety(_cfg(allow_writes=True), "streamable-http")
+    assert "ORACLARR_HTTP_TOKEN" in str(e.value)
+
+
+def test_writes_allowed_on_stdio_or_with_token():
+    entry.check_write_safety(_cfg(allow_writes=True), "stdio")
+    entry.check_write_safety(_cfg(allow_writes=True, token="t" * 24), "streamable-http")
+    entry.check_write_safety(_cfg(), "streamable-http")
+
+
+def test_serve_http_wraps_app_only_when_token_set(monkeypatch):
+    calls = []
+
+    class FakeMcp:
+        class settings:
+            host, port, log_level = "0.0.0.0", 7979, "INFO"
+
+        def streamable_http_app(self):
+            return "APP"
+
+    import uvicorn
+    monkeypatch.setattr(uvicorn, "run", lambda app, **kw: calls.append((app, kw)))
+    entry.serve_http(FakeMcp(), None)
+    entry.serve_http(FakeMcp(), "t" * 24)
+    assert calls[0][0] == "APP"
+    assert type(calls[1][0]).__name__ == "BearerTokenMiddleware"
+    assert calls[1][1] == {"host": "0.0.0.0", "port": 7979, "log_level": "info"}
