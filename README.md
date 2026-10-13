@@ -344,14 +344,15 @@ Over http, writes also need a token, and the container refuses to start with wri
 python -c "import secrets; print(secrets.token_urlsafe(32))"
 ```
 
-Put the result in `.env` as `ORACLARR_TOKEN`, then pass it to the container in the compose file:
+Add the token and both switches to your `.env`. The compose file's `env_file: .env` line passes them to the container:
 
-```yaml
-    environment:
-      ORACLARR_HTTP_TOKEN: ${ORACLARR_TOKEN}
-      ORACLARR_ALLOW_WRITES: "true"
-      ORACLARR_SONARR_ALLOW_WRITES: "true"
 ```
+ORACLARR_HTTP_TOKEN=<the token>
+ORACLARR_ALLOW_WRITES=true
+ORACLARR_SONARR_ALLOW_WRITES=true
+```
+
+If your compose file lists variables in an `environment:` block and uses `.env` only for substitution, write `ORACLARR_HTTP_TOKEN: ${ORACLARR_HTTP_TOKEN}` there instead, and do the same for the two switches.
 
 Once a token is set, every request needs it, reads included. Claude Desktop sends it through `mcp-remote`. This is the config from [Connect Claude Desktop](#connect-claude-desktop) with a `--header` argument and an `env` block added:
 
@@ -361,12 +362,14 @@ Once a token is set, every request needs it, reads included. Claude Desktop send
     "oraclarr": {
       "command": "npx",
       "args": ["-y", "mcp-remote", "http://<host>:7979/mcp", "--allow-http",
-               "--header", "Authorization: Bearer ${ORACLARR_TOKEN}"],
-      "env": {"ORACLARR_TOKEN": "<the token>"}
+               "--header", "Authorization:${AUTH_HEADER}"],
+      "env": {"AUTH_HEADER": "Bearer <the token>"}
     }
   }
 }
 ```
+
+There is no space after the colon on purpose, because Claude Desktop on Windows breaks arguments that contain spaces. The space lives in the `env` value instead.
 
 A write takes two calls. The first call has no `plan_id`. It changes nothing and returns a preview of what would happen, with a `plan_id` that is good for 10 minutes. The second call passes only that `plan_id`, and the job runs once. Plans live in memory, so a restart drops them, and nothing is retried: if a request times out after it was sent, the result says `outcome: unknown` and you check with `get_jobs`.
 
