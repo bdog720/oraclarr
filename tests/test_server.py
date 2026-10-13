@@ -12,13 +12,13 @@ def _registered_tool_names(mcp) -> list[str]:
     return list(mcp._tool_manager._tools.keys())
 
 
-def test_tool_specs_cover_all_sixteen_tools():
+def test_tool_specs_cover_all_seventeen_tools():
     names = {s.name for s in TOOL_SPECS}
     assert names == {
         "stack_health", "get_queues", "diagnose", "explain_decision",
         "get_quality_config", "get_history", "get_wanted", "search_media",
         "get_indexers", "get_transcodes", "get_upcoming", "get_library", "get_cleanup",
-        "get_host", "get_containers", "get_jobs",
+        "get_host", "get_containers", "get_jobs", "start_job",
     }
 
 
@@ -27,8 +27,9 @@ def test_get_upcoming_is_gated_by_the_media_toolset():
     assert "get_upcoming" in enabled_for_toolsets(TOOL_SPECS, ["media"])
 
 
-def test_all_tool_specs_are_read_risk():
-    assert all(s.risk == "read" for s in TOOL_SPECS)
+def test_only_start_job_writes():
+    assert {s.name for s in TOOL_SPECS if s.risk != "read"} == {"start_job"}
+    assert next(s for s in TOOL_SPECS if s.name == "start_job").risk == "safe_write"
 
 
 def test_toolset_filter_drops_transcode_when_disabled():
@@ -150,7 +151,7 @@ def test_every_tool_description_says_when_to_use_it_instead_of_ssh():
                  defaults=Defaults(),
                  instances={"sonarr": Instance(type="sonarr", url="http://h:8989", api_key="K")})
     tools = build_server(cfg, clients={})._tool_manager._tools
-    assert set(tools) == {s.name for s in TOOL_SPECS}
+    assert set(tools) == {s.name for s in TOOL_SPECS if s.risk == "read"}
     for name, tool in tools.items():
         assert "instead of" in tool.description and "SSH" in tool.description, name
         if name in BOUNDED_TOOLS:
@@ -204,3 +205,26 @@ def test_get_jobs_registers_with_media_toolset():
     p = _params(mcp, "get_jobs")
     assert p["limit"]["default"] == 50 and p["include_routine"]["default"] is False
     assert set(p) == {"service", "section", "include_routine", "limit"}
+
+
+def _writes_cfg(server_writes, inst_writes):
+    return Config(server=ServerSettings(toolsets=["media"], allow_writes=server_writes,
+                                        http_token="t" * 24),
+                  defaults=Defaults(),
+                  instances={"sonarr": Instance(type="sonarr", url="http://h:8989",
+                                                api_key="K", allow_writes=inst_writes)})
+
+
+def test_start_job_absent_unless_writes_are_enabled():
+    for server_writes, inst_writes in ((False, False), (False, True), (True, False)):
+        mcp = build_server(_writes_cfg(server_writes, inst_writes), clients={})
+        assert "start_job" not in _registered_tool_names(mcp)
+
+
+def test_start_job_registers_with_writes_enabled():
+    mcp = build_server(_writes_cfg(True, True), clients={})
+    assert "start_job" in _registered_tool_names(mcp)
+    p = _params(mcp, "start_job")
+    assert set(p) == {"action", "service", "target", "season", "library", "plan_id"}
+    desc = mcp._tool_manager._tools["start_job"].description
+    assert "plan_id" in desc and "instead of" in desc and "SSH" in desc

@@ -9,10 +9,6 @@ class ToolSpec:
     domain: str  # toolset name, or "always"
 
 
-class WriteNotAllowed(Exception):
-    pass
-
-
 def tool_spec(name: str, risk: Risk, domain: str) -> ToolSpec:
     return ToolSpec(name=name, risk=risk, domain=domain)
 
@@ -21,6 +17,12 @@ def enabled_for_toolsets(specs: list[ToolSpec], toolsets: list[str]) -> list[str
     return [s.name for s in specs if s.domain == "always" or s.domain in toolsets]
 
 
-def ensure_allowed(spec: ToolSpec, allow_writes: bool) -> None:
-    if spec.risk != "read" and not allow_writes:
-        raise WriteNotAllowed(f"Tool {spec.name} is {spec.risk}; allow_writes is false")
+def writable_instances(cfg) -> set[str]:
+    """Instances a write may reach: server switch on and the instance opted in."""
+    if not cfg.server.allow_writes:
+        return set()
+    return {n for n, i in cfg.instances.items() if i.enabled and i.allow_writes}
+
+
+def writes_enabled(cfg) -> bool:
+    return bool(writable_instances(cfg))
