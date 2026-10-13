@@ -100,7 +100,7 @@ services:
 
 Want container state and logs too (`get_containers`)? Use [`docker-compose.full.example.yml`](https://github.com/bdog720/oraclarr/blob/main/docker-compose.full.example.yml) instead. It adds the read-only Docker socket proxy, the one sidecar that has to live in the same stack. [Containers](https://github.com/bdog720/oraclarr/blob/main/docs/containers.md) explains it.
 
-Then [connect your client](https://github.com/bdog720/oraclarr/blob/main/docs/connect.md): one command for Claude Code, a small JSON block for Claude Desktop.
+Then [connect your client](https://github.com/bdog720/oraclarr/blob/main/docs/connect.md): one command for Claude Code, a small JSON block for Claude Desktop, Cursor, Codex, VS Code, Gemini CLI or Windsurf.
 
 ### Option B: Python (uv)
 
@@ -176,7 +176,7 @@ Every tool call has a time budget. If an instance doesn't answer in time, it com
 
 ## Guides
 
-- [Connecting a client](https://github.com/bdog720/oraclarr/blob/main/docs/connect.md): Claude Code, Claude Desktop, the token header, and why not to use a cloud connector.
+- [Connecting a client](https://github.com/bdog720/oraclarr/blob/main/docs/connect.md): Claude Code, Claude Desktop, Cursor, Codex CLI, VS Code, Gemini CLI and Windsurf, the token header, and why not to use a cloud connector.
 - [Host metrics](https://github.com/bdog720/oraclarr/blob/main/docs/host-metrics.md): the TrueNAS read-only user and the Netdata container for `get_host`.
 - [Containers](https://github.com/bdog720/oraclarr/blob/main/docs/containers.md): the Docker socket proxy for `get_containers`, and what it lets through.
 - [Writes](https://github.com/bdog720/oraclarr/blob/main/docs/writes.md): the two switches, the token, the two-step plan flow, and the audit log.
