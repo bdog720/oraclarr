@@ -2,6 +2,7 @@
 import asyncio
 import hashlib
 import json
+import re
 
 import httpx
 
@@ -17,6 +18,7 @@ ARR_ACTIONS = ("refresh", "rescan", "search", "rename")
 WRITE_ARR_TYPES = ("sonarr", "radarr")
 MAX_PREVIEW_ROWS = 50
 MAX_CANDIDATES = 10
+PLAN_ID_RE = re.compile(r"[A-Za-z0-9_-]{16}")  # secrets.token_urlsafe(12)
 COMMAND_PATH = "/api/v3/command"
 REFRESH_PARAMS = {"Recursive": "true", "MetadataRefreshMode": "Default",
                   "ImageRefreshMode": "Default", "ReplaceAllMetadata": "false",
@@ -113,6 +115,9 @@ async def _arr_plan(c, service, action, target, season):
         if not rows:
             return None, {"nothing_to_do": True, "target": _target(item, kind)}
         files = sorted({f for f in (_file_id(r) for r in rows) if f is not None})
+        if not files:
+            return None, {"nothing_to_do": True, "target": _target(item, kind),
+                          "detail": "the rename preview has no file ids"}
         preview = {"count": len(rows), "rows": [
             {"existing": r.get("existingPath"), "new": r.get("newPath")}
             for r in rows[:MAX_PREVIEW_ROWS]]}
@@ -220,6 +225,10 @@ def _upstream_message(resp: httpx.Response) -> str | None:
 
 
 async def _execute(clients, store, writable, plan_id):
+    if not PLAN_ID_RE.fullmatch(plan_id):
+        # Never log the raw value: it is caller-supplied and could forge audit lines.
+        audit("refused", tool=TOOL, detail="invalid_plan_id")
+        return _err("plan_not_found")
     plan = store.take(plan_id)  # removed before any await: single use
     if plan is None:
         audit("refused", tool=TOOL, plan_id=plan_id, detail="plan_not_found")

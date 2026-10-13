@@ -39,7 +39,7 @@ import oraclarr_mcp.__main__ as entry  # noqa: E402
 from oraclarr_mcp.config import Config, Instance  # noqa: E402
 
 
-def test_main_installs_log_redaction(monkeypatch):
+def test_main_installs_log_redaction_and_audit_logging(monkeypatch):
     cfg = Config(instances={"sonarr": Instance(type="sonarr", url="http://h",
                                                api_key="SONARRKEY123")})
 
@@ -52,9 +52,13 @@ def test_main_installs_log_redaction(monkeypatch):
     monkeypatch.setattr(entry, "load_config", lambda p: cfg)
     monkeypatch.setattr(entry, "build_clients", lambda c: {})
     monkeypatch.setattr(entry, "build_server", lambda *a, **k: Dummy())
+    installed = []
+    # Stubbed: the real installer would leave the audit logger non-propagating for later tests.
+    monkeypatch.setattr(entry, "install_audit_logging", lambda: installed.append(True))
     before = logging.getLogRecordFactory()
     try:
         entry.main()
+        assert installed == [True]
         rec = logging.getLogger("t").makeRecord(
             "t", logging.INFO, __file__, 1, "key %s", ("SONARRKEY123",), None)
         assert "SONARRKEY123" not in rec.getMessage()
