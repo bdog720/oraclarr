@@ -1,0 +1,25 @@
+[
+  {
+    "id": 1,
+    "name": "WEB-1080p (Alternative)",
+    "isDefault": true,
+    "upgradesAllowed": true,
+    "cutoffQuality": 15,
+    "items": [],
+    "formatItems": [
+      {"id": 0, "formatId": 1, "format": null, "score": 50},
+      {"id": 0, "formatId": 2, "format": null, "score": 0},
+      {"id": 0, "formatId": 98, "format": null, "score": -10000}
+    ],
+    "minFormatScore": 0,
+    "cutoffFormatScore": null,
+    "formatScoreIncrement": 1,
+    "minSize": null,
+    "maxSize": null,
+    "isSynced": true,
+    "trashId": null,
+    "trashScoreSet": "default",
+    "isCustomized": false,
+    "lastTrashScoreSync": null
+  }
+]

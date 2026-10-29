@@ -88,7 +88,27 @@ class ArrClient(BaseClient):
         return await self.get_json("/api/v3/customformat")
 
     async def quality_profiles(self) -> list[dict]:
+        if self.type == "sportarr":
+            return await self._sportarr_quality_profiles()
         return await self.get_json("/api/v3/qualityprofile")
+
+    async def _sportarr_quality_profiles(self) -> list[dict]:
+        # Sportarr's /api/v3/qualityprofile omits formatItems and the format-score
+        # fields. The native path has them, keyed formatId with format null, so the
+        # name comes from the v3 custom formats. Output is the Sonarr v3 shape.
+        profiles, formats = await asyncio.gather(
+            self.get_json("/api/qualityprofile"), self.custom_formats())
+        names = {f.get("id"): f.get("name") for f in formats}
+        return [{
+            "id": p.get("id"),
+            "name": p.get("name"),
+            "cutoff": p.get("cutoffQuality"),
+            "upgradeAllowed": p.get("upgradesAllowed"),
+            "minFormatScore": p.get("minFormatScore"),
+            "cutoffFormatScore": p.get("cutoffFormatScore"),
+            "formatItems": [{"format": f.get("formatId"), "name": names.get(f.get("formatId")),
+                             "score": f.get("score")} for f in p.get("formatItems") or []],
+        } for p in profiles]
 
     async def release_profiles(self) -> list[dict]:
         return await self.get_json("/api/v3/releaseprofile")
