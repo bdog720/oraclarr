@@ -12,5 +12,6 @@ dist/
 # docs/*.md (user guides) and CLAUDE.md are public.
 docs/superpowers/
 CLAUDE.local.md
+.hygiene-denylist
 .private-git/
 .claude/

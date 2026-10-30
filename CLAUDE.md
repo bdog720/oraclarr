@@ -221,6 +221,10 @@ identify the maintainer or describe a real installation.
   specific torrent.
 - Test canaries only: never paste a real serial, UUID or key from a probe into a test.
 - Commit with the GitHub noreply email, not a personal address.
+- Guards: `tests/test_fixture_hygiene.py` (addresses, emails, UTC offsets) runs in CI.
+  `scripts/hooks/pre-commit` checks the author email and the staged lines against a
+  local, gitignored `.hygiene-denylist` of real values; enable it per clone with
+  `git config core.hooksPath scripts/hooks`.
 
 ## Docs
 
