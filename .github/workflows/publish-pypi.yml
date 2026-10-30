@@ -29,6 +29,13 @@ jobs:
       - name: Build package
         run: uv build
 
+      # Test fixtures are scrubbed live captures; keep them out of the public sdist.
+      - name: Check sdist has no tests
+        run: |
+          if tar tzf dist/*.tar.gz | grep -E '^[^/]+/tests/'; then
+            echo "::error::the sdist contains tests/"; exit 1
+          fi
+
       - name: Publish to PyPI (Trusted Publishing)
         uses: pypa/gh-action-pypi-publish@release/v1
 
