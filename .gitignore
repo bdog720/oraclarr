@@ -8,9 +8,9 @@ dist/
 *.egg-info/
 .ruff_cache/
 
-# Internal planning docs — kept private, not for the public repo.
-# docs/*.md (user guides) are public; docs/superpowers/ (specs and plans) is not.
-CLAUDE.md
+# Local-only: specs and plans, personal agent notes, local agent settings.
+# docs/*.md (user guides) and CLAUDE.md are public.
 docs/superpowers/
+CLAUDE.local.md
 .private-git/
 .claude/
