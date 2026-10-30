@@ -242,3 +242,34 @@ async def test_items_item_and_rename_preview():
     assert route.calls.last.request.url.params["seriesId"] == "1"
     await c.rename_preview("movie", 7)
     assert route.calls.last.request.url.params["movieId"] == "7"
+
+
+@respx.mock
+async def test_sportarr_quality_profiles_use_native_endpoint_in_v3_shape():
+    # Sportarr's /api/v3/qualityprofile drops formatItems and both format-score
+    # fields; only the native /api/qualityprofile carries them.
+    respx.get("http://h/api/qualityprofile").mock(return_value=httpx.Response(
+        200, json=json.loads((FX/"sportarr_qualityprofile_native.json").read_text())))
+    respx.get("http://h/api/v3/customformat").mock(return_value=httpx.Response(
+        200, json=[{"id": 1, "name": "1080p"}, {"id": 2, "name": "AAC"},
+                   {"id": 98, "name": "SPLASH (clean feed)"}]))
+    c = ArrClient("sportarr", "sportarr", "http://h", ApiKeyHeaderAuth("K"), timeout=5)
+    profiles = await c.quality_profiles()
+    assert profiles == [{
+        "id": 1, "name": "WEB-1080p (Alternative)", "cutoff": 15,
+        "upgradeAllowed": True, "minFormatScore": 0, "cutoffFormatScore": None,
+        "formatItems": [{"format": 1, "name": "1080p", "score": 50},
+                        {"format": 2, "name": "AAC", "score": 0},
+                        {"format": 98, "name": "SPLASH (clean feed)", "score": -10000}],
+    }]
+    await c.aclose()
+
+
+@respx.mock
+async def test_sonarr_quality_profiles_stay_on_v3():
+    route = respx.get("http://h/api/v3/qualityprofile").mock(
+        return_value=httpx.Response(200, json=[{"id": 1, "name": "HD"}]))
+    c = _client()
+    assert await c.quality_profiles() == [{"id": 1, "name": "HD"}]
+    assert route.called
+    await c.aclose()
