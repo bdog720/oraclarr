@@ -3,7 +3,7 @@
   "name": "io.github.bdog720/oraclarr",
   "title": "Oraclarr",
   "description": "Read-only-by-default MCP server for diagnosing a self-hosted arr stack (Sonarr, Radarr & more).",
-  "version": "2.0.2",
+  "version": "2.0.3",
   "websiteUrl": "https://github.com/bdog720/oraclarr",
   "repository": {
     "url": "https://github.com/bdog720/oraclarr",
@@ -14,7 +14,7 @@
       "registryType": "pypi",
       "registryBaseUrl": "https://pypi.org",
       "identifier": "oraclarr-mcp",
-      "version": "2.0.2",
+      "version": "2.0.3",
       "runtimeHint": "uvx",
       "transport": {
         "type": "stdio"
